@@ -1,4 +1,4 @@
-# Worship Library — People of Praise music app
+# Worship Library — Christian worship music app
 
 Members-only web app (installable PWA): a shared, searchable library of the songs Christian communities use, with event setlists and listening playlists on top.
 

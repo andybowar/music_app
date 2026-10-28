@@ -1,0 +1,2632 @@
+{
+  "generated_from": "agent-spec/tasks/*.md",
+  "tasks": [
+    {
+      "id": "F-01",
+      "title": "Repo scaffold",
+      "phase": 0,
+      "wave": 1,
+      "stream": "platform",
+      "size": "M",
+      "human": false,
+      "deps": [],
+      "blocks": [
+        "F-02",
+        "F-03",
+        "F-05",
+        "OPS-02",
+        "UI-01"
+      ],
+      "owns": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "tsconfig.json",
+        "next.config.ts",
+        "eslint.config.mjs",
+        ".prettierrc",
+        "vitest.config.ts",
+        "playwright.config.ts",
+        ".env.example",
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/globals.css",
+        "components.json",
+        "supabase/config.toml",
+        "README.md",
+        ".gitignore"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/F-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "OPS-01",
+      "title": "Provision cloud environments",
+      "phase": 0,
+      "wave": 1,
+      "stream": "ops",
+      "size": "S",
+      "human": true,
+      "deps": [],
+      "blocks": [
+        "OPS-03"
+      ],
+      "owns": [
+        "docs/ops/environments.md"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/OPS-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "F-02",
+      "title": "CI pipeline",
+      "phase": 0,
+      "wave": 2,
+      "stream": "platform",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-01"
+      ],
+      "blocks": [],
+      "owns": [
+        ".github/workflows/"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/F-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "F-03",
+      "title": "Domain types + Zod validation",
+      "phase": 0,
+      "wave": 2,
+      "stream": "platform",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "F-01"
+      ],
+      "blocks": [
+        "AUTH-05",
+        "DB-01",
+        "F-04",
+        "IMP-01",
+        "IMP-02",
+        "LIB-16",
+        "LIST-03",
+        "LIST-04",
+        "LIST-05",
+        "PLAY-01",
+        "PLAY-06",
+        "SRCH-04",
+        "UI-01"
+      ],
+      "owns": [
+        "types/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-02",
+        "REQ-LIB-06",
+        "REQ-LIB-08",
+        "REQ-SRCH-05"
+      ],
+      "file": "tasks/F-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "F-05",
+      "title": "Env + Supabase clients",
+      "phase": 0,
+      "wave": 2,
+      "stream": "platform",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-01"
+      ],
+      "blocks": [
+        "AUTH-01",
+        "AUTH-04",
+        "DB-06",
+        "SHR-03"
+      ],
+      "owns": [
+        "lib/env.ts",
+        "lib/supabase/"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/F-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "OPS-03",
+      "title": "Backups, restore drill, quota alerts",
+      "phase": 5,
+      "wave": 2,
+      "stream": "ops",
+      "size": "S",
+      "human": true,
+      "deps": [
+        "OPS-01"
+      ],
+      "blocks": [
+        "PILOT-01"
+      ],
+      "owns": [
+        "docs/ops/backups.md"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-NF-04"
+      ],
+      "file": "tasks/OPS-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "AUTH-05",
+      "title": "Permissions helper",
+      "phase": 0,
+      "wave": 3,
+      "stream": "security",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "ADM-01",
+        "DB-05",
+        "LIB-01",
+        "LIB-02",
+        "LIB-03",
+        "LIB-04",
+        "LIB-05",
+        "LIB-06",
+        "LIB-07",
+        "LIST-01",
+        "LIST-02",
+        "SHR-01"
+      ],
+      "owns": [
+        "lib/permissions.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-AUTH-07"
+      ],
+      "file": "tasks/AUTH-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "DB-01",
+      "title": "Drizzle schema + initial migration",
+      "phase": 0,
+      "wave": 3,
+      "stream": "data",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "DB-02",
+        "DB-03",
+        "DB-04",
+        "DB-06"
+      ],
+      "owns": [
+        "db/schema/",
+        "db/migrations/0001_init.sql",
+        "drizzle.config.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-02",
+        "REQ-LIB-03",
+        "REQ-LIB-05",
+        "REQ-LIB-06",
+        "REQ-LIB-08",
+        "REQ-LIB-09",
+        "REQ-LIB-10",
+        "REQ-LIST-04"
+      ],
+      "file": "tasks/DB-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "F-04",
+      "title": "Fixtures",
+      "phase": 0,
+      "wave": 3,
+      "stream": "platform",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "CNT-01",
+        "DB-04",
+        "LIB-10",
+        "LIST-03",
+        "UI-02",
+        "UI-04"
+      ],
+      "owns": [
+        "fixtures/"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/F-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "IMP-01",
+      "title": "Import CSV parser",
+      "phase": 1,
+      "wave": 3,
+      "stream": "data",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "IMP-02",
+        "IMP-03"
+      ],
+      "owns": [
+        "features/import/parse.ts",
+        "features/import/types.ts",
+        "docs/import-template.csv"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-13"
+      ],
+      "file": "tasks/IMP-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-16",
+      "title": "Lyrics paste-and-split parser",
+      "phase": 1,
+      "wave": 3,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "LIB-12",
+        "LIB-17"
+      ],
+      "owns": [
+        "lib/lyrics/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-14"
+      ],
+      "file": "tasks/LIB-16.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-04",
+      "title": "Current list context",
+      "phase": 3,
+      "wave": 3,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "LIST-09"
+      ],
+      "owns": [
+        "features/lists/ui/CurrentList.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-01",
+        "REQ-NAV-04"
+      ],
+      "file": "tasks/LIST-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "PLAY-01",
+      "title": "Player engine (pure reducer)",
+      "phase": 3,
+      "wave": 3,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "PLAY-02",
+        "PLAY-03",
+        "PLAY-04"
+      ],
+      "owns": [
+        "features/player/engine.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-05"
+      ],
+      "file": "tasks/PLAY-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-04",
+      "title": "useSearchState (URL-backed)",
+      "phase": 2,
+      "wave": 3,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-03"
+      ],
+      "blocks": [
+        "SRCH-05",
+        "SRCH-06",
+        "SRCH-07"
+      ],
+      "owns": [
+        "features/search/ui/useSearchState.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-05",
+        "REQ-NAV-03"
+      ],
+      "file": "tasks/SRCH-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "UI-01",
+      "title": "Design tokens + UI primitives",
+      "phase": 0,
+      "wave": 3,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "F-01",
+        "F-03"
+      ],
+      "blocks": [
+        "AUTH-01",
+        "LIB-10",
+        "LIST-05",
+        "LIST-06",
+        "PLAY-04",
+        "PLAY-06",
+        "SRCH-05",
+        "SRCH-07",
+        "UI-02",
+        "UI-04",
+        "UI-08"
+      ],
+      "owns": [
+        "components/ui/",
+        "components/ResponsivePanel.tsx"
+      ],
+      "touches": [
+        "app/globals.css"
+      ],
+      "reqs": [
+        "REQ-NF-01",
+        "REQ-NF-03"
+      ],
+      "file": "tasks/UI-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "AUTH-01",
+      "title": "Password login, logout, reset",
+      "phase": 0,
+      "wave": 4,
+      "stream": "auth",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "F-05",
+        "UI-01"
+      ],
+      "blocks": [
+        "AUTH-02"
+      ],
+      "owns": [
+        "app/(auth)/login/",
+        "app/(auth)/reset/",
+        "features/auth/actions.ts",
+        "features/auth/ui/LoginForm.tsx",
+        "features/auth/ui/ResetForms.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-AUTH-02",
+        "REQ-NAV-02"
+      ],
+      "file": "tasks/AUTH-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "CNT-01",
+      "title": "Theme vocabulary v1 (draft)",
+      "phase": 1,
+      "wave": 4,
+      "stream": "content",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-04"
+      ],
+      "blocks": [
+        "CNT-02",
+        "H-02"
+      ],
+      "owns": [
+        "content/themes-v1.json",
+        "content/themes-v1.md"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/CNT-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "DB-02",
+      "title": "Search triggers + indexes",
+      "phase": 0,
+      "wave": 4,
+      "stream": "data",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "DB-01"
+      ],
+      "blocks": [
+        "LIB-01",
+        "SRCH-01"
+      ],
+      "owns": [
+        "db/migrations/0002_search.sql"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-02",
+        "REQ-SRCH-06"
+      ],
+      "file": "tasks/DB-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "DB-03",
+      "title": "RLS policies",
+      "phase": 0,
+      "wave": 4,
+      "stream": "security",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "DB-01"
+      ],
+      "blocks": [
+        "DB-05"
+      ],
+      "owns": [
+        "db/migrations/0003_rls.sql"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-AUTH-07",
+        "REQ-LIST-08",
+        "REQ-NF-05"
+      ],
+      "file": "tasks/DB-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "DB-04",
+      "title": "Seed script",
+      "phase": 0,
+      "wave": 4,
+      "stream": "data",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-01",
+        "F-04"
+      ],
+      "blocks": [
+        "DB-05",
+        "SRCH-01"
+      ],
+      "owns": [
+        "db/seed/"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/DB-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "DB-06",
+      "title": "DB client, action wrapper, audit helper",
+      "phase": 0,
+      "wave": 4,
+      "stream": "platform",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-01",
+        "F-05"
+      ],
+      "blocks": [
+        "AUTH-02",
+        "AUTH-04",
+        "LIB-01",
+        "LIB-02",
+        "LIB-03",
+        "LIB-04",
+        "LIB-05",
+        "LIB-06",
+        "LIB-07",
+        "LIB-19",
+        "LIST-02",
+        "OPS-02",
+        "SRCH-01",
+        "SRCH-10"
+      ],
+      "owns": [
+        "lib/db.ts",
+        "lib/audit.ts",
+        "lib/action.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-12"
+      ],
+      "file": "tasks/DB-06.md",
+      "status": "todo"
+    },
+    {
+      "id": "IMP-02",
+      "title": "Import file matcher",
+      "phase": 1,
+      "wave": 4,
+      "stream": "data",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-03",
+        "IMP-01"
+      ],
+      "blocks": [
+        "IMP-03"
+      ],
+      "owns": [
+        "features/import/match.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-13"
+      ],
+      "file": "tasks/IMP-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-10",
+      "title": "Song form: Basic info section",
+      "phase": 1,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "F-04"
+      ],
+      "blocks": [
+        "LIB-11",
+        "LIB-12",
+        "LIB-13",
+        "LIB-14",
+        "LIB-15"
+      ],
+      "owns": [
+        "features/songs/ui/form/types.ts",
+        "features/songs/ui/form/BasicInfoSection.tsx",
+        "app/dev/form-basic/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-02",
+        "REQ-LIB-03"
+      ],
+      "file": "tasks/LIB-10.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-03",
+      "title": "Override resolution (pure)",
+      "phase": 3,
+      "wave": 4,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-03",
+        "F-04"
+      ],
+      "blocks": [
+        "LIST-01"
+      ],
+      "owns": [
+        "lib/lists/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-04"
+      ],
+      "file": "tasks/LIST-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-05",
+      "title": "CreateListDialog",
+      "phase": 3,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "F-03"
+      ],
+      "blocks": [
+        "LIST-06",
+        "LIST-09"
+      ],
+      "owns": [
+        "features/lists/ui/CreateListDialog.tsx",
+        "app/dev/create-list/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-01"
+      ],
+      "file": "tasks/LIST-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "PLAY-02",
+      "title": "MP3 adapter",
+      "phase": 3,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "PLAY-01"
+      ],
+      "blocks": [
+        "PLAY-05"
+      ],
+      "owns": [
+        "features/player/adapters/mp3.ts"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/PLAY-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "PLAY-03",
+      "title": "YouTube adapter",
+      "phase": 3,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "PLAY-01"
+      ],
+      "blocks": [
+        "PLAY-05"
+      ],
+      "owns": [
+        "features/player/adapters/youtube.ts"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/PLAY-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "PLAY-04",
+      "title": "PlayerBar UI",
+      "phase": 3,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "PLAY-01"
+      ],
+      "blocks": [
+        "PLAY-05"
+      ],
+      "owns": [
+        "features/player/ui/PlayerBar.tsx",
+        "app/dev/player/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-05"
+      ],
+      "file": "tasks/PLAY-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "PLAY-06",
+      "title": "AudioPicker",
+      "phase": 3,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "F-03"
+      ],
+      "blocks": [
+        "PLAY-05"
+      ],
+      "owns": [
+        "features/player/ui/AudioPicker.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-05"
+      ],
+      "file": "tasks/PLAY-06.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-05",
+      "title": "SearchBar with field toggles",
+      "phase": 2,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "SRCH-04"
+      ],
+      "blocks": [
+        "SRCH-09"
+      ],
+      "owns": [
+        "features/search/ui/SearchBar.tsx",
+        "app/dev/search-bar/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-02"
+      ],
+      "file": "tasks/SRCH-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-07",
+      "title": "SortControl",
+      "phase": 2,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "SRCH-04"
+      ],
+      "blocks": [
+        "SRCH-09"
+      ],
+      "owns": [
+        "features/search/ui/SortControl.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-04"
+      ],
+      "file": "tasks/SRCH-07.md",
+      "status": "todo"
+    },
+    {
+      "id": "UI-02",
+      "title": "App shell + NavBar",
+      "phase": 0,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "F-04"
+      ],
+      "blocks": [
+        "ADM-01",
+        "BR-02",
+        "BR-04",
+        "LIB-17",
+        "LIB-18",
+        "LIST-07",
+        "LIST-08",
+        "LIST-09",
+        "SRCH-09"
+      ],
+      "owns": [
+        "app/(app)/layout.tsx",
+        "components/NavBar.tsx",
+        "app/dev/navbar/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-NAV-01",
+        "REQ-NAV-03",
+        "REQ-NAV-04"
+      ],
+      "file": "tasks/UI-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "UI-04",
+      "title": "Song atoms (EnergyChip, KeyBadge, TimeSig, ComposerName, BranchCode)",
+      "phase": 1,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "F-04"
+      ],
+      "blocks": [
+        "LIB-11",
+        "SRCH-06",
+        "UI-05",
+        "UI-06",
+        "UI-07"
+      ],
+      "owns": [
+        "components/song/EnergyChip.tsx",
+        "components/song/KeyBadge.tsx",
+        "components/song/TimeSigBadge.tsx",
+        "components/song/ComposerName.tsx",
+        "components/song/BranchCode.tsx",
+        "app/dev/atoms/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-ROW-01",
+        "REQ-LIB-03",
+        "REQ-NF-03"
+      ],
+      "file": "tasks/UI-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "UI-08",
+      "title": "PdfViewer + InlineAudio",
+      "phase": 1,
+      "wave": 4,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01"
+      ],
+      "blocks": [
+        "LIB-14",
+        "LIB-18",
+        "SRCH-09"
+      ],
+      "owns": [
+        "components/media/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-ROW-04"
+      ],
+      "file": "tasks/UI-08.md",
+      "status": "todo"
+    },
+    {
+      "id": "AUTH-02",
+      "title": "OIDC SSO (Google, Microsoft) + user provisioning",
+      "phase": 0,
+      "wave": 5,
+      "stream": "auth",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "AUTH-01",
+        "DB-06"
+      ],
+      "blocks": [
+        "AUTH-03",
+        "AUTH-06"
+      ],
+      "owns": [
+        "app/(auth)/auth/callback/",
+        "features/auth/provision.ts",
+        "features/auth/ui/SsoButtons.tsx"
+      ],
+      "touches": [
+        "app/(auth)/login/page.tsx",
+        "features/auth/actions.ts"
+      ],
+      "reqs": [
+        "REQ-AUTH-01",
+        "REQ-AUTH-03",
+        "REQ-AUTH-04"
+      ],
+      "file": "tasks/AUTH-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "AUTH-04",
+      "title": "Session guard + requireUser",
+      "phase": 0,
+      "wave": 5,
+      "stream": "auth",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-05",
+        "DB-06"
+      ],
+      "blocks": [
+        "ADM-01",
+        "LIB-01",
+        "LIB-02",
+        "LIB-03",
+        "LIB-04",
+        "LIB-05",
+        "LIB-06",
+        "LIB-07",
+        "LIST-02",
+        "SRCH-02",
+        "SRCH-10"
+      ],
+      "owns": [
+        "lib/auth.ts",
+        "middleware.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-AUTH-06"
+      ],
+      "file": "tasks/AUTH-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "CNT-02",
+      "title": "Tagging guide",
+      "phase": 1,
+      "wave": 5,
+      "stream": "content",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "CNT-01"
+      ],
+      "blocks": [
+        "CNT-03"
+      ],
+      "owns": [
+        "docs/tagging-guide.md"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/CNT-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "DB-05",
+      "title": "RLS + permission parity tests",
+      "phase": 0,
+      "wave": 5,
+      "stream": "security",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "DB-03",
+        "DB-04",
+        "AUTH-05"
+      ],
+      "blocks": [],
+      "owns": [
+        "tests/db/rls.test.ts"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/DB-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-11",
+      "title": "Song form: Musical tags section",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "UI-04",
+        "LIB-10"
+      ],
+      "blocks": [
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/ui/form/MusicalSection.tsx",
+        "app/dev/form-musical/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-08"
+      ],
+      "file": "tasks/LIB-11.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-12",
+      "title": "Song form: Lyrics section (chorus, verses 1–5, bridge)",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIB-10",
+        "LIB-16"
+      ],
+      "blocks": [
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/ui/form/LyricsSection.tsx",
+        "app/dev/form-lyrics/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-06",
+        "REQ-LIB-14"
+      ],
+      "file": "tasks/LIB-12.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-13",
+      "title": "Song form: Themes section",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIB-10"
+      ],
+      "blocks": [
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/ui/form/ThemesSection.tsx",
+        "app/dev/form-themes/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-07"
+      ],
+      "file": "tasks/LIB-13.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-14",
+      "title": "Song form: Files & links section",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIB-10",
+        "UI-08"
+      ],
+      "blocks": [
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/ui/form/ResourcesSection.tsx",
+        "app/dev/form-resources/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-09",
+        "REQ-LIB-10"
+      ],
+      "file": "tasks/LIB-14.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-15",
+      "title": "Song form: Branch usage section",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIB-10"
+      ],
+      "blocks": [
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/ui/form/UsageSection.tsx",
+        "app/dev/form-usage/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-05"
+      ],
+      "file": "tasks/LIB-15.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-06",
+      "title": "AddToListMenu",
+      "phase": 3,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-01",
+        "LIST-05"
+      ],
+      "blocks": [
+        "LIST-09"
+      ],
+      "owns": [
+        "features/lists/ui/AddToListMenu.tsx",
+        "app/dev/add-to-list/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-02"
+      ],
+      "file": "tasks/LIST-06.md",
+      "status": "todo"
+    },
+    {
+      "id": "OPS-02",
+      "title": "Sentry + structured logging",
+      "phase": 5,
+      "wave": 5,
+      "stream": "ops",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-01",
+        "DB-06"
+      ],
+      "blocks": [],
+      "owns": [
+        "sentry.*.config.ts",
+        "instrumentation.ts",
+        "lib/log.ts"
+      ],
+      "touches": [
+        "lib/action.ts",
+        "next.config.ts"
+      ],
+      "reqs": [
+        "REQ-NF-04"
+      ],
+      "file": "tasks/OPS-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-01",
+      "title": "Search query builder",
+      "phase": 2,
+      "wave": 5,
+      "stream": "backend",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "DB-02",
+        "DB-04",
+        "DB-06"
+      ],
+      "blocks": [
+        "SRCH-02"
+      ],
+      "owns": [
+        "features/search/server/query.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-01",
+        "REQ-SRCH-02",
+        "REQ-SRCH-03",
+        "REQ-SRCH-04"
+      ],
+      "file": "tasks/SRCH-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-06",
+      "title": "FilterBar (concurrent dropdowns)",
+      "phase": 2,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "UI-04",
+        "SRCH-04"
+      ],
+      "blocks": [
+        "SRCH-09"
+      ],
+      "owns": [
+        "features/search/ui/FilterBar.tsx",
+        "app/dev/filter-bar/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-03"
+      ],
+      "file": "tasks/SRCH-06.md",
+      "status": "todo"
+    },
+    {
+      "id": "UI-05",
+      "title": "SongRow",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "UI-04"
+      ],
+      "blocks": [
+        "BR-02",
+        "BR-04",
+        "LIST-07",
+        "SHR-02",
+        "SRCH-08"
+      ],
+      "owns": [
+        "components/song/SongRow.tsx",
+        "app/dev/song-row/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-ROW-01",
+        "REQ-ROW-02"
+      ],
+      "file": "tasks/UI-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "UI-06",
+      "title": "Detail panels: Key, Composer, Usage, Reminder",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "UI-04"
+      ],
+      "blocks": [
+        "LIB-18",
+        "LIST-07",
+        "SRCH-09"
+      ],
+      "owns": [
+        "components/song/panels/KeyPanel.tsx",
+        "components/song/panels/ComposerPanel.tsx",
+        "components/song/panels/UsagePanel.tsx",
+        "components/song/panels/ReminderPanel.tsx",
+        "app/dev/panels/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-ROW-02"
+      ],
+      "file": "tasks/UI-06.md",
+      "status": "todo"
+    },
+    {
+      "id": "UI-07",
+      "title": "ResourcesPanel + LyricsViewer",
+      "phase": 1,
+      "wave": 5,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "UI-04"
+      ],
+      "blocks": [
+        "LIB-18",
+        "SRCH-09"
+      ],
+      "owns": [
+        "components/song/panels/ResourcesPanel.tsx",
+        "components/song/LyricsViewer.tsx",
+        "app/dev/resources/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-ROW-02",
+        "REQ-ROW-03"
+      ],
+      "file": "tasks/UI-07.md",
+      "status": "todo"
+    },
+    {
+      "id": "ADM-01",
+      "title": "Admin: users",
+      "phase": 1,
+      "wave": 6,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "AUTH-04",
+        "AUTH-05",
+        "UI-02"
+      ],
+      "blocks": [
+        "ADM-02",
+        "AUTH-06"
+      ],
+      "owns": [
+        "app/(app)/admin/users/",
+        "features/admin/server.ts",
+        "features/admin/ui/users/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-AUTH-03",
+        "REQ-AUTH-07"
+      ],
+      "file": "tasks/ADM-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "AUTH-03",
+      "title": "SAML SSO",
+      "phase": 0,
+      "wave": 6,
+      "stream": "auth",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "AUTH-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "features/auth/saml.ts",
+        "docs/ops/saml.md"
+      ],
+      "touches": [
+        "features/auth/ui/SsoButtons.tsx",
+        "features/auth/actions.ts"
+      ],
+      "reqs": [
+        "REQ-AUTH-01"
+      ],
+      "file": "tasks/AUTH-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-01",
+      "title": "Song server actions (create/update/delete/get)",
+      "phase": 1,
+      "wave": 6,
+      "stream": "backend",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "DB-02",
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "IMP-03",
+        "LIB-17",
+        "LIB-18",
+        "LIST-01",
+        "SRCH-02"
+      ],
+      "owns": [
+        "features/songs/server/songs.ts",
+        "features/songs/server/assemble.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-01",
+        "REQ-LIB-02",
+        "REQ-LIB-04",
+        "REQ-LIB-06",
+        "REQ-LIB-12"
+      ],
+      "file": "tasks/LIB-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-02",
+      "title": "Song keys action",
+      "phase": 1,
+      "wave": 6,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "IMP-03",
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/server/keys.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-08"
+      ],
+      "file": "tasks/LIB-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-03",
+      "title": "Composers actions",
+      "phase": 1,
+      "wave": 6,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "IMP-03",
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/server/composers.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-02",
+        "REQ-LIB-03"
+      ],
+      "file": "tasks/LIB-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-04",
+      "title": "Themes actions",
+      "phase": 1,
+      "wave": 6,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "H-02",
+        "IMP-03",
+        "LIB-17"
+      ],
+      "owns": [
+        "features/themes/server.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-07"
+      ],
+      "file": "tasks/LIB-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-05",
+      "title": "Branch usage action",
+      "phase": 1,
+      "wave": 6,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "BR-03",
+        "IMP-03",
+        "LIB-17"
+      ],
+      "owns": [
+        "features/songs/server/usage.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-05"
+      ],
+      "file": "tasks/LIB-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-06",
+      "title": "File uploads + signed URLs",
+      "phase": 1,
+      "wave": 6,
+      "stream": "backend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "IMP-03",
+        "LIB-17",
+        "LIB-18",
+        "SRCH-09"
+      ],
+      "owns": [
+        "lib/storage.ts",
+        "features/resources/server/files.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-09",
+        "REQ-LIB-10",
+        "REQ-LIB-11"
+      ],
+      "file": "tasks/LIB-06.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-07",
+      "title": "External links + YouTube parsing",
+      "phase": 1,
+      "wave": 6,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "IMP-03",
+        "LIB-17"
+      ],
+      "owns": [
+        "features/resources/server/links.ts",
+        "lib/youtube.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-09"
+      ],
+      "file": "tasks/LIB-07.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-02",
+      "title": "List items server",
+      "phase": 3,
+      "wave": 6,
+      "stream": "backend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "LIST-07",
+        "LIST-09"
+      ],
+      "owns": [
+        "features/lists/server/items.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-02",
+        "REQ-LIST-03",
+        "REQ-LIST-04",
+        "REQ-LIST-05"
+      ],
+      "file": "tasks/LIST-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-08",
+      "title": "ResultsList",
+      "phase": 2,
+      "wave": 6,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-05"
+      ],
+      "blocks": [
+        "SRCH-09"
+      ],
+      "owns": [
+        "features/search/ui/ResultsList.tsx",
+        "app/dev/results/"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/SRCH-08.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-10",
+      "title": "Facet options",
+      "phase": 2,
+      "wave": 6,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-06",
+        "AUTH-04"
+      ],
+      "blocks": [
+        "SRCH-09"
+      ],
+      "owns": [
+        "features/search/server/facets.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-03"
+      ],
+      "file": "tasks/SRCH-10.md",
+      "status": "todo"
+    },
+    {
+      "id": "ADM-02",
+      "title": "Admin: branches",
+      "phase": 1,
+      "wave": 7,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "ADM-01"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/(app)/admin/branches/",
+        "features/admin/ui/branches/"
+      ],
+      "touches": [
+        "features/admin/server.ts"
+      ],
+      "reqs": [],
+      "file": "tasks/ADM-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "AUTH-06",
+      "title": "Account linking + deprovisioning",
+      "phase": 4,
+      "wave": 7,
+      "stream": "auth",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "AUTH-02",
+        "ADM-01"
+      ],
+      "blocks": [],
+      "owns": [
+        "features/auth/linking.ts"
+      ],
+      "touches": [
+        "features/auth/provision.ts"
+      ],
+      "reqs": [
+        "REQ-AUTH-05",
+        "REQ-AUTH-06"
+      ],
+      "file": "tasks/AUTH-06.md",
+      "status": "todo"
+    },
+    {
+      "id": "IMP-03",
+      "title": "Import runner CLI",
+      "phase": 1,
+      "wave": 7,
+      "stream": "data",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "IMP-01",
+        "IMP-02",
+        "LIB-01",
+        "LIB-02",
+        "LIB-03",
+        "LIB-04",
+        "LIB-05",
+        "LIB-06",
+        "LIB-07"
+      ],
+      "blocks": [],
+      "owns": [
+        "scripts/import.ts",
+        "docs/import.md"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-13"
+      ],
+      "file": "tasks/IMP-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-17",
+      "title": "Song create/edit pages",
+      "phase": 1,
+      "wave": 7,
+      "stream": "frontend",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "LIB-01",
+        "LIB-02",
+        "LIB-03",
+        "LIB-04",
+        "LIB-05",
+        "LIB-06",
+        "LIB-07",
+        "LIB-11",
+        "LIB-12",
+        "LIB-13",
+        "LIB-14",
+        "LIB-15",
+        "LIB-16",
+        "UI-02"
+      ],
+      "blocks": [
+        "CNT-03",
+        "H-04",
+        "H-05"
+      ],
+      "owns": [
+        "app/(app)/songs/new/",
+        "app/(app)/songs/[id]/edit/",
+        "features/songs/ui/SongForm.tsx",
+        "features/songs/ui/form/toInput.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIB-01"
+      ],
+      "file": "tasks/LIB-17.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-18",
+      "title": "Song page",
+      "phase": 1,
+      "wave": 7,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIB-01",
+        "LIB-06",
+        "UI-06",
+        "UI-07",
+        "UI-08",
+        "UI-02"
+      ],
+      "blocks": [
+        "H-01",
+        "LIB-19"
+      ],
+      "owns": [
+        "app/(app)/songs/[id]/page.tsx",
+        "features/songs/ui/SongPage.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-ROW-03",
+        "REQ-ROW-04"
+      ],
+      "file": "tasks/LIB-18.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-01",
+      "title": "Lists server (create/get/list/rename/delete)",
+      "phase": 3,
+      "wave": 7,
+      "stream": "backend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIB-01",
+        "LIST-03",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "BR-01",
+        "BR-03",
+        "LIST-07",
+        "LIST-08",
+        "LIST-09",
+        "SHR-01"
+      ],
+      "owns": [
+        "features/lists/server/lists.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-01",
+        "REQ-LIST-03",
+        "REQ-LIST-06",
+        "REQ-LIST-07",
+        "REQ-LIST-08"
+      ],
+      "file": "tasks/LIST-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-02",
+      "title": "searchSongs action + default view",
+      "phase": 2,
+      "wave": 7,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-01",
+        "LIB-01",
+        "AUTH-04"
+      ],
+      "blocks": [
+        "BR-01",
+        "BR-04",
+        "H-02",
+        "SRCH-03",
+        "SRCH-09"
+      ],
+      "owns": [
+        "features/search/server/search.ts"
+      ],
+      "touches": [
+        "features/search/server/query.ts"
+      ],
+      "reqs": [
+        "REQ-SRCH-01"
+      ],
+      "file": "tasks/SRCH-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "BR-01",
+      "title": "Branch activity server",
+      "phase": 4,
+      "wave": 8,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIST-01",
+        "SRCH-02"
+      ],
+      "blocks": [
+        "BR-02"
+      ],
+      "owns": [
+        "features/branches/server.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-BR-01"
+      ],
+      "file": "tasks/BR-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "BR-03",
+      "title": "Derived branch usage job",
+      "phase": 4,
+      "wave": 8,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIST-01",
+        "LIB-05"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/api/cron/usage/",
+        "lib/usage/",
+        "vercel.json"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-BR-02"
+      ],
+      "file": "tasks/BR-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "BR-04",
+      "title": "Quick theme lookup",
+      "phase": 4,
+      "wave": 8,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-02",
+        "UI-05",
+        "UI-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/(app)/quick/"
+      ],
+      "touches": [
+        "components/NavBar.tsx"
+      ],
+      "reqs": [
+        "REQ-BR-03"
+      ],
+      "file": "tasks/BR-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "CNT-03",
+      "title": "Pilot data entry: first 50 songs",
+      "phase": 1,
+      "wave": 8,
+      "stream": "content",
+      "size": "L",
+      "human": true,
+      "deps": [
+        "LIB-17",
+        "CNT-02"
+      ],
+      "blocks": [
+        "PILOT-01"
+      ],
+      "owns": [],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/CNT-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "H-02",
+      "title": "Theme synonyms in search",
+      "phase": 5,
+      "wave": 8,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-02",
+        "LIB-04",
+        "CNT-01"
+      ],
+      "blocks": [
+        "H-03"
+      ],
+      "owns": [
+        "features/search/server/synonyms.ts",
+        "app/(app)/admin/themes/"
+      ],
+      "touches": [
+        "features/search/server/query.ts",
+        "features/themes/server.ts"
+      ],
+      "reqs": [
+        "REQ-LIB-07"
+      ],
+      "file": "tasks/H-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIB-19",
+      "title": "Song change history",
+      "phase": 1,
+      "wave": 8,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIB-18",
+        "DB-06"
+      ],
+      "blocks": [],
+      "owns": [
+        "features/audit/"
+      ],
+      "touches": [
+        "features/songs/ui/SongPage.tsx"
+      ],
+      "reqs": [
+        "REQ-LIB-12"
+      ],
+      "file": "tasks/LIB-19.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-07",
+      "title": "Setlist view + route",
+      "phase": 3,
+      "wave": 8,
+      "stream": "frontend",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "LIST-01",
+        "LIST-02",
+        "UI-05",
+        "UI-02",
+        "UI-06"
+      ],
+      "blocks": [
+        "H-01",
+        "PLAY-05",
+        "SHR-04"
+      ],
+      "owns": [
+        "app/(app)/lists/[id]/",
+        "features/lists/ui/SetlistView.tsx",
+        "features/lists/ui/ItemOverrideEditor.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-03",
+        "REQ-LIST-04",
+        "REQ-LIST-06"
+      ],
+      "file": "tasks/LIST-07.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-08",
+      "title": "Open Setlist / Open Playlist index",
+      "phase": 3,
+      "wave": 8,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIST-01",
+        "UI-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/(app)/lists/page.tsx",
+        "features/lists/ui/ListIndex.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-LIST-07"
+      ],
+      "file": "tasks/LIST-08.md",
+      "status": "todo"
+    },
+    {
+      "id": "SHR-01",
+      "title": "Share tokens server",
+      "phase": 4,
+      "wave": 8,
+      "stream": "backend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIST-01",
+        "AUTH-05"
+      ],
+      "blocks": [
+        "SHR-02",
+        "SHR-03",
+        "SHR-04"
+      ],
+      "owns": [
+        "features/sharing/server.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SHARE-01",
+        "REQ-SHARE-03"
+      ],
+      "file": "tasks/SHR-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-03",
+      "title": "Fuzzy title fallback + did-you-mean",
+      "phase": 2,
+      "wave": 8,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-02"
+      ],
+      "blocks": [
+        "SRCH-11"
+      ],
+      "owns": [
+        "features/search/server/fuzzy.ts"
+      ],
+      "touches": [
+        "features/search/server/search.ts"
+      ],
+      "reqs": [
+        "REQ-SRCH-06"
+      ],
+      "file": "tasks/SRCH-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-09",
+      "title": "Library page (integration)",
+      "phase": 2,
+      "wave": 8,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "SRCH-02",
+        "SRCH-05",
+        "SRCH-06",
+        "SRCH-07",
+        "SRCH-08",
+        "SRCH-10",
+        "UI-06",
+        "UI-07",
+        "UI-08",
+        "UI-02",
+        "LIB-06"
+      ],
+      "blocks": [
+        "DOC-01",
+        "H-04",
+        "H-05",
+        "LIST-09"
+      ],
+      "owns": [
+        "app/(app)/library/",
+        "features/search/ui/LibraryView.tsx",
+        "features/search/ui/RowPanels.tsx"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-NAV-02",
+        "REQ-SRCH-01",
+        "REQ-ROW-02"
+      ],
+      "file": "tasks/SRCH-09.md",
+      "status": "todo"
+    },
+    {
+      "id": "BR-02",
+      "title": "Branches page",
+      "phase": 4,
+      "wave": 9,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "BR-01",
+        "UI-05",
+        "UI-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/(app)/branches/",
+        "features/branches/ui/"
+      ],
+      "touches": [
+        "components/NavBar.tsx"
+      ],
+      "reqs": [
+        "REQ-BR-01"
+      ],
+      "file": "tasks/BR-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "H-01",
+      "title": "PWA + offline setlists",
+      "phase": 5,
+      "wave": 9,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIST-07",
+        "LIB-18"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/manifest.ts",
+        "app/sw.ts",
+        "public/icons/"
+      ],
+      "touches": [
+        "next.config.ts"
+      ],
+      "reqs": [
+        "REQ-NF-01",
+        "REQ-NF-02"
+      ],
+      "file": "tasks/H-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "H-03",
+      "title": "Semantic theme search (optional)",
+      "phase": 5,
+      "wave": 9,
+      "stream": "backend",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "H-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "features/search/server/semantic.ts",
+        "db/migrations/0004_vector.sql"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/H-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "LIST-09",
+      "title": "Wire list creation + Add-to-List into app",
+      "phase": 3,
+      "wave": 9,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIST-04",
+        "LIST-05",
+        "LIST-06",
+        "LIST-01",
+        "LIST-02",
+        "SRCH-09",
+        "UI-02"
+      ],
+      "blocks": [
+        "DOC-01",
+        "H-04",
+        "H-05",
+        "SHR-04"
+      ],
+      "owns": [
+        "features/lists/ui/AddToListAction.tsx",
+        "features/lists/ui/NavListActions.tsx"
+      ],
+      "touches": [
+        "app/(app)/layout.tsx",
+        "features/search/ui/LibraryView.tsx"
+      ],
+      "reqs": [
+        "REQ-LIST-01",
+        "REQ-LIST-02",
+        "REQ-NAV-01"
+      ],
+      "file": "tasks/LIST-09.md",
+      "status": "todo"
+    },
+    {
+      "id": "PLAY-05",
+      "title": "PlaylistView",
+      "phase": 3,
+      "wave": 9,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "PLAY-02",
+        "PLAY-03",
+        "PLAY-04",
+        "PLAY-06",
+        "LIST-07"
+      ],
+      "blocks": [
+        "H-04",
+        "H-05",
+        "SHR-04"
+      ],
+      "owns": [
+        "features/player/ui/PlaylistView.tsx",
+        "features/player/ui/usePlayer.ts"
+      ],
+      "touches": [
+        "app/(app)/lists/[id]/page.tsx"
+      ],
+      "reqs": [
+        "REQ-LIST-05"
+      ],
+      "file": "tasks/PLAY-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "SHR-02",
+      "title": "Public share page",
+      "phase": 4,
+      "wave": 9,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SHR-01",
+        "UI-05"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/share/[token]/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SHARE-01",
+        "REQ-SHARE-03"
+      ],
+      "file": "tasks/SHR-02.md",
+      "status": "todo"
+    },
+    {
+      "id": "SHR-03",
+      "title": "Share by email",
+      "phase": 4,
+      "wave": 9,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SHR-01",
+        "F-05"
+      ],
+      "blocks": [
+        "SHR-04"
+      ],
+      "owns": [
+        "lib/email.ts",
+        "emails/ShareList.tsx"
+      ],
+      "touches": [
+        "features/sharing/server.ts"
+      ],
+      "reqs": [
+        "REQ-SHARE-02"
+      ],
+      "file": "tasks/SHR-03.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-11",
+      "title": "Search performance test",
+      "phase": 2,
+      "wave": 9,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-03"
+      ],
+      "blocks": [],
+      "owns": [
+        "tests/perf/search.perf.ts",
+        "tests/perf/synthetic-seed.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-SRCH-07"
+      ],
+      "file": "tasks/SRCH-11.md",
+      "status": "todo"
+    },
+    {
+      "id": "H-04",
+      "title": "Accessibility audit + fixes",
+      "phase": 5,
+      "wave": 10,
+      "stream": "qa",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "SRCH-09",
+        "LIST-09",
+        "PLAY-05",
+        "LIB-17"
+      ],
+      "blocks": [],
+      "owns": [
+        "tests/e2e/a11y.spec.ts"
+      ],
+      "touches": [
+        "components/",
+        "features/"
+      ],
+      "reqs": [
+        "REQ-NF-03"
+      ],
+      "file": "tasks/H-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "SHR-04",
+      "title": "ShareDialog + nav Share wiring",
+      "phase": 4,
+      "wave": 10,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SHR-01",
+        "SHR-03",
+        "LIST-09",
+        "LIST-07",
+        "PLAY-05"
+      ],
+      "blocks": [
+        "DOC-01",
+        "H-05"
+      ],
+      "owns": [
+        "features/sharing/ui/"
+      ],
+      "touches": [
+        "features/lists/ui/NavListActions.tsx",
+        "features/lists/ui/SetlistView.tsx",
+        "features/player/ui/PlaylistView.tsx"
+      ],
+      "reqs": [
+        "REQ-NAV-04",
+        "REQ-SHARE-01",
+        "REQ-SHARE-02"
+      ],
+      "file": "tasks/SHR-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "DOC-01",
+      "title": "User guide",
+      "phase": 5,
+      "wave": 11,
+      "stream": "content",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-09",
+        "LIST-09",
+        "SHR-04"
+      ],
+      "blocks": [
+        "PILOT-01"
+      ],
+      "owns": [
+        "docs/user-guide.md"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/DOC-01.md",
+      "status": "todo"
+    },
+    {
+      "id": "H-05",
+      "title": "End-to-end journey suite",
+      "phase": 5,
+      "wave": 11,
+      "stream": "qa",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "SRCH-09",
+        "LIST-09",
+        "SHR-04",
+        "PLAY-05",
+        "LIB-17"
+      ],
+      "blocks": [
+        "PILOT-01"
+      ],
+      "owns": [
+        "tests/e2e/journeys/"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-NAV-01",
+        "REQ-LIST-02",
+        "REQ-SHARE-01"
+      ],
+      "file": "tasks/H-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "PILOT-01",
+      "title": "Pilot branch rollout",
+      "phase": 5,
+      "wave": 12,
+      "stream": "content",
+      "size": "L",
+      "human": true,
+      "deps": [
+        "H-05",
+        "DOC-01",
+        "OPS-03",
+        "CNT-03"
+      ],
+      "blocks": [],
+      "owns": [],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/PILOT-01.md",
+      "status": "todo"
+    }
+  ]
+}

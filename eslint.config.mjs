@@ -13,6 +13,7 @@ const eslintConfig = [
       'test-results/**',
       'supabase/.temp/**',
       'agent-spec/**',
+      '.claude/**',
     ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),

@@ -77,7 +77,7 @@ export const KIND_FORMATS: Record<ResourceKind, readonly ResourceFormat[]> = {
   audio: ['mp3', 'm4a', 'url'],
   video_link: ['url'],
   instruction_link: ['url', 'mp3', 'pdf'],
-  projection: ['pro', 'mdb', 'ppt', 'pptx'],
+  projection: ['pro', 'mdb', 'ppt', 'pptx', 'url'],
 };
 /** Kinds stored per key (song_key_id NOT NULL). 'projection' is key-independent. */
 export const KEYED_KINDS: readonly ResourceKind[] = [

@@ -122,7 +122,7 @@ function checkSongKey(
     ctx.addIssue({
       code: 'custom',
       path: ['songKeyId'],
-      message: 'Projection files are not tied to a key',
+      message: 'Projection resources are not tied to a key',
     });
   }
 }

@@ -179,6 +179,19 @@ describe('resourceLinkInputSchema', () => {
     url: 'https://example.com/watch?v=1',
   };
 
+  it('accepts a key-less projection link', () => {
+    const parsed = resourceLinkInputSchema.safeParse({
+      ...link,
+      kind: 'projection',
+      songKeyId: null,
+    });
+    expect(parsed.success).toBe(true);
+    expect(
+      resourceLinkInputSchema.safeParse({ ...link, kind: 'projection', songKeyId: undefined }).data
+        ?.songKeyId,
+    ).toBeNull();
+  });
+
   it('accepts an http(s) link for a keyed kind', () => {
     expect(resourceLinkInputSchema.safeParse(link).success).toBe(true);
     expect(resourceLinkInputSchema.safeParse({ ...link, url: 'http://example.com' }).success).toBe(
@@ -192,7 +205,7 @@ describe('resourceLinkInputSchema', () => {
     ['bad song id', { songId: 'x' }, 'songId'],
     ['bad kind', { kind: 'tab' }, 'kind'],
     ['kind without url format', { kind: 'full_score' }, 'kind'],
-    ['projection link', { kind: 'projection', songKeyId: null }, 'kind'],
+    ['projection link with key', { kind: 'projection' }, 'songKeyId'],
     ['empty label', { label: ' ' }, 'label'],
     ['long label', { label: 'x'.repeat(121) }, 'label'],
     ['ftp url', { url: 'ftp://example.com/file' }, 'url'],

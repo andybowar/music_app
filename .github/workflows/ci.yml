@@ -1,0 +1,141 @@
+# F-02 · CI pipeline. Every PR (and every push to main) runs:
+#   checks       install (cached) → typecheck → lint → prettier → unit tests → build
+#   integration  local Supabase stack → migrations (when they exist) → pnpm test:int
+# Playwright e2e runs against Vercel previews in e2e.yml.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A new push to a PR cancels that PR's in-flight run; runs on main always finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+# Placeholder values for every var in .env.example, so env validation (F-05,
+# lib/env.ts) passes at build/test time. None of these are secrets and none
+# reach a real service. The integration job overrides the Supabase ones with the
+# values printed by the local stack.
+env:
+  CI: true
+  NEXT_TELEMETRY_DISABLED: 1
+  APP_URL: http://127.0.0.1:3000
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+  SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
+  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+  SSO_PROVIDERS: google
+  FEATURE_SAML: false
+  SAML_PROVIDER_ID: 00000000-0000-0000-0000-000000000000
+  RESEND_API_KEY: re_ci_placeholder
+  EMAIL_FROM: Worship Library <no-reply@example.org>
+  SENTRY_DSN: https://examplePublicKey@o0.ingest.sentry.io/0
+  NEXT_PUBLIC_SENTRY_DSN: https://examplePublicKey@o0.ingest.sentry.io/0
+  CRON_SECRET: ci-placeholder-cron-secret-0123456789abcdef
+
+jobs:
+  checks:
+    name: Typecheck, lint, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `version:` input: the action reads `packageManager` from package.json.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.ts', '**/*.tsx', '**/*.css') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - name: Build
+        run: pnpm build
+
+  integration:
+    name: Integration tests (local Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Also installs the Supabase CLI (pinned devDependency), so local and CI match.
+      - run: pnpm install --frozen-lockfile
+
+      # Only what the app talks to: Postgres, Auth (gotrue), PostgREST, Storage,
+      # Kong (API gateway) and Mailpit (auth emails). The rest is skipped for speed.
+      - name: Start Supabase
+        run: pnpm exec supabase start -x studio,imgproxy,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta
+
+      - name: Export Supabase env
+        run: |
+          pnpm exec supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          # Lines look like KEY="value"; map the CLI's names onto ours.
+          get() { sed -n "s/^$1=\"\{0,1\}\([^\"]*\)\"\{0,1\}$/\1/p" "$RUNNER_TEMP/supabase.env"; }
+          api_url="$(get API_URL)"
+          anon="$(get ANON_KEY)"
+          service="$(get SERVICE_ROLE_KEY)"
+          db_url="$(get DB_URL)"
+          for v in api_url anon service db_url; do
+            if [ -z "${!v}" ]; then echo "::error::supabase status did not print a value for $v"; exit 1; fi
+          done
+          echo "::add-mask::$service"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$api_url"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$anon"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$service"
+            echo "DATABASE_URL=$db_url"
+          } >> "$GITHUB_ENV"
+
+      # Drizzle migrations (db/migrations/, drizzle.config.ts) arrive with DB-01,
+      # together with a `db:migrate` script. Until that script exists this step is a
+      # no-op; once it does, it runs automatically with no change to this workflow.
+      - name: Run migrations
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.['db:migrate'] ? 0 : 1)"; then
+            pnpm db:migrate
+          else
+            echo "No db:migrate script in package.json yet (added by DB-01); skipping."
+          fi
+
+      - name: Integration tests
+        run: pnpm test:int
+
+      - name: Stop Supabase
+        if: always()
+        run: pnpm exec supabase stop --no-backup

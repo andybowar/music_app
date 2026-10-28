@@ -1,0 +1,66 @@
+# F-02 · Playwright e2e against the Vercel preview of a PR (or a production deploy).
+# Vercel's GitHub integration posts a `deployment_status` event when a deployment
+# changes state; we run only for successful ones that carry a URL. Any other
+# state, event or a missing URL skips the job cleanly.
+name: E2E
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Deployed URL to test (e.g. a Vercel preview URL)
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.deployment.environment || 'manual' }}-${{ github.event.deployment.sha || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Playwright (Vercel preview)
+    if: >-
+      (github.event_name == 'deployment_status'
+        && github.event.deployment_status.state == 'success'
+        && github.event.deployment_status.environment_url != '')
+      || (github.event_name == 'workflow_dispatch' && inputs.base_url != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: true
+      # When set, playwright.config.ts skips its own webServer and tests this URL.
+      PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.environment_url || inputs.base_url }}
+    steps:
+      # Test the exact commit that was deployed.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha || github.sha }}
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

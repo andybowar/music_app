@@ -1,1 +1,31 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# next
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# supabase
+supabase/.temp/
+supabase/.branches/
+
+# misc
 .DS_Store
+*.log
+.vercel

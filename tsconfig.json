@@ -23,5 +23,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "agent-spec"]
+  "exclude": ["node_modules", "agent-spec", ".claude"]
 }

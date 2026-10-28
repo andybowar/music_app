@@ -32,7 +32,7 @@ requirements: ["REQ-LIB-09", "REQ-LIB-10"]
 - `REQ-LIB-10` — Projection files (`.pro`, `.mdb`, `.ppt`, `.pptx`) attach to the song, independent of key.
 
 ## Deliverables
-- [ ] One block per key (from Musical section) + "Projection (any key)" block
+- [ ] One block per key (from Musical section) + "Projection (any key)" block, which accepts both file uploads and links
 - [ ] Dropzone with kind select; progress; retry; delete
 - [ ] Link adder with label + URL; YouTube thumbnail preview
 

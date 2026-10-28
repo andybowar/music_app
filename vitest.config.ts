@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
-const shared = ['node_modules/**', '.next/**', 'agent-spec/**', 'tests/e2e/**'];
+const shared = ['node_modules/**', '.next/**', 'agent-spec/**', '.claude/**', 'tests/e2e/**'];
 
 export default defineConfig({
   plugins: [tsconfigPaths(), react()],

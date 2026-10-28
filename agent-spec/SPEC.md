@@ -45,7 +45,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-LIB-07** Lyric themes are tagged per section from a shared, normalized theme vocabulary; new themes can be created inline.
 - **REQ-LIB-08** Musical tags: one primary key + 0..n alternate keys; each key has first chords for intro, verse, chorus, bridge; tempo (BPM), time signature, energy level (5 levels, see §4), free-text energy notes (e.g. "starts light, slow build, big bridge build").
 - **REQ-LIB-09** Files attach to a specific key: full score PDF, lead sheet PDF, chord chart PDF (several allowed), MP3. Links attach to a key: YouTube, other audio/video, instruction links.
-- **REQ-LIB-10** Projection files (`.pro`, `.mdb`, `.ppt`, `.pptx`) attach to the song, independent of key.
+- **REQ-LIB-10** Projection files (`.pro`, `.mdb`, `.ppt`, `.pptx`) attach to the song, independent of key. A projection resource may instead be a link (e.g. a shared-drive or slide-deck URL), also key-independent.
 - **REQ-LIB-11** All files are private; served only to signed-in users via short-lived signed URLs.
 - **REQ-LIB-12** Edits are recorded in an audit log (who, when, what changed) viewable on the song.
 - **REQ-LIB-13** Bulk import from CSV + a folder of files, with dry-run report and idempotent re-run.
@@ -73,7 +73,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-ROW-01** Each result/setlist row shows, left→right: BPM on energy-colored chip, time signature, usual key, most common title, composer (POP-highlighted), year, Resources, added-by branch code, ADD.
 - **REQ-ROW-02** Each region is a tap target: key → all keys with first chords; title → chorus first line + verse 1 first line; composer → all composers; Resources → lyrics, sheet music, audio, projection files; branch code → branch usage; ADD → add-to-list menu.
 - **REQ-ROW-03** Lyrics open in a readable viewer showing sections in arrangement order.
-- **REQ-ROW-04** PDFs open in an in-app viewer; audio plays inline; projection files download.
+- **REQ-ROW-04** PDFs open in an in-app viewer; audio plays inline; projection files download; projection links open in a new tab.
 
 ### 2.6 Lists (REQ-LIST) — Diagram II/III
 

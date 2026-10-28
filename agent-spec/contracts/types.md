@@ -57,7 +57,7 @@ export type ResourceFormat = (typeof RESOURCE_FORMATS)[number];
 export const KIND_FORMATS: Record<ResourceKind, readonly ResourceFormat[]> = {
   full_score: ['pdf'], lead_sheet: ['pdf'], chord_chart: ['pdf'],
   audio: ['mp3', 'm4a', 'url'], video_link: ['url'], instruction_link: ['url', 'mp3', 'pdf'],
-  projection: ['pro', 'mdb', 'ppt', 'pptx'],
+  projection: ['pro', 'mdb', 'ppt', 'pptx', 'url'],
 };
 /** Kinds stored per key (song_key_id NOT NULL). 'projection' is key-independent. */
 export const KEYED_KINDS: readonly ResourceKind[] = ['full_score','lead_sheet','chord_chart','audio','video_link','instruction_link'];
@@ -204,7 +204,7 @@ Must export these schemas; inferred types must be assignable to the interfaces a
 | `songInputSchema` | `title` 1–200 chars; `altTitles` ≤10 × ≤200; `composerIds` UUID[] 1..10 (ordered); `sourceGroup` ≤100 nullable; `year` 1000–2100 nullable; `tempoBpm` 20–300 nullable; `timeSignature` matches `TIME_SIGNATURE_RE` nullable; `energyLevel` enum nullable; `energyNotes` ≤500 nullable; `lyrics` partial `SongLyrics`, each ≤5000; `arrangement` Section[] ≤30 and every entry must have non-empty lyrics; `addedByBranchId` UUID nullable (admin only) |
 | `songKeyInputSchema` | `key` matches `MUSICAL_KEY_RE`; `isPrimary` bool; `firstChords` partial record, each matches `CHORD_RE` or null |
 | `songKeysInputSchema` | array 1..12 of the above; exactly one `isPrimary`; keys unique |
-| `resourceLinkInputSchema` | `songId`, `songKeyId` (required unless kind=projection), `kind`, `label` 1–120, `url` http(s) |
+| `resourceLinkInputSchema` | `songId`, `songKeyId` (required unless kind=projection; must be null for projection), `kind` (must allow `'url'` in `KIND_FORMATS`), `label` 1–120, `url` http(s) |
 | `uploadRequestSchema` | `songId`, `songKeyId` nullable, `kind`, `format` allowed by `KIND_FORMATS`, `label`, `sizeBytes` ≤ `MAX_UPLOAD_BYTES`, `mimeType` |
 | `themeNameSchema` | trimmed, collapsed whitespace, lowercased, 1–60 chars |
 | `usageInputSchema` | array of `{ branchId, level }` |

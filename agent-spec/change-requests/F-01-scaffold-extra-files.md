@@ -1,6 +1,6 @@
 # CR F-01 · Scaffold files missing from F-01 `owns`
 
-**Status:** proposed
+**Status:** approved 2026-10-28; F-01 `owns` updated in `tasks/F-01.md` and `tasks.json`.
 
 ## Problem
 

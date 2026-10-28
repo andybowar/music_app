@@ -33,12 +33,17 @@
         "components.json",
         "supabase/config.toml",
         "README.md",
-        ".gitignore"
+        ".gitignore",
+        "postcss.config.mjs",
+        ".prettierignore",
+        "tests/smoke.test.ts",
+        "tests/e2e/smoke.spec.ts",
+        "supabase/.gitignore"
       ],
       "touches": [],
       "reqs": [],
       "file": "tasks/F-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "OPS-01",

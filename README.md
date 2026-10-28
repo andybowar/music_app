@@ -1,6 +1,6 @@
 # Worship Library — People of Praise music app
 
-Members-only web app (installable PWA): a shared, searchable library of the songs People of Praise branches use, with event setlists and listening playlists on top.
+Members-only web app (installable PWA): a shared, searchable library of the songs Christian communities use, with event setlists and listening playlists on top.
 
 - What we're building: [`agent-spec/SPEC.md`](agent-spec/SPEC.md)
 - How agents pick up and deliver work: [`agent-spec/AGENTS.md`](agent-spec/AGENTS.md)

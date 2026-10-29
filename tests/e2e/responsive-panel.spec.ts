@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
 // UI-01 · ResponsivePanel is a popover at >= 768px and a bottom sheet below (contracts/ui.md).
-// It is exercised through the /dev/tokens gallery, which calls notFound() in production. The e2e
-// workflow runs against Vercel preview deployments (production builds), so there the page 404s
-// and this spec skips itself. It runs wherever the dev gallery is served (`pnpm dev`, local e2e).
+// It is exercised through the /dev/tokens gallery, which 404s only on the live production
+// deployment (lib/devGallery.ts). It runs locally and against Vercel preview deployments, and
+// skips itself wherever the gallery 404s.
 const GALLERY = '/dev/tokens';
 
 const CASES = [
@@ -16,7 +16,10 @@ const CASES = [
 test.describe('ResponsivePanel viewport switch', () => {
   test.beforeEach(async ({ request }) => {
     const res = await request.get(GALLERY);
-    test.skip(res.status() === 404, `${GALLERY} is dev-only (404 in production builds)`);
+    test.skip(
+      res.status() === 404,
+      `${GALLERY} is not served here (404 on the production deployment)`,
+    );
     expect(res.ok()).toBe(true);
   });
 

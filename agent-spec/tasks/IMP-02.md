@@ -5,7 +5,7 @@ phase: 1
 wave: 4
 stream: data
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["F-03", "IMP-01"]
 blocks: ["IMP-03"]
@@ -31,12 +31,17 @@ requirements: ["REQ-LIB-13"]
 - `REQ-LIB-13` — Bulk import from CSV + a folder of files, with dry-run report and idempotent re-run.
 
 ## Deliverables
-- [ ] `matchFiles` per naming convention; fuzzy title match (normalized) with confidence
+- [x] `matchFiles` per naming convention; fuzzy title match (normalized) with confidence
 
 ## Acceptance criteria
-- [ ] Tests including numbered duplicates ("Chord Chart 2") and projection files
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Tests including numbered duplicates ("Chord Chart 2") and projection files
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/import/match.ts`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
+
+## Notes
+
+- `FileMatch` is not defined in any contract; it is defined and exported from `match.ts`. See
+  `agent-spec/change-requests/IMP-02-file-match-type.md`.

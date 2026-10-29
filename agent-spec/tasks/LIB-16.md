@@ -5,7 +5,7 @@ phase: 1
 wave: 3
 stream: backend
 size: S
-status: review
+status: done
 human_required: false
 depends_on: ["F-03"]
 blocks: ["LIB-12", "LIB-17"]

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { isDevGalleryEnabled } from '@/lib/devGallery';
-import { env } from '@/lib/env';
+import { NOT_CONFIGURED, readSupabaseConfig } from './supabaseConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +17,9 @@ const embed = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c')
 export function GET() {
   if (!isDevGalleryEnabled()) return new NextResponse('Not found', { status: 404 });
 
-  const config = {
-    supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, ''),
-    anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  };
+  const supabase = readSupabaseConfig();
+  if (!supabase) return new NextResponse(NOT_CONFIGURED, { status: 503 });
+  const config = { supabaseUrl: supabase.url, anonKey: supabase.anonKey };
 
   const html = `<!doctype html>
 <html lang="en">

@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { isDevGalleryEnabled } from '@/lib/devGallery';
-import { env } from '@/lib/env';
-
 import { patchPostgrestSpec, type SwaggerSpec } from '../patchSpec';
+import { NOT_CONFIGURED, readSupabaseConfig } from '../supabaseConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +10,12 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   if (!isDevGalleryEnabled()) return new NextResponse('Not found', { status: 404 });
 
-  const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabase = readSupabaseConfig();
+  if (!supabase) return NextResponse.json({ error: NOT_CONFIGURED }, { status: 503 });
+  const supabaseUrl = supabase.url;
   try {
-    const res = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/`, {
-      headers: { apikey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY },
+    const res = await fetch(`${supabaseUrl}/rest/v1/`, {
+      headers: { apikey: supabase.anonKey },
       cache: 'no-store',
     });
     if (!res.ok) {

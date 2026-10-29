@@ -4,8 +4,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { isDevGalleryEnabled } from '@/lib/devGallery';
-import { env } from '@/lib/env';
-
+import { isLocalSupabase, readSupabaseConfig } from './api/supabaseConfig';
 import { discoverRoutes, type DevRoute } from './pages';
 
 export const metadata: Metadata = { title: 'Dev · index' };
@@ -33,7 +32,7 @@ export default function DevIndexPage() {
   const routes = discoverRoutes(join(process.cwd(), 'app'));
   const appPages = routes.filter((r) => !r.path.startsWith('/dev'));
   const galleries = routes.filter((r) => r.path.startsWith('/dev/'));
-  const isLocal = /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(env.NEXT_PUBLIC_SUPABASE_URL);
+  const isLocal = isLocalSupabase(readSupabaseConfig());
 
   return (
     <main className="mx-auto max-w-2xl space-y-8 px-4 py-8">

@@ -10,6 +10,7 @@ const auth = {
   exchangeCodeForSession: vi.fn(),
   getUser: vi.fn(),
   updateUser: vi.fn(),
+  signInWithOAuth: vi.fn(),
 };
 vi.mock('@/lib/supabase/server', () => ({ createServerSupabase: vi.fn(async () => ({ auth })) }));
 
@@ -22,11 +23,12 @@ const db = {
   })),
   update: vi.fn(() => ({ set: (v: unknown) => (updateSet(v), { where: async () => undefined }) })),
 };
-vi.mock('@/lib/db', () => ({ getDb: () => db }));
-vi.mock('@/lib/env', () => ({ env: { APP_URL: 'https://app.example.test' } }));
+vi.mock('@/lib/db', () => ({ getDb: () => db, withTx: vi.fn() }));
+const envMock = { APP_URL: 'https://app.example.test', SSO_PROVIDERS: ['google', 'microsoft'] };
+vi.mock('@/lib/env', () => ({ env: envMock }));
 
 const { setSentryCapture } = await import('@/lib/action');
-const { confirmPasswordReset, requestPasswordReset, signInWithPassword, signOut } =
+const { confirmPasswordReset, requestPasswordReset, signInWithOidc, signInWithPassword, signOut } =
   await import('./actions');
 
 const USER_ID = '00000000-0000-4000-8000-000000000001';
@@ -259,5 +261,69 @@ describe('confirmPasswordReset', () => {
     expect(await confirmPasswordReset('c', 'new-password-1')).toMatchObject({
       error: { code: 'INTERNAL' },
     });
+  });
+});
+
+describe('signInWithOidc', () => {
+  beforeEach(() => {
+    envMock.SSO_PROVIDERS = ['google', 'microsoft'];
+    auth.signInWithOAuth.mockResolvedValue({
+      data: { provider: 'google', url: 'https://idp.test/authorize?x=1' },
+      error: null,
+    });
+  });
+
+  it('returns the Google URL with a callback that carries the sanitized next', async () => {
+    expect(await signInWithOidc('google', '/songs/1?tab=files')).toEqual({
+      ok: true,
+      data: { url: 'https://idp.test/authorize?x=1' },
+    });
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://app.example.test/auth/callback?next=%2Fsongs%2F1%3Ftab%3Dfiles',
+        skipBrowserRedirect: true,
+        queryParams: { prompt: 'select_account' },
+      },
+    });
+  });
+
+  it('maps microsoft to the Supabase azure provider and asks for email', async () => {
+    await signInWithOidc('microsoft', '//evil.test');
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'azure',
+      options: {
+        redirectTo: 'https://app.example.test/auth/callback?next=%2Flibrary',
+        skipBrowserRedirect: true,
+        scopes: 'openid email profile',
+      },
+    });
+  });
+
+  it('rejects providers not enabled in SSO_PROVIDERS', async () => {
+    envMock.SSO_PROVIDERS = ['google'];
+    expect(await signInWithOidc('microsoft')).toEqual({
+      ok: false,
+      error: { code: 'FORBIDDEN', message: 'This sign-in option is not available.' },
+    });
+    expect(auth.signInWithOAuth).not.toHaveBeenCalled();
+  });
+
+  it('rejects unknown providers as a validation error', async () => {
+    // Simulates a tampered client call.
+    expect(await signInWithOidc('apple' as never)).toMatchObject({
+      ok: false,
+      error: { code: 'VALIDATION' },
+    });
+  });
+
+  it('maps rate limits and hides other failures', async () => {
+    auth.signInWithOAuth.mockResolvedValueOnce({ data: {}, error: authError(429) });
+    expect(await signInWithOidc('google')).toMatchObject({ error: { code: 'RATE_LIMITED' } });
+    auth.signInWithOAuth.mockResolvedValueOnce({ data: {}, error: authError(500) });
+    expect(await signInWithOidc('google')).toMatchObject({ error: { code: 'INTERNAL' } });
+    auth.signInWithOAuth.mockResolvedValueOnce({ data: { url: null }, error: null });
+    expect(await signInWithOidc('google')).toMatchObject({ error: { code: 'INTERNAL' } });
+    expect(capture).toHaveBeenCalledTimes(2);
   });
 });

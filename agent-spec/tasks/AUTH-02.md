@@ -5,7 +5,7 @@ phase: 0
 wave: 5
 stream: auth
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["AUTH-01", "DB-06"]
 blocks: ["AUTH-03", "AUTH-06"]
@@ -34,17 +34,31 @@ requirements: ["REQ-AUTH-01", "REQ-AUTH-03", "REQ-AUTH-04"]
 - `REQ-AUTH-04` — On first SSO login, branch and role are derived from IdP group → `branches.sso_group`; default role `member`.
 
 ## Deliverables
-- [ ] Provider buttons controlled by `env.SSO_PROVIDERS`
-- [ ] Callback route exchanges code, calls `provisionUser`
-- [ ] `provisionUser`: create `users` row on first login; branch from IdP group ↔ `branches.sso_group`; role `member`; set `auth_provider`, `sso_subject`, `last_login_at`
-- [ ] Reject login if user is disabled
+- [x] Provider buttons controlled by `env.SSO_PROVIDERS`
+- [x] Callback route exchanges code, calls `provisionUser`
+- [x] `provisionUser`: create `users` row on first login; branch from IdP group ↔ `branches.sso_group`; role `member`; set `auth_provider`, `sso_subject`, `last_login_at`
+- [x] Reject login if user is disabled
 
 ## Acceptance criteria
-- [ ] Unit tests for provisionUser (new user, known group, unknown group → branch null, disabled user)
-- [ ] Manual test steps documented in PR for real providers
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Unit tests for provisionUser (new user, known group, unknown group → branch null, disabled user)
+- [x] Manual test steps documented in PR for real providers (steps written; not yet run, since no real Google/Microsoft credentials exist)
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `app/(auth)/auth/callback/`, `features/auth/provision.ts`, `features/auth/ui/SsoButtons.tsx`
 - **May touch** (minimal integration edits only, described in PR): `app/(auth)/login/page.tsx`, `features/auth/actions.ts`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
+
+## Notes (AUTH-02)
+
+- Not verified with real IdPs: there are no Google or Microsoft credentials yet. The flow was
+  tested with a mocked Supabase client, with integration tests of `provisionUser` against the
+  local database, and with a browser smoke test against local Supabase. That smoke test
+  produced the authorize URL with PKCE and set the verifier cookie. Real sign-in is still to
+  be done; the PR lists the manual steps.
+- Enabling the providers needs `supabase/config.toml` changes (F-01). See
+  `change-requests/AUTH-02-oidc-provider-config.md`.
+- Assumption: a new SSO identity with no mapped group is rejected (REQ-AUTH-03, no public
+  signup). "Unknown group → branch null" applies to existing (invited) accounts. A decision is
+  requested in the CR.
+- No `/dev/sso-buttons` gallery: `app/dev/` isn't owned. `/login` shows every state (see CR).

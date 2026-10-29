@@ -17,7 +17,9 @@ import type { AuthError, SupabaseClient } from '@supabase/supabase-js';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
+import { safeNext } from '@/app/(auth)/login/safeNext';
 import { users } from '@/db/schema';
+import { OIDC_PROVIDERS, type OidcProvider } from '@/features/auth/provision';
 import { ActionError, withAction } from '@/lib/action';
 import { getDb } from '@/lib/db';
 import { env } from '@/lib/env';
@@ -44,6 +46,11 @@ const signInSchema = z.object({
     .string({ error: 'Enter your password.' })
     .min(1, 'Enter your password.')
     .max(1024, 'Password is too long.'),
+});
+
+const oidcSchema = z.object({
+  provider: z.enum(['google', 'microsoft'], { error: 'Choose a sign-in provider.' }),
+  next: z.string().max(2048).optional(),
 });
 
 const resetRequestSchema = z.object({ email: emailField });
@@ -176,5 +183,42 @@ export const confirmPasswordReset = withAction(
     }
     if (isRequestRateLimited(error)) throw new ActionError('RATE_LIMITED', RATE_LIMITED);
     throw error;
+  },
+);
+
+/**
+ * Start Google / Microsoft sign-in (REQ-AUTH-01, AUTH-02). Returns the IdP URL
+ * for the browser to visit; the IdP comes back to `/auth/callback?next=…`, which
+ * exchanges the code and provisions the user. Only providers listed in
+ * `env.SSO_PROVIDERS` are allowed. `next` is optional and re-sanitized here and
+ * in the callback.
+ */
+export const signInWithOidc = withAction(
+  async (provider: OidcProvider, next?: string): Promise<{ url: string }> => {
+    const input = oidcSchema.parse({ provider, next });
+    if (!env.SSO_PROVIDERS.includes(input.provider)) {
+      throw new ActionError('FORBIDDEN', 'This sign-in option is not available.');
+    }
+
+    const redirectTo = new URL('/auth/callback', env.APP_URL);
+    redirectTo.searchParams.set('next', safeNext(input.next));
+
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: OIDC_PROVIDERS[input.provider],
+      options: {
+        redirectTo: redirectTo.toString(),
+        skipBrowserRedirect: true,
+        // Entra ID only returns an email when asked for it.
+        ...(input.provider === 'microsoft' ? { scopes: 'openid email profile' } : {}),
+        ...(input.provider === 'google' ? { queryParams: { prompt: 'select_account' } } : {}),
+      },
+    });
+    if (error) {
+      if (isRequestRateLimited(error)) throw new ActionError('RATE_LIMITED', RATE_LIMITED);
+      throw error;
+    }
+    if (!data.url) throw new Error('signInWithOAuth returned no URL');
+    return { url: data.url };
   },
 );

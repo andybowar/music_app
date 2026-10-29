@@ -431,7 +431,8 @@
       ],
       "owns": [
         "components/ui/",
-        "components/ResponsivePanel.tsx"
+        "components/ResponsivePanel.tsx",
+        "tests/e2e/responsive-panel.spec.ts"
       ],
       "touches": [
         "app/globals.css"

@@ -2,24 +2,33 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 import { LoginForm } from '@/features/auth/ui/LoginForm';
+import { SsoButtons } from '@/features/auth/ui/SsoButtons';
+import { env } from '@/lib/env';
 
 import { AuthShell } from './AuthShell';
 import { safeNext } from './safeNext';
 
 export const metadata: Metadata = { title: 'Sign in' };
 
-/**
- * SSO buttons slot (REQ-AUTH-01). AUTH-02 / AUTH-03 fill this in; until then it
- * renders nothing and the page shows the password form alone.
- */
-const ssoSlot: ReactNode = null;
-
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
+
+  // SSO buttons slot (REQ-AUTH-01): OIDC providers from env.SSO_PROVIDERS (AUTH-02);
+  // AUTH-03 adds SAML. Empty → the page shows the password form alone.
+  const oidcProviders = (['google', 'microsoft'] as const).filter((p) =>
+    env.SSO_PROVIDERS.includes(p),
+  );
+  const ssoSlot: ReactNode = oidcProviders.length ? (
+    <SsoButtons
+      providers={oidcProviders}
+      next={safeNext(next)}
+      error={typeof error === 'string' ? error : null}
+    />
+  ) : null;
 
   return (
     <AuthShell title="Sign in" description="Use your email and password.">

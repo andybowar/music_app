@@ -5,7 +5,7 @@ phase: 1
 wave: 5
 stream: frontend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["LIB-10"]
 blocks: ["LIB-17"]
@@ -30,11 +30,11 @@ requirements: ["REQ-LIB-07"]
 - `REQ-LIB-07` — Lyric themes are tagged per section from a shared, normalized theme vocabulary; new themes can be created inline.
 
 ## Deliverables
-- [ ] For each non-empty section, a chip input with autocomplete (searchThemes prop) and create-new (createTheme prop)
+- [x] For each non-empty section, a chip input with autocomplete (searchThemes prop) and create-new (createTheme prop)
 
 ## Acceptance criteria
-- [ ] Same theme can be on multiple sections; not twice on one
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Same theme can be on multiple sections; not twice on one
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/ui/form/ThemesSection.tsx`, `app/dev/form-themes/`

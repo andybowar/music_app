@@ -2,7 +2,7 @@
 id: SRCH-11
 title: "Search performance test"
 phase: 2
-wave: 9
+wave: 10
 stream: backend
 size: S
 status: todo

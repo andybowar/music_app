@@ -14,8 +14,8 @@
         "F-02",
         "F-03",
         "F-05",
-        "OPS-02",
-        "UI-01"
+        "UI-01",
+        "OPS-02"
       ],
       "owns": [
         "package.json",
@@ -101,15 +101,16 @@
         "DB-01",
         "F-04",
         "IMP-01",
-        "IMP-02",
         "LIB-16",
-        "LIST-03",
         "LIST-04",
-        "LIST-05",
         "PLAY-01",
-        "PLAY-06",
         "SRCH-04",
-        "UI-01"
+        "UI-01",
+        "IMP-02",
+        "LIST-03",
+        "LIST-05",
+        "PLAY-06",
+        "DB-07"
       ],
       "owns": [
         "types/"
@@ -137,8 +138,8 @@
       ],
       "blocks": [
         "AUTH-01",
-        "AUTH-04",
         "DB-06",
+        "AUTH-04",
         "SHR-03"
       ],
       "owns": [
@@ -186,8 +187,8 @@
         "F-03"
       ],
       "blocks": [
-        "ADM-01",
         "DB-05",
+        "ADM-01",
         "LIB-01",
         "LIB-02",
         "LIB-03",
@@ -195,8 +196,8 @@
         "LIB-05",
         "LIB-06",
         "LIB-07",
-        "LIST-01",
         "LIST-02",
+        "LIST-01",
         "SHR-01"
       ],
       "owns": [
@@ -207,7 +208,7 @@
         "REQ-AUTH-07"
       ],
       "file": "tasks/AUTH-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DB-01",
@@ -243,7 +244,7 @@
         "REQ-LIST-04"
       ],
       "file": "tasks/DB-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "F-04",
@@ -262,7 +263,8 @@
         "LIB-10",
         "LIST-03",
         "UI-02",
-        "UI-04"
+        "UI-04",
+        "DB-07"
       ],
       "owns": [
         "fixtures/"
@@ -270,7 +272,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/F-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "IMP-01",
@@ -297,7 +299,7 @@
         "REQ-LIB-13"
       ],
       "file": "tasks/IMP-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-16",
@@ -322,7 +324,7 @@
         "REQ-LIB-14"
       ],
       "file": "tasks/LIB-16.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-04",
@@ -349,7 +351,7 @@
         "REQ-NAV-04"
       ],
       "file": "tasks/LIST-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "PLAY-01",
@@ -375,7 +377,7 @@
         "REQ-LIST-05"
       ],
       "file": "tasks/PLAY-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-04",
@@ -390,8 +392,8 @@
       ],
       "blocks": [
         "SRCH-05",
-        "SRCH-06",
-        "SRCH-07"
+        "SRCH-07",
+        "SRCH-06"
       ],
       "owns": [
         "features/search/ui/useSearchState.ts"
@@ -402,7 +404,7 @@
         "REQ-NAV-03"
       ],
       "file": "tasks/SRCH-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "UI-01",
@@ -420,14 +422,14 @@
         "AUTH-01",
         "LIB-10",
         "LIST-05",
-        "LIST-06",
         "PLAY-04",
         "PLAY-06",
         "SRCH-05",
         "SRCH-07",
         "UI-02",
         "UI-04",
-        "UI-08"
+        "UI-08",
+        "LIST-06"
       ],
       "owns": [
         "components/ui/",
@@ -442,7 +444,7 @@
         "REQ-NF-03"
       ],
       "file": "tasks/UI-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "AUTH-01",
@@ -457,7 +459,8 @@
         "UI-01"
       ],
       "blocks": [
-        "AUTH-02"
+        "AUTH-02",
+        "AUTH-07"
       ],
       "owns": [
         "app/(auth)/login/",
@@ -472,7 +475,7 @@
         "REQ-NAV-02"
       ],
       "file": "tasks/AUTH-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "CNT-01",
@@ -496,7 +499,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/CNT-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DB-02",
@@ -510,8 +513,8 @@
         "DB-01"
       ],
       "blocks": [
-        "LIB-01",
-        "SRCH-01"
+        "SRCH-01",
+        "LIB-01"
       ],
       "owns": [
         "db/migrations/0002_search.sql"
@@ -522,7 +525,7 @@
         "REQ-SRCH-06"
       ],
       "file": "tasks/DB-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DB-03",
@@ -536,6 +539,7 @@
         "DB-01"
       ],
       "blocks": [
+        "DB-07",
         "DB-05"
       ],
       "owns": [
@@ -548,7 +552,7 @@
         "REQ-NF-05"
       ],
       "file": "tasks/DB-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DB-04",
@@ -563,8 +567,9 @@
         "F-04"
       ],
       "blocks": [
-        "DB-05",
-        "SRCH-01"
+        "DB-07",
+        "SRCH-01",
+        "DB-05"
       ],
       "owns": [
         "db/seed/"
@@ -572,7 +577,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/DB-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DB-06",
@@ -588,6 +593,8 @@
       ],
       "blocks": [
         "AUTH-02",
+        "OPS-02",
+        "SRCH-01",
         "AUTH-04",
         "LIB-01",
         "LIB-02",
@@ -596,11 +603,9 @@
         "LIB-05",
         "LIB-06",
         "LIB-07",
-        "LIB-19",
         "LIST-02",
-        "OPS-02",
-        "SRCH-01",
-        "SRCH-10"
+        "SRCH-10",
+        "LIB-19"
       ],
       "owns": [
         "lib/db.ts",
@@ -612,7 +617,7 @@
         "REQ-LIB-12"
       ],
       "file": "tasks/DB-06.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "IMP-02",
@@ -637,7 +642,7 @@
         "REQ-LIB-13"
       ],
       "file": "tasks/IMP-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-10",
@@ -669,7 +674,7 @@
         "REQ-LIB-03"
       ],
       "file": "tasks/LIB-10.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-03",
@@ -694,7 +699,7 @@
         "REQ-LIST-04"
       ],
       "file": "tasks/LIST-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-05",
@@ -721,7 +726,7 @@
         "REQ-LIST-01"
       ],
       "file": "tasks/LIST-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "PLAY-02",
@@ -743,7 +748,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/PLAY-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "PLAY-03",
@@ -765,7 +770,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/PLAY-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "PLAY-04",
@@ -791,7 +796,7 @@
         "REQ-LIST-05"
       ],
       "file": "tasks/PLAY-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "PLAY-06",
@@ -816,7 +821,7 @@
         "REQ-LIST-05"
       ],
       "file": "tasks/PLAY-06.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-05",
@@ -842,7 +847,7 @@
         "REQ-SRCH-02"
       ],
       "file": "tasks/SRCH-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-07",
@@ -867,7 +872,7 @@
         "REQ-SRCH-04"
       ],
       "file": "tasks/SRCH-07.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "UI-02",
@@ -883,14 +888,14 @@
       ],
       "blocks": [
         "ADM-01",
-        "BR-02",
-        "BR-04",
         "LIB-17",
         "LIB-18",
+        "BR-04",
         "LIST-07",
         "LIST-08",
-        "LIST-09",
-        "SRCH-09"
+        "SRCH-09",
+        "BR-02",
+        "LIST-09"
       ],
       "owns": [
         "app/(app)/layout.tsx",
@@ -904,7 +909,7 @@
         "REQ-NAV-04"
       ],
       "file": "tasks/UI-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "UI-04",
@@ -940,7 +945,7 @@
         "REQ-NF-03"
       ],
       "file": "tasks/UI-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "UI-08",
@@ -966,7 +971,7 @@
         "REQ-ROW-04"
       ],
       "file": "tasks/UI-08.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "AUTH-02",
@@ -981,6 +986,7 @@
         "DB-06"
       ],
       "blocks": [
+        "AUTH-07",
         "AUTH-03",
         "AUTH-06"
       ],
@@ -999,43 +1005,7 @@
         "REQ-AUTH-04"
       ],
       "file": "tasks/AUTH-02.md",
-      "status": "todo"
-    },
-    {
-      "id": "AUTH-04",
-      "title": "Session guard + requireUser",
-      "phase": 0,
-      "wave": 5,
-      "stream": "auth",
-      "size": "S",
-      "human": false,
-      "deps": [
-        "F-05",
-        "DB-06"
-      ],
-      "blocks": [
-        "ADM-01",
-        "LIB-01",
-        "LIB-02",
-        "LIB-03",
-        "LIB-04",
-        "LIB-05",
-        "LIB-06",
-        "LIB-07",
-        "LIST-02",
-        "SRCH-02",
-        "SRCH-10"
-      ],
-      "owns": [
-        "lib/auth.ts",
-        "middleware.ts"
-      ],
-      "touches": [],
-      "reqs": [
-        "REQ-AUTH-06"
-      ],
-      "file": "tasks/AUTH-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "CNT-02",
@@ -1060,25 +1030,43 @@
       "status": "todo"
     },
     {
-      "id": "DB-05",
-      "title": "RLS + permission parity tests",
+      "id": "DB-07",
+      "title": "User access status (approval) migration",
       "phase": 0,
       "wave": 5,
-      "stream": "security",
+      "stream": "data",
       "size": "M",
       "human": false,
       "deps": [
         "DB-03",
         "DB-04",
-        "AUTH-05"
+        "F-03",
+        "F-04"
       ],
-      "blocks": [],
+      "blocks": [
+        "AUTH-04",
+        "AUTH-07",
+        "DB-05",
+        "ADM-01"
+      ],
       "owns": [
-        "tests/db/rls.test.ts"
+        "db/migrations/0004_access_status.sql",
+        "tests/db/0004_access_status.int.test.ts"
       ],
-      "touches": [],
-      "reqs": [],
-      "file": "tasks/DB-05.md",
+      "touches": [
+        "db/schema/users.ts",
+        "db/schema/enums.ts",
+        "db/migrations/meta/",
+        "types/domain.ts",
+        "types/validation.ts",
+        "fixtures/users.json",
+        "db/seed/"
+      ],
+      "reqs": [
+        "REQ-AUTH-03",
+        "REQ-AUTH-08"
+      ],
+      "file": "tasks/DB-07.md",
       "status": "todo"
     },
     {
@@ -1105,11 +1093,11 @@
         "REQ-LIB-08"
       ],
       "file": "tasks/LIB-11.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-12",
-      "title": "Song form: Lyrics section (chorus, verses 1–5, bridge)",
+      "title": "Song form: Lyrics section (chorus, verses 1\u20135, bridge)",
       "phase": 1,
       "wave": 5,
       "stream": "frontend",
@@ -1132,7 +1120,7 @@
         "REQ-LIB-14"
       ],
       "file": "tasks/LIB-12.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-13",
@@ -1157,7 +1145,7 @@
         "REQ-LIB-07"
       ],
       "file": "tasks/LIB-13.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-14",
@@ -1184,7 +1172,7 @@
         "REQ-LIB-10"
       ],
       "file": "tasks/LIB-14.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-15",
@@ -1209,7 +1197,7 @@
         "REQ-LIB-05"
       ],
       "file": "tasks/LIB-15.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-06",
@@ -1332,11 +1320,11 @@
         "UI-04"
       ],
       "blocks": [
-        "BR-02",
+        "SRCH-08",
         "BR-04",
         "LIST-07",
-        "SHR-02",
-        "SRCH-08"
+        "BR-02",
+        "SHR-02"
       ],
       "owns": [
         "components/song/SongRow.tsx",
@@ -1409,21 +1397,144 @@
       "status": "todo"
     },
     {
+      "id": "AUTH-04",
+      "title": "Session guard + requireUser",
+      "phase": 0,
+      "wave": 6,
+      "stream": "auth",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "F-05",
+        "DB-06",
+        "DB-07"
+      ],
+      "blocks": [
+        "ADM-01",
+        "LIB-01",
+        "LIB-02",
+        "LIB-03",
+        "LIB-04",
+        "LIB-05",
+        "LIB-06",
+        "LIB-07",
+        "LIST-02",
+        "SRCH-10",
+        "SRCH-02"
+      ],
+      "owns": [
+        "lib/auth.ts",
+        "middleware.ts"
+      ],
+      "touches": [],
+      "reqs": [
+        "REQ-AUTH-06",
+        "REQ-AUTH-08"
+      ],
+      "file": "tasks/AUTH-04.md",
+      "status": "todo"
+    },
+    {
+      "id": "AUTH-07",
+      "title": "Self sign-up + account-status page",
+      "phase": 0,
+      "wave": 6,
+      "stream": "auth",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "DB-07",
+        "AUTH-01",
+        "AUTH-02"
+      ],
+      "blocks": [
+        "AUTH-03",
+        "AUTH-06",
+        "ADM-04"
+      ],
+      "owns": [
+        "app/(auth)/signup/",
+        "app/(auth)/account-status/",
+        "features/auth/ui/SignupForm.tsx",
+        "features/auth/ui/AccountStatus.tsx"
+      ],
+      "touches": [
+        "features/auth/actions.ts",
+        "features/auth/provision.ts",
+        "app/(auth)/login/page.tsx"
+      ],
+      "reqs": [
+        "REQ-AUTH-03",
+        "REQ-AUTH-04",
+        "REQ-AUTH-08"
+      ],
+      "file": "tasks/AUTH-07.md",
+      "status": "todo"
+    },
+    {
+      "id": "DB-05",
+      "title": "RLS + permission parity tests",
+      "phase": 0,
+      "wave": 6,
+      "stream": "security",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "DB-03",
+        "DB-04",
+        "AUTH-05",
+        "DB-07"
+      ],
+      "blocks": [],
+      "owns": [
+        "tests/db/rls.test.ts"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/DB-05.md",
+      "status": "todo"
+    },
+    {
+      "id": "SRCH-08",
+      "title": "ResultsList",
+      "phase": 2,
+      "wave": 6,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "UI-05"
+      ],
+      "blocks": [
+        "SRCH-09"
+      ],
+      "owns": [
+        "features/search/ui/ResultsList.tsx",
+        "app/dev/results/"
+      ],
+      "touches": [],
+      "reqs": [],
+      "file": "tasks/SRCH-08.md",
+      "status": "todo"
+    },
+    {
       "id": "ADM-01",
       "title": "Admin: users",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "frontend",
-      "size": "M",
+      "size": "L",
       "human": false,
       "deps": [
         "AUTH-04",
         "AUTH-05",
-        "UI-02"
+        "UI-02",
+        "DB-07"
       ],
       "blocks": [
         "ADM-02",
-        "AUTH-06"
+        "AUTH-06",
+        "ADM-04"
       ],
       "owns": [
         "app/(app)/admin/users/",
@@ -1433,7 +1544,8 @@
       "touches": [],
       "reqs": [
         "REQ-AUTH-03",
-        "REQ-AUTH-07"
+        "REQ-AUTH-07",
+        "REQ-AUTH-08"
       ],
       "file": "tasks/ADM-01.md",
       "status": "todo"
@@ -1442,12 +1554,13 @@
       "id": "AUTH-03",
       "title": "SAML SSO",
       "phase": 0,
-      "wave": 6,
+      "wave": 7,
       "stream": "auth",
       "size": "S",
       "human": false,
       "deps": [
-        "AUTH-02"
+        "AUTH-02",
+        "AUTH-07"
       ],
       "blocks": [],
       "owns": [
@@ -1459,7 +1572,8 @@
         "features/auth/actions.ts"
       ],
       "reqs": [
-        "REQ-AUTH-01"
+        "REQ-AUTH-01",
+        "REQ-AUTH-03"
       ],
       "file": "tasks/AUTH-03.md",
       "status": "todo"
@@ -1468,7 +1582,7 @@
       "id": "LIB-01",
       "title": "Song server actions (create/update/delete/get)",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "L",
       "human": false,
@@ -1504,7 +1618,7 @@
       "id": "LIB-02",
       "title": "Song keys action",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1531,7 +1645,7 @@
       "id": "LIB-03",
       "title": "Composers actions",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1559,7 +1673,7 @@
       "id": "LIB-04",
       "title": "Themes actions",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1569,9 +1683,9 @@
         "AUTH-05"
       ],
       "blocks": [
-        "H-02",
         "IMP-03",
-        "LIB-17"
+        "LIB-17",
+        "H-02"
       ],
       "owns": [
         "features/themes/server.ts"
@@ -1587,7 +1701,7 @@
       "id": "LIB-05",
       "title": "Branch usage action",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1597,9 +1711,9 @@
         "AUTH-05"
       ],
       "blocks": [
-        "BR-03",
         "IMP-03",
-        "LIB-17"
+        "LIB-17",
+        "BR-03"
       ],
       "owns": [
         "features/songs/server/usage.ts"
@@ -1615,7 +1729,7 @@
       "id": "LIB-06",
       "title": "File uploads + signed URLs",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -1647,7 +1761,7 @@
       "id": "LIB-07",
       "title": "External links + YouTube parsing",
       "phase": 1,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1675,7 +1789,7 @@
       "id": "LIST-02",
       "title": "List items server",
       "phase": 3,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -1702,33 +1816,10 @@
       "status": "todo"
     },
     {
-      "id": "SRCH-08",
-      "title": "ResultsList",
-      "phase": 2,
-      "wave": 6,
-      "stream": "frontend",
-      "size": "S",
-      "human": false,
-      "deps": [
-        "UI-05"
-      ],
-      "blocks": [
-        "SRCH-09"
-      ],
-      "owns": [
-        "features/search/ui/ResultsList.tsx",
-        "app/dev/results/"
-      ],
-      "touches": [],
-      "reqs": [],
-      "file": "tasks/SRCH-08.md",
-      "status": "todo"
-    },
-    {
       "id": "SRCH-10",
       "title": "Facet options",
       "phase": 2,
-      "wave": 6,
+      "wave": 7,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1753,7 +1844,7 @@
       "id": "ADM-02",
       "title": "Admin: branches",
       "phase": 1,
-      "wave": 7,
+      "wave": 8,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -1776,13 +1867,14 @@
       "id": "AUTH-06",
       "title": "Account linking + deprovisioning",
       "phase": 4,
-      "wave": 7,
+      "wave": 8,
       "stream": "auth",
       "size": "S",
       "human": false,
       "deps": [
         "AUTH-02",
-        "ADM-01"
+        "ADM-01",
+        "AUTH-07"
       ],
       "blocks": [],
       "owns": [
@@ -1793,7 +1885,8 @@
       ],
       "reqs": [
         "REQ-AUTH-05",
-        "REQ-AUTH-06"
+        "REQ-AUTH-06",
+        "REQ-AUTH-03"
       ],
       "file": "tasks/AUTH-06.md",
       "status": "todo"
@@ -1802,7 +1895,7 @@
       "id": "IMP-03",
       "title": "Import runner CLI",
       "phase": 1,
-      "wave": 7,
+      "wave": 8,
       "stream": "data",
       "size": "M",
       "human": false,
@@ -1833,7 +1926,7 @@
       "id": "LIB-17",
       "title": "Song create/edit pages",
       "phase": 1,
-      "wave": 7,
+      "wave": 8,
       "stream": "frontend",
       "size": "L",
       "human": false,
@@ -1875,7 +1968,7 @@
       "id": "LIB-18",
       "title": "Song page",
       "phase": 1,
-      "wave": 7,
+      "wave": 8,
       "stream": "frontend",
       "size": "M",
       "human": false,
@@ -1888,8 +1981,8 @@
         "UI-02"
       ],
       "blocks": [
-        "H-01",
-        "LIB-19"
+        "LIB-19",
+        "H-01"
       ],
       "owns": [
         "app/(app)/songs/[id]/page.tsx",
@@ -1907,7 +2000,7 @@
       "id": "LIST-01",
       "title": "Lists server (create/get/list/rename/delete)",
       "phase": 3,
-      "wave": 7,
+      "wave": 8,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -1921,8 +2014,8 @@
         "BR-03",
         "LIST-07",
         "LIST-08",
-        "LIST-09",
-        "SHR-01"
+        "SHR-01",
+        "LIST-09"
       ],
       "owns": [
         "features/lists/server/lists.ts"
@@ -1942,7 +2035,7 @@
       "id": "SRCH-02",
       "title": "searchSongs action + default view",
       "phase": 2,
-      "wave": 7,
+      "wave": 8,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1974,7 +2067,7 @@
       "id": "BR-01",
       "title": "Branch activity server",
       "phase": 4,
-      "wave": 8,
+      "wave": 9,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -1999,7 +2092,7 @@
       "id": "BR-03",
       "title": "Derived branch usage job",
       "phase": 4,
-      "wave": 8,
+      "wave": 9,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -2024,7 +2117,7 @@
       "id": "BR-04",
       "title": "Quick theme lookup",
       "phase": 4,
-      "wave": 8,
+      "wave": 9,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2050,7 +2143,7 @@
       "id": "CNT-03",
       "title": "Pilot data entry: first 50 songs",
       "phase": 1,
-      "wave": 8,
+      "wave": 9,
       "stream": "content",
       "size": "L",
       "human": true,
@@ -2071,7 +2164,7 @@
       "id": "H-02",
       "title": "Theme synonyms in search",
       "phase": 5,
-      "wave": 8,
+      "wave": 9,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -2101,7 +2194,7 @@
       "id": "LIB-19",
       "title": "Song change history",
       "phase": 1,
-      "wave": 8,
+      "wave": 9,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2126,7 +2219,7 @@
       "id": "LIST-07",
       "title": "Setlist view + route",
       "phase": 3,
-      "wave": 8,
+      "wave": 9,
       "stream": "frontend",
       "size": "L",
       "human": false,
@@ -2160,7 +2253,7 @@
       "id": "LIST-08",
       "title": "Open Setlist / Open Playlist index",
       "phase": 3,
-      "wave": 8,
+      "wave": 9,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2184,7 +2277,7 @@
       "id": "SHR-01",
       "title": "Share tokens server",
       "phase": 4,
-      "wave": 8,
+      "wave": 9,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -2212,7 +2305,7 @@
       "id": "SRCH-03",
       "title": "Fuzzy title fallback + did-you-mean",
       "phase": 2,
-      "wave": 8,
+      "wave": 9,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -2238,7 +2331,7 @@
       "id": "SRCH-09",
       "title": "Library page (integration)",
       "phase": 2,
-      "wave": 8,
+      "wave": 9,
       "stream": "frontend",
       "size": "M",
       "human": false,
@@ -2256,10 +2349,10 @@
         "LIB-06"
       ],
       "blocks": [
-        "DOC-01",
+        "LIST-09",
         "H-04",
-        "H-05",
-        "LIST-09"
+        "DOC-01",
+        "H-05"
       ],
       "owns": [
         "app/(app)/library/",
@@ -2279,7 +2372,7 @@
       "id": "BR-02",
       "title": "Branches page",
       "phase": 4,
-      "wave": 9,
+      "wave": 10,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2306,7 +2399,7 @@
       "id": "H-01",
       "title": "PWA + offline setlists",
       "phase": 5,
-      "wave": 9,
+      "wave": 10,
       "stream": "frontend",
       "size": "M",
       "human": false,
@@ -2334,7 +2427,7 @@
       "id": "H-03",
       "title": "Semantic theme search (optional)",
       "phase": 5,
-      "wave": 9,
+      "wave": 10,
       "stream": "backend",
       "size": "L",
       "human": false,
@@ -2355,7 +2448,7 @@
       "id": "LIST-09",
       "title": "Wire list creation + Add-to-List into app",
       "phase": 3,
-      "wave": 9,
+      "wave": 10,
       "stream": "frontend",
       "size": "M",
       "human": false,
@@ -2369,10 +2462,10 @@
         "UI-02"
       ],
       "blocks": [
-        "DOC-01",
         "H-04",
-        "H-05",
-        "SHR-04"
+        "SHR-04",
+        "DOC-01",
+        "H-05"
       ],
       "owns": [
         "features/lists/ui/AddToListAction.tsx",
@@ -2394,7 +2487,7 @@
       "id": "PLAY-05",
       "title": "PlaylistView",
       "phase": 3,
-      "wave": 9,
+      "wave": 10,
       "stream": "frontend",
       "size": "M",
       "human": false,
@@ -2407,8 +2500,8 @@
       ],
       "blocks": [
         "H-04",
-        "H-05",
-        "SHR-04"
+        "SHR-04",
+        "H-05"
       ],
       "owns": [
         "features/player/ui/PlaylistView.tsx",
@@ -2427,7 +2520,7 @@
       "id": "SHR-02",
       "title": "Public share page",
       "phase": 4,
-      "wave": 9,
+      "wave": 10,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2451,7 +2544,7 @@
       "id": "SHR-03",
       "title": "Share by email",
       "phase": 4,
-      "wave": 9,
+      "wave": 10,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -2460,6 +2553,7 @@
         "F-05"
       ],
       "blocks": [
+        "ADM-04",
         "SHR-04"
       ],
       "owns": [
@@ -2479,7 +2573,7 @@
       "id": "SRCH-11",
       "title": "Search performance test",
       "phase": 2,
-      "wave": 9,
+      "wave": 10,
       "stream": "backend",
       "size": "S",
       "human": false,
@@ -2499,10 +2593,40 @@
       "status": "todo"
     },
     {
+      "id": "ADM-04",
+      "title": "Access request emails",
+      "phase": 4,
+      "wave": 11,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SHR-03",
+        "AUTH-07",
+        "ADM-01"
+      ],
+      "blocks": [],
+      "owns": [
+        "features/admin/notifications.ts",
+        "emails/AccessRequested.tsx",
+        "emails/AccessApproved.tsx"
+      ],
+      "touches": [
+        "features/auth/actions.ts",
+        "features/auth/provision.ts",
+        "features/admin/server.ts"
+      ],
+      "reqs": [
+        "REQ-AUTH-08"
+      ],
+      "file": "tasks/ADM-04.md",
+      "status": "todo"
+    },
+    {
       "id": "H-04",
       "title": "Accessibility audit + fixes",
       "phase": 5,
-      "wave": 10,
+      "wave": 11,
       "stream": "qa",
       "size": "M",
       "human": false,
@@ -2530,7 +2654,7 @@
       "id": "SHR-04",
       "title": "ShareDialog + nav Share wiring",
       "phase": 4,
-      "wave": 10,
+      "wave": 11,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2565,7 +2689,7 @@
       "id": "DOC-01",
       "title": "User guide",
       "phase": 5,
-      "wave": 11,
+      "wave": 12,
       "stream": "content",
       "size": "S",
       "human": false,
@@ -2589,7 +2713,7 @@
       "id": "H-05",
       "title": "End-to-end journey suite",
       "phase": 5,
-      "wave": 11,
+      "wave": 12,
       "stream": "qa",
       "size": "M",
       "human": false,
@@ -2619,7 +2743,7 @@
       "id": "PILOT-01",
       "title": "Pilot branch rollout",
       "phase": 5,
-      "wave": 12,
+      "wave": 13,
       "stream": "content",
       "size": "L",
       "human": true,

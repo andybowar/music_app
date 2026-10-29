@@ -8,6 +8,8 @@
 |---|---|---|
 | `/login` | Password + SSO buttons (+ SAML "use your organization" by email domain) | AUTH-01 (SSO buttons: AUTH-02, SAML: AUTH-03 — via slots) |
 | `/reset`, `/reset/confirm` | Password reset | AUTH-01 |
+| `/signup` | Request an account (name, email, password); SSO buttons also create a request | AUTH-07 |
+| `/account-status` | Shown to signed-in pending/rejected users: "awaiting approval" or "request declined", plus sign out. No app data | AUTH-07 |
 | `/auth/callback` | OIDC/SAML callback → provision → redirect `/library` | AUTH-02 |
 | `/library` | Worship Library: default view + search + results (Home target) | SRCH-09 |
 | `/songs/new`, `/songs/[id]/edit` | Song form | LIB-17 |

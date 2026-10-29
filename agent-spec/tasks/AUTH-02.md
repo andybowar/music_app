@@ -8,7 +8,7 @@ size: M
 status: done
 human_required: false
 depends_on: ["AUTH-01", "DB-06"]
-blocks: ["AUTH-03", "AUTH-06"]
+blocks: ["AUTH-07", "AUTH-03", "AUTH-06"]
 owns: ["app/(auth)/auth/callback/", "features/auth/provision.ts", "features/auth/ui/SsoButtons.tsx"]
 touches: ["app/(auth)/login/page.tsx", "features/auth/actions.ts"]
 requirements: ["REQ-AUTH-01", "REQ-AUTH-03", "REQ-AUTH-04"]

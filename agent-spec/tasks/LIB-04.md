@@ -2,13 +2,13 @@
 id: LIB-04
 title: "Themes actions"
 phase: 1
-wave: 6
+wave: 7
 stream: backend
 size: S
 status: todo
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
-blocks: ["H-02", "IMP-03", "LIB-17"]
+blocks: ["IMP-03", "LIB-17", "H-02"]
 owns: ["features/themes/server.ts"]
 touches: []
 requirements: ["REQ-LIB-07"]

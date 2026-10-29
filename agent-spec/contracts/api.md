@@ -21,7 +21,7 @@ Read helpers (non-action, server-only, used by RSC pages) return plain data or `
 | `lib/db.ts` | `db` (Drizzle, server-only), `withTx(fn)` | DB-06 |
 | `lib/audit.ts` | `recordAudit(tx, { actorId, entity, entityId, action, before?, after? })` computes `diff` | DB-06 |
 | `lib/action.ts` | `class ActionError(code, message, fieldErrors?)`, `withAction<A,T>(fn): (...a:A)=>Promise<ActionResult<T>>` | DB-06 |
-| `lib/auth.ts` | `getUser(): Promise<AppUser\|null>`, `requireUser(): Promise<AppUser>` (throws UNAUTHENTICATED), `requireRole(r: Role)` | AUTH-04 |
+| `lib/auth.ts` | `getUser(): Promise<AppUser\|null>` (any access status), `requireUser(): Promise<AppUser>` (approved only: throws UNAUTHENTICATED when signed out, FORBIDDEN when pending/rejected; pages redirect pending/rejected users to `/account-status`), `requireRole(r: Role)` | AUTH-04 |
 | `lib/permissions.ts` | `can`, `assertCan`, `Action`, `PermCtx` — see `permissions.md` | AUTH-05 |
 | `lib/storage.ts` | `createUploadUrl(path)`, `objectExists(path) → {size}\|null`, `signedReadUrl(path, ttl?)`, `removeObject(path)`, `resourcePath(songId, songKeyId\|null, resourceId, ext)` | LIB-06 |
 | `lib/email.ts` | `sendEmail({ to, subject, react })` | SHR-03 |
@@ -70,7 +70,8 @@ export function deriveUsageLevel(setlistCountLast365d: number): UsageLevel; // >
 | | `signOut()` / `requestPasswordReset(email)` / `confirmPasswordReset(token, pw)` | `ActionResult<void>` | — | AUTH-01 |
 | | `signInWithOidc(provider: 'google'\|'microsoft')` | `ActionResult<{ url }>` | — | AUTH-02 |
 | | `signInWithSaml(emailOrDomain)` | `ActionResult<{ url }>` | — | AUTH-03 |
-| `features/auth/provision.ts` | `provisionUser(authUser, idpGroups: string[])` | `AppUser` | — | AUTH-02 |
+| `features/auth/provision.ts` | `provisionUser(authUser, idpGroups: string[])` (new users are created `pending`, with the group-mapped branch as a suggestion; AUTH-07) | `AppUser` | — | AUTH-02 / AUTH-07 |
+| `features/auth/actions.ts` | `signUpWithPassword({ name, email, password })` (creates a `pending` account; never reveals whether the email exists) | `ActionResult<void>` | — | AUTH-07 |
 | `features/songs/server/songs.ts` | `createSong(input)` | `ActionResult<{ id }>` | song:write | LIB-01 |
 | | `updateSong(id, input)` | `ActionResult<void>` | song:write | LIB-01 |
 | | `deleteSong(id)` | `ActionResult<void>` | song:delete | LIB-01 |
@@ -107,7 +108,8 @@ export function deriveUsageLevel(setlistCountLast365d: number): UsageLevel; // >
 | | `getSharedList(token)` (service role) | `ListDetail \| null` (resources stripped of urls/paths) | — | SHR-01 |
 | | `sendShareEmail(listId, to: string[])` (≤20 recipients, ≤10 sends/user/hour) | `ActionResult<void>` | share:create | SHR-03 |
 | `features/branches/server.ts` | `getBranchActivity({ days = 90 })` | `{ branch: Branch; recentlyAdded: SongSummary[]; upcoming: List[]; topSongs: Array<SongSummary & { count }> }[]` | song:read | BR-01 |
-| `features/admin/server.ts` | `inviteUser`, `updateUser(id, { role?, branchId?, disabled? })`, `listUsers()`, `upsertBranch` | | admin:* | ADM-01/02 |
+| `features/admin/server.ts` | `inviteUser` (creates an `approved` user), `updateUser(id, { role?, branchId?, disabled? })`, `listUsers({ accessStatus? })`, `upsertBranch` | | admin:* | ADM-01/02 |
+| | `approveUser(id, { role, branchId })` / `rejectUser(id)` (sets `access_status`, `access_decided_by/at`; audited; an admin can't decide their own request) | `ActionResult<void>` | admin:* | ADM-01 |
 | `app/api/cron/usage/route.ts` | `GET` with `Authorization: Bearer CRON_SECRET` | `{ updated: number }` | cron | BR-03 |
 
 ## Import format (IMP-01)

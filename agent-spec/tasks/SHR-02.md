@@ -2,7 +2,7 @@
 id: SHR-02
 title: "Public share page"
 phase: 4
-wave: 9
+wave: 10
 stream: frontend
 size: S
 status: todo

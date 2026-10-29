@@ -2,13 +2,13 @@
 id: LIST-01
 title: "Lists server (create/get/list/rename/delete)"
 phase: 3
-wave: 7
+wave: 8
 stream: backend
 size: M
 status: todo
 human_required: false
 depends_on: ["LIB-01", "LIST-03", "AUTH-05"]
-blocks: ["BR-01", "BR-03", "LIST-07", "LIST-08", "LIST-09", "SHR-01"]
+blocks: ["BR-01", "BR-03", "LIST-07", "LIST-08", "SHR-01", "LIST-09"]
 owns: ["features/lists/server/lists.ts"]
 touches: []
 requirements: ["REQ-LIST-01", "REQ-LIST-03", "REQ-LIST-06", "REQ-LIST-07", "REQ-LIST-08"]

@@ -2,7 +2,7 @@
 id: SRCH-03
 title: "Fuzzy title fallback + did-you-mean"
 phase: 2
-wave: 8
+wave: 9
 stream: backend
 size: S
 status: todo

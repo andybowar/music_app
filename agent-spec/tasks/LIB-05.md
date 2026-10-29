@@ -2,13 +2,13 @@
 id: LIB-05
 title: "Branch usage action"
 phase: 1
-wave: 6
+wave: 7
 stream: backend
 size: S
 status: todo
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
-blocks: ["BR-03", "IMP-03", "LIB-17"]
+blocks: ["IMP-03", "LIB-17", "BR-03"]
 owns: ["features/songs/server/usage.ts"]
 touches: []
 requirements: ["REQ-LIB-05"]

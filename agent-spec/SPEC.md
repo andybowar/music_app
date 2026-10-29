@@ -28,11 +28,12 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 
 - **REQ-AUTH-01** Users sign in with SSO: OIDC (Google, Microsoft) and SAML 2.0 for the organization's identity provider.
 - **REQ-AUTH-02** Email + password login (with password reset) remains available as a fallback for members without an SSO account.
-- **REQ-AUTH-03** No public signup. Accounts are created by admin invite, or on first SSO login when the IdP domain/group maps to a branch.
-- **REQ-AUTH-04** On first SSO login, branch and role are derived from IdP group → `branches.sso_group`; default role `member`.
+- **REQ-AUTH-03** Anyone can request an account: sign up with email + password, or sign in with SSO for the first time. New accounts start **pending** and can see no data until an admin approves them. Accounts an admin invites are approved when created. *(Changed 2026-10-29 by the project owner; previously "no public signup".)*
+- **REQ-AUTH-04** On first SSO login, branch and role are derived from IdP group → `branches.sso_group`; default role `member`. These are suggestions the approving admin can change (REQ-AUTH-08); the account is still pending.
 - **REQ-AUTH-05** An SSO identity links to an existing account with the same verified email.
 - **REQ-AUTH-06** Disabled users (`users.disabled_at` set) cannot sign in or use existing sessions.
 - **REQ-AUTH-07** Roles: `member`, `contributor`, `music_leader`, `admin`. Permissions per `contracts/permissions.md`, enforced in Postgres RLS **and** server code.
+- **REQ-AUTH-08** Admins review access requests: they see pending accounts and approve each one (choosing role and branch; for SSO users the IdP group mapping pre-fills the branch) or reject it. Pending and rejected users who sign in see only an account-status page. Admins are emailed about new requests, and users are emailed when approved.
 
 ### 2.2 Library — building entries (REQ-LIB) — Diagram I
 
@@ -159,6 +160,8 @@ Each has a **default** that agents must use until a human resolves it. Do not bl
 
 - **Copyright / CCLI licensing** for storing lyrics, sheet music and MP3s. *Default:* build everything behind login with signed URLs; share pages never expose files.
 - **SSO identity provider(s).** *Default:* implement Google + Microsoft OIDC and generic SAML; providers enabled by env/config.
+- **Do SSO users whose group maps to a branch skip approval?** *Decided (project owner, 2026-10-29):* no. Every new account, SSO included, starts pending (REQ-AUTH-03).
+- **Must a self-registered email be confirmed before the request reaches admins?** *Default:* yes when the Supabase project has email confirmation on (hosted); local dev runs with it off. The account is pending either way.
 - **SAML on Supabase plan tier** (may require paid plan). *Default:* SAML code path ships behind `FEATURE_SAML=false`.
 - **Email/password for non-SSO members.** *Default:* enabled.
 - **Branch usage: manual vs derived.** *Default:* manual first; derived job in Phase 4; manual overrides derived.

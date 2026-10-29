@@ -2,13 +2,13 @@
 id: LIST-09
 title: "Wire list creation + Add-to-List into app"
 phase: 3
-wave: 9
+wave: 10
 stream: frontend
 size: M
 status: todo
 human_required: false
 depends_on: ["LIST-04", "LIST-05", "LIST-06", "LIST-01", "LIST-02", "SRCH-09", "UI-02"]
-blocks: ["DOC-01", "H-04", "H-05", "SHR-04"]
+blocks: ["H-04", "SHR-04", "DOC-01", "H-05"]
 owns: ["features/lists/ui/AddToListAction.tsx", "features/lists/ui/NavListActions.tsx"]
 touches: ["app/(app)/layout.tsx", "features/search/ui/LibraryView.tsx"]
 requirements: ["REQ-LIST-01", "REQ-LIST-02", "REQ-NAV-01"]

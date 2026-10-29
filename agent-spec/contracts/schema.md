@@ -23,6 +23,7 @@ create type resource_kind  as enum ('full_score','lead_sheet','chord_chart','aud
 create type resource_format as enum ('pdf','mp3','m4a','pro','mdb','ppt','pptx','url');
 create type list_type      as enum ('setlist','playlist');
 create type audit_action   as enum ('create','update','delete');
+create type access_status  as enum ('pending','approved','rejected');   -- DB-07, REQ-AUTH-03/08
 ```
 
 ## Tables
@@ -46,6 +47,9 @@ create table users (
   sso_subject   text,
   last_login_at timestamptz,
   disabled_at   timestamptz,
+  access_status access_status not null default 'pending',  -- DB-07; rows that existed before it are backfilled 'approved'
+  access_decided_by uuid references users(id),             -- admin who approved/rejected; null while pending or for invites
+  access_decided_at timestamptz,
   created_at    timestamptz not null default now()
 );
 

@@ -2,7 +2,7 @@
 id: LIST-08
 title: "Open Setlist / Open Playlist index"
 phase: 3
-wave: 8
+wave: 9
 stream: frontend
 size: S
 status: todo

@@ -2,7 +2,7 @@
 id: LIB-06
 title: "File uploads + signed URLs"
 phase: 1
-wave: 6
+wave: 7
 stream: backend
 size: M
 status: todo

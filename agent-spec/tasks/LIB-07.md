@@ -2,7 +2,7 @@
 id: LIB-07
 title: "External links + YouTube parsing"
 phase: 1
-wave: 6
+wave: 7
 stream: backend
 size: S
 status: todo

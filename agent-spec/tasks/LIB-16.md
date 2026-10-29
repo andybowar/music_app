@@ -5,7 +5,7 @@ phase: 1
 wave: 3
 stream: backend
 size: S
-status: in_progress
+status: review
 human_required: false
 depends_on: ["F-03"]
 blocks: ["LIB-12", "LIB-17"]
@@ -32,12 +32,12 @@ requirements: ["REQ-LIB-14"]
 - `REQ-LIB-14` — Paste-and-split helper: paste full lyrics with section headings and have them split into the 7 section fields + arrangement.
 
 ## Deliverables
-- [ ] `parseLyrics`, `firstLine` per contract
-- [ ] ≥20 unit test cases (headings variants, repeats, pre-chorus fold, no headings, Windows line endings, >5 verses → warning)
+- [x] `parseLyrics`, `firstLine` per contract
+- [x] ≥20 unit test cases (headings variants, repeats, pre-chorus fold, no headings, Windows line endings, >5 verses → warning)
 
 ## Acceptance criteria
-- [ ] All tests pass; no I/O imports
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] All tests pass; no I/O imports
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `lib/lyrics/`

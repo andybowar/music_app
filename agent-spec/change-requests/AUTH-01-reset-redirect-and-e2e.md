@@ -1,6 +1,6 @@
 # CR AUTH-01 · Allow the reset redirect URL; let AUTH-01 own a login e2e spec and gallery page
 
-**Status:** proposed (AUTH-01). Needs approval.
+**Status:** §1 approved by project owner 2026-10-29 and applied to `supabase/config.toml` (hosted redirect URLs still to add with OPS-01). §2 and §3 still proposed.
 
 ## 1. `/reset/confirm` is not an allowed Supabase redirect for `localhost`
 

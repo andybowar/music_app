@@ -29,8 +29,36 @@ The server default is `"$user", public`, which doesn't include `extensions`.
 
 No `create schema if not exists extensions` is needed or added: Supabase creates that schema on the local stack, in CI (which uses the same stack) and on hosted projects.
 
+### DB-02 example SQL (same CR, follow-up)
+
+`contracts/schema.md` "Indexes (DB-02)" and "search_vector weights" now schema-qualify extension objects, so DB-02 can copy them as-is:
+
+```diff
+-create index songs_title_trgm     on songs using gin (lower(title) gin_trgm_ops);
++create index songs_title_trgm     on songs using gin (lower(title) extensions.gin_trgm_ops);
+```
+
+```diff
+-Use config `english` with `unaccent`. Example:
++Use config `english` with `extensions.unaccent`. `unaccent` is only STABLE, so use it here, in the trigger function, and never in an index expression or generated column. Example:
+-  ... unaccent(...) ...
++  ... extensions.unaccent(...) ...      (all four calls)
+```
+
+The contract uses `similarity` and the `%` operator nowhere, so there was nothing to qualify. If SRCH-01 uses them, write `extensions.similarity(...)` and `a operator(extensions.%) b`.
+
+`unaccent` (STABLE) appears only in the trigger function, where STABLE is fine. The trigram index is on `lower(title)` (IMMUTABLE), so no IMMUTABLE wrapper is needed. If a later task wants an accent-insensitive expression index or generated column, it needs an IMMUTABLE wrapper that pins the dictionary. That would be a new change request.
+
+I checked this on a fresh local stack after `pnpm db:migrate` (2026-10-28), in one transaction that was rolled back, with `set local search_path = ''`:
+
+- All 12 DB-02 indexes were created.
+- A `set search_path = ''` plpgsql trigger function holding the example `search_vector` expression was created, plus a BEFORE INSERT trigger.
+- Inserting `'Café Grâce'` produced `'cafe':1A 'grace':2A ... 'jose':4C 'perez':5C`.
+- `extensions.similarity` and `operator(extensions.%)` both worked.
+- The one-argument `extensions.unaccent(text)` finds its dictionary even with an empty `search_path`.
+
 ## Affects
 
-- **DB-02** (search triggers/indexes): qualify extension objects. Use `lower(title) extensions.gin_trgm_ops` in `songs_title_trgm`, and `extensions.unaccent(...)` in the `search_vector` trigger function. The unqualified example SQL in the contract's DB-02 sections still works under the `postgres` role's search_path. It breaks, though, if the trigger function pins `search_path` or a dump is restored with an empty one. `to_tsvector`/`setweight` are core (`pg_catalog`) and need no prefix.
+- **DB-02** (search triggers/indexes): done. The contract's DB-02 index and trigger SQL is now schema-qualified and verified (above), and can be copied as-is. `to_tsvector`/`setweight` are core (`pg_catalog`) and need no prefix.
 - **SRCH-01**: runtime queries over `DATABASE_URL` or PostgREST already resolve `similarity()`/`unaccent()`. Qualifying them is still recommended.
 - **DB-01**: `0001_init.sql` updated (not yet merged, so no migration is edited after merge).

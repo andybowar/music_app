@@ -10,17 +10,24 @@
  *   - create: before is `null`,   after is the new row  → every field is "added"
  *   - delete: before is old row,   after is `null`       → every field is "removed"
  *   - update: before/after are rows; only fields that differ are recorded
+ *
+ * A missing side is recorded as `null`, never `undefined`: jsonb drops undefined
+ * keys, which would break the `{ from, to }` shape readers rely on.
  */
 
 import { auditLog } from '@/db/schema';
 import type { Tx } from '@/lib/db';
+import type { AuditEntry } from '@/types/domain';
 
 export type { Tx };
 
-/** What changed, keyed by field: `{ from, to }` snapshots (absent ⇒ `undefined`). */
-export type AuditDiff = Record<string, { from: unknown; to: unknown }>;
+/** What changed, keyed by field: `{ from, to }` snapshots (absent ⇒ `null`). */
+export type AuditDiff = AuditEntry['diff'];
 
-export type AuditAction = 'create' | 'update' | 'delete';
+export type AuditAction = AuditEntry['action'];
+
+/** Bookkeeping columns that change on every write and say nothing about the edit. */
+const IGNORED_FIELDS: ReadonlySet<string> = new Set(['id', 'createdAt', 'updatedAt']);
 
 export interface RecordAuditArgs {
   actorId: string;
@@ -36,7 +43,8 @@ export interface RecordAuditArgs {
 /**
  * Shallow diff of `before` and `after`: the top-level fields whose values
  * changed, with `{ from, to }` snapshots. Two rows that look identical produce an
- * empty diff. Absent sides are treated as empty objects.
+ * empty diff. Absent sides are treated as empty objects. `id`, `createdAt` and
+ * `updatedAt` are never recorded.
  */
 export function computeAuditDiff(
   before: Record<string, unknown> | null | undefined,
@@ -47,8 +55,9 @@ export function computeAuditDiff(
   const diff: AuditDiff = {};
 
   for (const key of new Set([...Object.keys(b), ...Object.keys(a)])) {
-    const from = b[key];
-    const to = a[key];
+    if (IGNORED_FIELDS.has(key)) continue;
+    const from = b[key] ?? null;
+    const to = a[key] ?? null;
     if (!deepEqual(from, to)) {
       diff[key] = { from, to };
     }

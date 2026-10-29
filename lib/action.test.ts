@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { expect, test, vi } from 'vitest';
 
+import { notFound, redirect } from 'next/navigation';
+
 import { ActionError, setSentryCapture, withAction } from './action';
 import { z } from 'zod';
 
@@ -66,26 +68,57 @@ test('unknown errors map to INTERNAL and are reported to the capture hook', asyn
   }
 });
 
-test('clearing the capture hook means unknown errors are not reported', async () => {
+test('clearing the capture hook stops reporting to it and falls back to console.error', async () => {
   const capture = vi.fn();
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   setSentryCapture(capture);
   const wrapped = withAction(async () => {
     throw new Error('x');
   });
   setSentryCapture(null); // clear before the call runs
 
-  await wrapped();
-  expect(capture).not.toHaveBeenCalled();
+  try {
+    await wrapped();
+    expect(capture).not.toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledOnce();
+  } finally {
+    consoleError.mockRestore();
+  }
 });
 
-test('the default no-op capture hook never throws on unknown errors', async () => {
+test('the default capture hook logs and still resolves to INTERNAL', async () => {
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   setSentryCapture(null);
-  await expect(
-    withAction(async () => {
-      throw new Error('x');
-    })(),
-  ).resolves.toEqual({
-    ok: false,
-    error: { code: 'INTERNAL', message: 'Something went wrong. Please try again.' },
-  });
+  try {
+    await expect(
+      withAction(async () => {
+        throw new Error('x');
+      })(),
+    ).resolves.toEqual({
+      ok: false,
+      error: { code: 'INTERNAL', message: 'Something went wrong. Please try again.' },
+    });
+    expect(consoleError).toHaveBeenCalledOnce();
+  } finally {
+    consoleError.mockRestore();
+  }
+});
+
+test.each([
+  ['redirect()', () => redirect('/library')],
+  ['notFound()', () => notFound()],
+])('%s propagates to Next instead of becoming an ActionResult', async (_name, control) => {
+  const capture = vi.fn();
+  setSentryCapture(capture);
+  try {
+    const thrown = await withAction(async () => {
+      control();
+    })().catch((error: unknown) => error);
+
+    expect(thrown).toBeInstanceOf(Error);
+    expect(thrown).toHaveProperty('digest');
+    expect(capture).not.toHaveBeenCalled();
+  } finally {
+    setSentryCapture(null);
+  }
 });

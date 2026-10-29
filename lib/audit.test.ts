@@ -5,19 +5,19 @@ import { computeAuditDiff, recordAudit, type Tx } from './audit';
 
 // ---- computeAuditDiff (pure) --------------------------------------------------
 
-test('create diffs every field as added (from undefined)', () => {
+test('create diffs every field as added (from null)', () => {
   const diff = computeAuditDiff(null, { title: 'Amazing Grace', year: 1779 });
   expect(diff).toEqual({
-    title: { from: undefined, to: 'Amazing Grace' },
-    year: { from: undefined, to: 1779 },
+    title: { from: null, to: 'Amazing Grace' },
+    year: { from: null, to: 1779 },
   });
 });
 
-test('delete diffs every field as removed (to undefined)', () => {
+test('delete diffs every field as removed (to null)', () => {
   const diff = computeAuditDiff({ title: 'Amazing Grace', year: 1779 }, null);
   expect(diff).toEqual({
-    title: { from: 'Amazing Grace', to: undefined },
-    year: { from: 1779, to: undefined },
+    title: { from: 'Amazing Grace', to: null },
+    year: { from: 1779, to: null },
   });
 });
 
@@ -36,14 +36,30 @@ test('added and removed fields on an update are both recorded', () => {
   const before = { a: 1, b: 2 };
   const after = { a: 1, c: 3 };
   expect(computeAuditDiff(before, after)).toEqual({
-    b: { from: 2, to: undefined },
-    c: { from: undefined, to: 3 },
+    b: { from: 2, to: null },
+    c: { from: null, to: 3 },
   });
 });
 
-test('field absent on one side is treated as undefined', () => {
-  expect(computeAuditDiff({ a: 1 }, undefined)).toEqual({ a: { from: 1, to: undefined } });
-  expect(computeAuditDiff(undefined, { a: 1 })).toEqual({ a: { from: undefined, to: 1 } });
+test('field absent on one side is recorded as null', () => {
+  expect(computeAuditDiff({ a: 1 }, undefined)).toEqual({ a: { from: 1, to: null } });
+  expect(computeAuditDiff(undefined, { a: 1 })).toEqual({ a: { from: null, to: 1 } });
+});
+
+test('a field that is undefined on one side and null on the other is unchanged', () => {
+  expect(computeAuditDiff({ a: undefined }, { a: null })).toEqual({});
+});
+
+test('id, createdAt and updatedAt are never recorded', () => {
+  const before = { id: 's1', title: 'old', createdAt: new Date(0), updatedAt: new Date(0) };
+  const after = { id: 's1', title: 'new', createdAt: new Date(0), updatedAt: new Date(1) };
+  expect(computeAuditDiff(before, after)).toEqual({ title: { from: 'old', to: 'new' } });
+  expect(computeAuditDiff(null, after)).toEqual({ title: { from: null, to: 'new' } });
+});
+
+test('diffs keep both from and to through a JSON round trip (as stored in jsonb)', () => {
+  const diff = computeAuditDiff(null, { title: 'x' });
+  expect(JSON.parse(JSON.stringify(diff))).toEqual({ title: { from: null, to: 'x' } });
 });
 
 // ---- recordAudit (needs a transaction) ---------------------------------------

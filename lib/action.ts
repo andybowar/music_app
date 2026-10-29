@@ -5,6 +5,7 @@
  * any thrown error onto an `ActionResult` so callers/UI never see a raw throw:
  *   - `ActionError`        → its own code + optional fieldErrors (passed through)
  *   - `ZodError`           → VALIDATION, with per-field messages
+ *   - Next.js control flow → rethrown (`redirect()`, `notFound()` must reach Next)
  *   - anything else        → INTERNAL, swallowed + reported via the capture hook
  *
  * `lib/action.ts` has no I/O of its own, so it is pure and fully unit-testable.
@@ -12,6 +13,7 @@
 
 import type { ActionResult, ErrorCode } from '@/types/domain';
 
+import { unstable_rethrow } from 'next/navigation';
 import { z } from 'zod';
 
 /** An error an action may throw deliberately; its code is preserved on the result. */
@@ -30,15 +32,19 @@ export class ActionError extends Error {
 // ----- Sentry capture hook ------------------------------------------------------
 // This task owns the plumbing, not the SDK: a capture callback is installed by
 // server bootstrap (or a test) so unknown errors are reported without lib/action
-// depending on `@sentry/*`. Defaults to a no-op, so the module is safe to import
-// anywhere (including the test runner) before Sentry is wired up.
+// depending on `@sentry/*`. Until one is installed, unknown errors are logged to
+// the console so they are never lost.
 export type ErrorCapture = (error: unknown, context?: Record<string, unknown>) => void;
 
-let capture: ErrorCapture = () => {};
+const logToConsole: ErrorCapture = (error, context) => {
+  console.error('[withAction] unhandled error', context, error);
+};
 
-/** Install (or clear with `null`) the sink that receives unhandled errors. */
+let capture: ErrorCapture = logToConsole;
+
+/** Install the sink that receives unhandled errors; `null` restores console logging. */
 export function setSentryCapture(fn: ErrorCapture | null): void {
-  capture = fn ?? (() => {});
+  capture = fn ?? logToConsole;
 }
 
 // ----- Zod mapping --------------------------------------------------------------
@@ -64,6 +70,9 @@ export function withAction<A extends unknown[], T>(
       const data = await fn(...args);
       return { ok: true, data };
     } catch (error) {
+      // redirect()/notFound() throw sentinel errors that Next must handle itself.
+      unstable_rethrow(error);
+
       if (error instanceof ActionError) {
         return {
           ok: false,

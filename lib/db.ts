@@ -11,7 +11,7 @@
 
 import 'server-only';
 
-import { type TablesRelationalConfig } from 'drizzle-orm';
+import { type ExtractTablesWithRelations } from 'drizzle-orm';
 import {
   drizzle,
   type PostgresJsDatabase,
@@ -27,17 +27,19 @@ import { env } from '@/lib/env';
 export type DB = PostgresJsDatabase<typeof schema>;
 
 /** A transaction handle passed to `withTx` callbacks. */
-export type Tx = PostgresJsTransaction<typeof schema, TablesRelationalConfig>;
+export type Tx = PostgresJsTransaction<typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
-let cached: DB | undefined;
+// Cached on globalThis so dev hot reloads reuse one pool instead of opening a
+// new one (up to 10 connections) every time this module is re-evaluated.
+const globalForDb = globalThis as typeof globalThis & { __musicAppDb?: DB };
 
 /**
  * Lazily create (and cache) the shared Drizzle database. Server-only: reading
  * `env.DATABASE_URL` throws in the browser by design.
  */
 export function getDb(): DB {
-  cached ??= drizzle(postgres(env.DATABASE_URL, { max: 10 }), { schema });
-  return cached;
+  globalForDb.__musicAppDb ??= drizzle(postgres(env.DATABASE_URL, { max: 10 }), { schema });
+  return globalForDb.__musicAppDb;
 }
 
 /**

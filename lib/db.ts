@@ -23,8 +23,8 @@ import * as schema from '@/db/schema';
 
 import { env } from '@/lib/env';
 
-/** The configured Drizzle database (over the full schema). */
-export type DB = PostgresJsDatabase<typeof schema>;
+/** The configured Drizzle database (over the full schema), with its postgres.js client. */
+export type DB = PostgresJsDatabase<typeof schema> & { $client: postgres.Sql };
 
 /** A transaction handle passed to `withTx` callbacks. */
 export type Tx = PostgresJsTransaction<typeof schema, ExtractTablesWithRelations<typeof schema>>;

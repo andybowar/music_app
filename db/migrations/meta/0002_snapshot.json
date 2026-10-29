@@ -1,0 +1,1426 @@
+{
+  "id": "73a33d18-5d18-4f50-a623-b52d89ad4b0e",
+  "prevId": "1a6189b4-430e-4820-a769-ea1777ad2151",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.branches": {
+      "name": "branches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sso_group": {
+          "name": "sso_group",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "branches_name_key": {
+          "name": "branches_name_key",
+          "columns": ["name"],
+          "nullsNotDistinct": false
+        },
+        "branches_code_key": {
+          "name": "branches_code_key",
+          "columns": ["code"],
+          "nullsNotDistinct": false
+        },
+        "branches_sso_group_key": {
+          "name": "branches_sso_group_key",
+          "columns": ["sso_group"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "branches_code_check": {
+          "name": "branches_code_check",
+          "value": "\"branches\".\"code\" ~ '^[A-Z]{2,3}$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'member'"
+        },
+        "auth_provider": {
+          "name": "auth_provider",
+          "type": "auth_provider",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sso_subject": {
+          "name": "sso_subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "disabled_at": {
+          "name": "disabled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "users_id_fkey": {
+          "name": "users_id_fkey",
+          "tableFrom": "users",
+          "columnsFrom": ["id"],
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "users_branch_id_fkey": {
+          "name": "users_branch_id_fkey",
+          "tableFrom": "users",
+          "columnsFrom": ["branch_id"],
+          "tableTo": "branches",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_key": {
+          "name": "users_email_key",
+          "columns": ["email"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.composers": {
+      "name": "composers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pop_member": {
+          "name": "pop_member",
+          "type": "pop_member",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'none'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "composers_name_uq": {
+          "name": "composers_name_uq",
+          "columns": [
+            {
+              "expression": "lower(\"name\")",
+              "isExpression": true,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.song_composers": {
+      "name": "song_composers",
+      "schema": "",
+      "columns": {
+        "song_id": {
+          "name": "song_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "composer_id": {
+          "name": "composer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "song_composers_song_id_fkey": {
+          "name": "song_composers_song_id_fkey",
+          "tableFrom": "song_composers",
+          "columnsFrom": ["song_id"],
+          "tableTo": "songs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "song_composers_composer_id_fkey": {
+          "name": "song_composers_composer_id_fkey",
+          "tableFrom": "song_composers",
+          "columnsFrom": ["composer_id"],
+          "tableTo": "composers",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {
+        "song_composers_pkey": {
+          "name": "song_composers_pkey",
+          "columns": ["song_id", "composer_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.songs": {
+      "name": "songs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alt_titles": {
+          "name": "alt_titles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "year": {
+          "name": "year",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_group": {
+          "name": "source_group",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tempo_bpm": {
+          "name": "tempo_bpm",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "time_signature": {
+          "name": "time_signature",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "energy_level": {
+          "name": "energy_level",
+          "type": "energy_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "energy_notes": {
+          "name": "energy_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chorus_lyrics": {
+          "name": "chorus_lyrics",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verse_1_lyrics": {
+          "name": "verse_1_lyrics",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verse_2_lyrics": {
+          "name": "verse_2_lyrics",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verse_3_lyrics": {
+          "name": "verse_3_lyrics",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verse_4_lyrics": {
+          "name": "verse_4_lyrics",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verse_5_lyrics": {
+          "name": "verse_5_lyrics",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bridge_lyrics": {
+          "name": "bridge_lyrics",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "arrangement": {
+          "name": "arrangement",
+          "type": "lyric_section[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "chorus_line": {
+          "name": "chorus_line",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verse1_line": {
+          "name": "verse1_line",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "composer_names": {
+          "name": "composer_names",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "theme_names": {
+          "name": "theme_names",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "search_vector": {
+          "name": "search_vector",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_by_branch_id": {
+          "name": "added_by_branch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "songs_added_by_branch_id_fkey": {
+          "name": "songs_added_by_branch_id_fkey",
+          "tableFrom": "songs",
+          "columnsFrom": ["added_by_branch_id"],
+          "tableTo": "branches",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "songs_created_by_fkey": {
+          "name": "songs_created_by_fkey",
+          "tableFrom": "songs",
+          "columnsFrom": ["created_by"],
+          "tableTo": "users",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "songs_updated_by_fkey": {
+          "name": "songs_updated_by_fkey",
+          "tableFrom": "songs",
+          "columnsFrom": ["updated_by"],
+          "tableTo": "users",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "songs_title_check": {
+          "name": "songs_title_check",
+          "value": "length(\"songs\".\"title\") between 1 and 200"
+        },
+        "songs_year_check": {
+          "name": "songs_year_check",
+          "value": "\"songs\".\"year\" between 1000 and 2100"
+        },
+        "songs_tempo_bpm_check": {
+          "name": "songs_tempo_bpm_check",
+          "value": "\"songs\".\"tempo_bpm\" between 20 and 300"
+        },
+        "songs_time_signature_check": {
+          "name": "songs_time_signature_check",
+          "value": "\"songs\".\"time_signature\" ~ '^\\d{1,2}/\\d{1,2}$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.song_keys": {
+      "name": "song_keys",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "song_id": {
+          "name": "song_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_primary": {
+          "name": "is_primary",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "intro_chord": {
+          "name": "intro_chord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verse_chord": {
+          "name": "verse_chord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chorus_chord": {
+          "name": "chorus_chord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bridge_chord": {
+          "name": "bridge_chord",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "song_keys_one_primary": {
+          "name": "song_keys_one_primary",
+          "columns": [
+            {
+              "expression": "song_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"song_keys\".\"is_primary\"",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "song_keys_song_id_fkey": {
+          "name": "song_keys_song_id_fkey",
+          "tableFrom": "song_keys",
+          "columnsFrom": ["song_id"],
+          "tableTo": "songs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "song_keys_song_id_key_key": {
+          "name": "song_keys_song_id_key_key",
+          "columns": ["song_id", "key"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "song_keys_key_check": {
+          "name": "song_keys_key_check",
+          "value": "\"song_keys\".\"key\" ~ '^[A-G](#|b)?m?$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.resources": {
+      "name": "resources",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "song_id": {
+          "name": "song_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "song_key_id": {
+          "name": "song_key_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "resource_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "format": {
+          "name": "format",
+          "type": "resource_format",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size_bytes": {
+          "name": "size_bytes",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uploaded_by": {
+          "name": "uploaded_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "resources_song_id_fkey": {
+          "name": "resources_song_id_fkey",
+          "tableFrom": "resources",
+          "columnsFrom": ["song_id"],
+          "tableTo": "songs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "resources_song_key_id_fkey": {
+          "name": "resources_song_key_id_fkey",
+          "tableFrom": "resources",
+          "columnsFrom": ["song_key_id"],
+          "tableTo": "song_keys",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "resources_uploaded_by_fkey": {
+          "name": "resources_uploaded_by_fkey",
+          "tableFrom": "resources",
+          "columnsFrom": ["uploaded_by"],
+          "tableTo": "users",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "resources_check": {
+          "name": "resources_check",
+          "value": "(\"resources\".\"storage_path\" is null) <> (\"resources\".\"url\" is null)"
+        },
+        "resources_check1": {
+          "name": "resources_check1",
+          "value": "(\"resources\".\"format\" = 'url') = (\"resources\".\"url\" is not null)"
+        },
+        "resources_check2": {
+          "name": "resources_check2",
+          "value": "(\"resources\".\"kind\" = 'projection') = (\"resources\".\"song_key_id\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.song_themes": {
+      "name": "song_themes",
+      "schema": "",
+      "columns": {
+        "song_id": {
+          "name": "song_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "theme_id": {
+          "name": "theme_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "section": {
+          "name": "section",
+          "type": "lyric_section",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "song_themes_song_id_fkey": {
+          "name": "song_themes_song_id_fkey",
+          "tableFrom": "song_themes",
+          "columnsFrom": ["song_id"],
+          "tableTo": "songs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "song_themes_theme_id_fkey": {
+          "name": "song_themes_theme_id_fkey",
+          "tableFrom": "song_themes",
+          "columnsFrom": ["theme_id"],
+          "tableTo": "themes",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "song_themes_pkey": {
+          "name": "song_themes_pkey",
+          "columns": ["song_id", "theme_id", "section"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.theme_synonyms": {
+      "name": "theme_synonyms",
+      "schema": "",
+      "columns": {
+        "theme_id": {
+          "name": "theme_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "synonym": {
+          "name": "synonym",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "theme_synonyms_theme_id_fkey": {
+          "name": "theme_synonyms_theme_id_fkey",
+          "tableFrom": "theme_synonyms",
+          "columnsFrom": ["theme_id"],
+          "tableTo": "themes",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "theme_synonyms_pkey": {
+          "name": "theme_synonyms_pkey",
+          "columns": ["theme_id", "synonym"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "theme_synonyms_synonym_check": {
+          "name": "theme_synonyms_synonym_check",
+          "value": "\"theme_synonyms\".\"synonym\" = lower(btrim(\"theme_synonyms\".\"synonym\"))"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.themes": {
+      "name": "themes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "themes_created_by_fkey": {
+          "name": "themes_created_by_fkey",
+          "tableFrom": "themes",
+          "columnsFrom": ["created_by"],
+          "tableTo": "users",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "themes_name_key": {
+          "name": "themes_name_key",
+          "columns": ["name"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "themes_name_check": {
+          "name": "themes_name_check",
+          "value": "\"themes\".\"name\" = lower(btrim(\"themes\".\"name\"))"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.branch_usage": {
+      "name": "branch_usage",
+      "schema": "",
+      "columns": {
+        "song_id": {
+          "name": "song_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "usage_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "usage_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'manual'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "branch_usage_song_id_fkey": {
+          "name": "branch_usage_song_id_fkey",
+          "tableFrom": "branch_usage",
+          "columnsFrom": ["song_id"],
+          "tableTo": "songs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "branch_usage_branch_id_fkey": {
+          "name": "branch_usage_branch_id_fkey",
+          "tableFrom": "branch_usage",
+          "columnsFrom": ["branch_id"],
+          "tableTo": "branches",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "branch_usage_pkey": {
+          "name": "branch_usage_pkey",
+          "columns": ["song_id", "branch_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.list_items": {
+      "name": "list_items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "list_id": {
+          "name": "list_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "song_id": {
+          "name": "song_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "override_key": {
+          "name": "override_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "override_bpm": {
+          "name": "override_bpm",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "override_energy": {
+          "name": "override_energy",
+          "type": "energy_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resource_id": {
+          "name": "resource_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "list_items_list_id_fkey": {
+          "name": "list_items_list_id_fkey",
+          "tableFrom": "list_items",
+          "columnsFrom": ["list_id"],
+          "tableTo": "lists",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "list_items_song_id_fkey": {
+          "name": "list_items_song_id_fkey",
+          "tableFrom": "list_items",
+          "columnsFrom": ["song_id"],
+          "tableTo": "songs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "restrict"
+        },
+        "list_items_resource_id_fkey": {
+          "name": "list_items_resource_id_fkey",
+          "tableFrom": "list_items",
+          "columnsFrom": ["resource_id"],
+          "tableTo": "resources",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "set null"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "list_items_override_key_check": {
+          "name": "list_items_override_key_check",
+          "value": "\"list_items\".\"override_key\" ~ '^[A-G](#|b)?m?$'"
+        },
+        "list_items_override_bpm_check": {
+          "name": "list_items_override_bpm_check",
+          "value": "\"list_items\".\"override_bpm\" between 20 and 300"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.lists": {
+      "name": "lists",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "type": {
+          "name": "type",
+          "type": "list_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_date": {
+          "name": "event_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lists_owner_id_fkey": {
+          "name": "lists_owner_id_fkey",
+          "tableFrom": "lists",
+          "columnsFrom": ["owner_id"],
+          "tableTo": "users",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "lists_branch_id_fkey": {
+          "name": "lists_branch_id_fkey",
+          "tableFrom": "lists",
+          "columnsFrom": ["branch_id"],
+          "tableTo": "branches",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "lists_name_check": {
+          "name": "lists_name_check",
+          "value": "length(\"lists\".\"name\") between 1 and 120"
+        },
+        "lists_check": {
+          "name": "lists_check",
+          "value": "\"lists\".\"type\" <> 'setlist' or \"lists\".\"event_date\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.shares": {
+      "name": "shares",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "list_id": {
+          "name": "list_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "shares_list_id_fkey": {
+          "name": "shares_list_id_fkey",
+          "tableFrom": "shares",
+          "columnsFrom": ["list_id"],
+          "tableTo": "lists",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "shares_created_by_fkey": {
+          "name": "shares_created_by_fkey",
+          "tableFrom": "shares",
+          "columnsFrom": ["created_by"],
+          "tableTo": "users",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "shares_token_key": {
+          "name": "shares_token_key",
+          "columns": ["token"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.audit_log": {
+      "name": "audit_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entity": {
+          "name": "entity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "audit_action",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "diff": {
+          "name": "diff",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "audit_log_actor_id_fkey": {
+          "name": "audit_log_actor_id_fkey",
+          "tableFrom": "audit_log",
+          "columnsFrom": ["actor_id"],
+          "tableTo": "users",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.audit_action": {
+      "name": "audit_action",
+      "schema": "public",
+      "values": ["create", "update", "delete"]
+    },
+    "public.auth_provider": {
+      "name": "auth_provider",
+      "schema": "public",
+      "values": ["google", "microsoft", "saml", "password"]
+    },
+    "public.energy_level": {
+      "name": "energy_level",
+      "schema": "public",
+      "values": ["high_praise", "high_worship", "mid_worship", "deep_worship", "quiet_worship"]
+    },
+    "public.list_type": {
+      "name": "list_type",
+      "schema": "public",
+      "values": ["setlist", "playlist"]
+    },
+    "public.lyric_section": {
+      "name": "lyric_section",
+      "schema": "public",
+      "values": ["chorus", "verse_1", "verse_2", "verse_3", "verse_4", "verse_5", "bridge"]
+    },
+    "public.pop_member": {
+      "name": "pop_member",
+      "schema": "public",
+      "values": ["none", "past", "current"]
+    },
+    "public.resource_format": {
+      "name": "resource_format",
+      "schema": "public",
+      "values": ["pdf", "mp3", "m4a", "pro", "mdb", "ppt", "pptx", "url"]
+    },
+    "public.resource_kind": {
+      "name": "resource_kind",
+      "schema": "public",
+      "values": [
+        "full_score",
+        "lead_sheet",
+        "chord_chart",
+        "audio",
+        "video_link",
+        "instruction_link",
+        "projection"
+      ]
+    },
+    "public.role": {
+      "name": "role",
+      "schema": "public",
+      "values": ["member", "contributor", "music_leader", "admin"]
+    },
+    "public.usage_level": {
+      "name": "usage_level",
+      "schema": "public",
+      "values": ["high", "low", "rare", "none"]
+    },
+    "public.usage_source": {
+      "name": "usage_source",
+      "schema": "public",
+      "values": ["manual", "derived"]
+    }
+  },
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

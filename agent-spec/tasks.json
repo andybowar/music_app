@@ -83,7 +83,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/F-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "F-03",
@@ -122,7 +122,7 @@
         "REQ-SRCH-05"
       ],
       "file": "tasks/F-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "F-05",
@@ -148,7 +148,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/F-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "OPS-03",

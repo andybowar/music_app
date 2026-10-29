@@ -37,6 +37,12 @@ export function GET() {
   .auth a { color: inherit; }
   #status { flex-basis: 100%; }
   #status.error { color: #b00020; }
+  /* Swagger UI doesn't wrap long tag names or paths, which overflows phones. */
+  .swagger-ui .wrapper { padding: 0 12px; }
+  .swagger-ui .opblock-tag { flex-wrap: wrap; }
+  .swagger-ui .opblock-tag a.nostyle, .swagger-ui .opblock-tag small { min-width: 0; overflow-wrap: anywhere; white-space: normal; }
+  .swagger-ui .opblock .opblock-summary-path { overflow-wrap: anywhere; }
+  .swagger-ui table, .swagger-ui pre { max-width: 100%; overflow-x: auto; }
 </style>
 </head>
 <body>

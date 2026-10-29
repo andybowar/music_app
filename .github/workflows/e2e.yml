@@ -1,11 +1,14 @@
-# F-02 · Playwright e2e against the Vercel preview of a PR (or a production deploy).
-# Vercel's GitHub integration posts a `deployment_status` event when a deployment
-# changes state; we run only for successful ones that carry a URL. Any other
-# state, event or a missing URL skips the job cleanly.
+# F-02 · Playwright e2e against the Vercel preview of a PR.
+# Vercel sends a `repository_dispatch` event (`vercel.deployment.success`) when a
+# deployment is ready; `client_payload` carries its `url`, `environment` and `git.sha`.
+# Dispatch events only trigger the copy of this file on the default branch.
+# Production deployments are skipped: the dev galleries some specs use 404 there.
+# The result is posted as an "E2E (Vercel preview)" commit status so it shows on the PR.
 name: E2E
 
 on:
-  deployment_status:
+  repository_dispatch:
+    types: ['vercel.deployment.success']
   workflow_dispatch:
     inputs:
       base_url:
@@ -14,31 +17,53 @@ on:
         type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.deployment.environment || 'manual' }}-${{ github.event.deployment.sha || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.client_payload.git.sha || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   e2e:
     name: Playwright (Vercel preview)
     if: >-
-      (github.event_name == 'deployment_status'
-        && github.event.deployment_status.state == 'success'
-        && github.event.deployment_status.environment_url != '')
+      (github.event_name == 'repository_dispatch'
+        && github.event.client_payload.url != ''
+        && github.event.client_payload.environment != 'production')
       || (github.event_name == 'workflow_dispatch' && inputs.base_url != '')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       CI: true
-      # When set, playwright.config.ts skips its own webServer and tests this URL.
-      PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.environment_url || inputs.base_url }}
-    steps:
       # Test the exact commit that was deployed.
+      SHA: ${{ github.event.client_payload.git.sha || github.sha }}
+      DEPLOY_URL: ${{ github.event.client_payload.url || inputs.base_url }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      STATUS_CONTEXT: E2E (Vercel preview)
+      GH_TOKEN: ${{ github.token }}
+      # Lets Playwright past Vercel Deployment Protection (see playwright.config.ts).
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Mark commit status pending
+        if: github.event_name == 'repository_dispatch'
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state=pending \
+            -f context="$STATUS_CONTEXT" -f target_url="$RUN_URL" -f description="Running"
+
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.deployment.sha || github.sha }}
+          ref: ${{ env.SHA }}
+
+      # The payload URL may omit the scheme.
+      - name: Resolve base URL
+        run: |
+          case "$DEPLOY_URL" in
+            http://*|https://*) url="$DEPLOY_URL" ;;
+            *) url="https://$DEPLOY_URL" ;;
+          esac
+          echo "PLAYWRIGHT_BASE_URL=$url" >> "$GITHUB_ENV"
+          echo "Testing $url"
 
       - uses: pnpm/action-setup@v4
 
@@ -64,3 +89,16 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 14
+
+      - name: Report commit status
+        if: always() && github.event_name == 'repository_dispatch'
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          case "$JOB_STATUS" in
+            success) state=success; desc="Passed" ;;
+            cancelled) state=error; desc="Cancelled" ;;
+            *) state=failure; desc="Failed" ;;
+          esac
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$state" \
+            -f context="$STATUS_CONTEXT" -f target_url="$RUN_URL" -f description="$desc"

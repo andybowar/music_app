@@ -18,7 +18,7 @@
 | `/quick` | Quick theme lookup | BR-04 |
 | `/share/[token]` | Public read-only list | SHR-02 |
 | `/admin/users`, `/admin/branches` | Admin | ADM-01, ADM-02 |
-| `/dev/[component]` | Component gallery with fixtures; 404 in production | each UI task adds its own page |
+| `/dev/[component]` | Component gallery with fixtures; 404 on the production deployment via `if (!isDevGalleryEnabled()) notFound()` (`lib/devGallery.ts`), served on previews | each UI task adds its own page |
 
 Route groups: `app/(auth)/…` (no shell), `app/(app)/…` (shell + `requireUser`), `app/share/…` (public), `app/dev/…`.
 

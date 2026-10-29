@@ -5,7 +5,7 @@ phase: 2
 wave: 4
 stream: frontend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["UI-01", "SRCH-04"]
 blocks: ["SRCH-09"]
@@ -31,11 +31,11 @@ requirements: ["REQ-SRCH-02"]
 - `REQ-SRCH-02` — Optional free text, searchable across fields individually toggleable: Titles (incl. alternate), Lyrics (all sections), Themes, Composer.
 
 ## Deliverables
-- [ ] Input, toggle-group (all on by default; at least one must stay on), clear button
+- [x] Input, toggle-group (all on by default; at least one must stay on), clear button
 
 ## Acceptance criteria
-- [ ] Enter submits; Esc clears
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Enter submits; Esc clears
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/search/ui/SearchBar.tsx`, `app/dev/search-bar/`

@@ -5,7 +5,7 @@ phase: 3
 wave: 4
 stream: frontend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["UI-01", "PLAY-01"]
 blocks: ["PLAY-05"]
@@ -31,11 +31,11 @@ requirements: ["REQ-LIST-05"]
 - `REQ-LIST-05` — Playlist: per-song chosen audio item (MP3 or YouTube link); play, pause, stop, skip ahead/back, auto-advance; edit order; rename; delete; share.
 
 ## Deliverables
-- [ ] Sticky bottom bar: now playing, controls, position
+- [x] Sticky bottom bar: now playing, controls, position
 
 ## Acceptance criteria
-- [ ] Media Session API metadata set (lock-screen controls)
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Media Session API metadata set (lock-screen controls)
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/player/ui/PlayerBar.tsx`, `app/dev/player/`

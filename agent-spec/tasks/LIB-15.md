@@ -5,7 +5,7 @@ phase: 1
 wave: 5
 stream: frontend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["LIB-10"]
 blocks: ["LIB-17"]
@@ -30,12 +30,21 @@ requirements: ["REQ-LIB-05"]
 - `REQ-LIB-05` — Branch usage per branch: `high | low | rare | none`.
 
 ## Deliverables
-- [ ] Row per branch × segmented control high/low/rare/none; derived values shown with a "derived" badge
+- [x] Row per branch × segmented control high/low/rare/none; derived values shown with a "derived" badge
 
 ## Acceptance criteria
-- [ ] Dev page with 4 fixture branches
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Dev page with 4 fixture branches
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/ui/form/UsageSection.tsx`, `app/dev/form-usage/`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
+
+## Notes
+
+- Form value `usage` holds manual entries only (`usageFromSong`); stored usage goes in the `saved`
+  prop so derived values show with a "Derived" badge. `setBranchUsage` semantics this relies on are
+  in `agent-spec/change-requests/LIB-15-set-branch-usage-semantics.md` (proposed).
+- Read-only rows follow `can(user, 'usage:write')`: permissions.md has no per-branch rule, so
+  members, disabled users and signed-out visitors see every row read-only with the reason.
+- `pnpm test:int` not run: no server or DB code touched.

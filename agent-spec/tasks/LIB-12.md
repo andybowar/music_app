@@ -5,7 +5,7 @@ phase: 1
 wave: 5
 stream: frontend
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["LIB-10", "LIB-16"]
 blocks: ["LIB-17"]
@@ -32,13 +32,13 @@ requirements: ["REQ-LIB-06", "REQ-LIB-14"]
 - `REQ-LIB-14` — Paste-and-split helper: paste full lyrics with section headings and have them split into the 7 section fields + arrangement.
 
 ## Deliverables
-- [ ] 7 section textareas (verses 3–5 collapsed until used)
-- [ ] Arrangement builder: chips for non-empty sections, drag to order, repeats allowed
-- [ ] "Paste full lyrics" dialog calling `parseLyrics` (from `@/lib/lyrics/parse`)
+- [x] 7 section textareas (verses 3–5 collapsed until used)
+- [x] Arrangement builder: chips for non-empty sections, drag to order, repeats allowed
+- [x] "Paste full lyrics" dialog calling `parseLyrics` (from `@/lib/lyrics/parse`)
 
 ## Acceptance criteria
-- [ ] Emptying a section removes it from arrangement with a warning
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Emptying a section removes it from arrangement with a warning
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/ui/form/LyricsSection.tsx`, `app/dev/form-lyrics/`

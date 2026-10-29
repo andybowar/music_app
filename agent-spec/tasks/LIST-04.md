@@ -5,7 +5,7 @@ phase: 3
 wave: 3
 stream: frontend
 size: S
-status: in_progress
+status: review
 human_required: false
 depends_on: ["F-03"]
 blocks: ["LIST-09"]
@@ -31,11 +31,11 @@ requirements: ["REQ-LIST-01", "REQ-NAV-04"]
 - `REQ-NAV-04` — Share acts on the *current list*; disabled when there is none.
 
 ## Deliverables
-- [ ] Provider + hook; cookie `current_list` (list id, 12h); server helper `readCurrentListId()`
+- [x] Provider + hook; cookie `current_list` (list id, 12h); server helper `readCurrentListId()` (helper deferred: needs a server-only path, see `change-requests/LIST-04-server-helper.md`)
 
 ## Acceptance criteria
-- [ ] Survives reload; cleared if list is deleted
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Survives reload; cleared if list is deleted
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/lists/ui/CurrentList.tsx`

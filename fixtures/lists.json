@@ -1,0 +1,144 @@
+{
+  "lists": [
+    {
+      "id": "80000000-0000-4000-8000-000000000001",
+      "type": "setlist",
+      "name": "BG 4/19/26",
+      "eventDate": "2026-04-19",
+      "ownerId": "20000000-0000-4000-8000-000000000002",
+      "ownerName": "Maria Chen",
+      "branchId": "10000000-0000-4000-8000-000000000002",
+      "branchCode": "OR",
+      "itemCount": 4,
+      "createdAt": "2026-04-12T18:00:00Z",
+      "updatedAt": "2026-04-17T22:40:00Z"
+    },
+    {
+      "id": "80000000-0000-4000-8000-000000000002",
+      "type": "setlist",
+      "name": "AG 4/25/26",
+      "eventDate": "2026-04-25",
+      "ownerId": "20000000-0000-4000-8000-000000000002",
+      "ownerName": "Maria Chen",
+      "branchId": "10000000-0000-4000-8000-000000000002",
+      "branchCode": "OR",
+      "itemCount": 2,
+      "createdAt": "2026-04-18T09:15:00Z",
+      "updatedAt": "2026-04-18T09:30:00Z"
+    },
+    {
+      "id": "80000000-0000-4000-8000-000000000003",
+      "type": "playlist",
+      "name": "Background 1",
+      "eventDate": null,
+      "ownerId": "20000000-0000-4000-8000-000000000004",
+      "ownerName": "Lee Novak",
+      "branchId": "10000000-0000-4000-8000-000000000004",
+      "branchCode": "RF",
+      "itemCount": 3,
+      "createdAt": "2026-03-20T12:00:00Z",
+      "updatedAt": "2026-04-01T12:00:00Z"
+    }
+  ],
+  "items": [
+    {
+      "id": "90000000-0000-4000-8000-000001000001",
+      "listId": "80000000-0000-4000-8000-000000000001",
+      "songId": "40000000-0000-4000-8000-000000000004",
+      "position": 0,
+      "overrideKey": null,
+      "overrideBpm": 126,
+      "overrideEnergy": null,
+      "resourceId": null,
+      "notes": null
+    },
+    {
+      "id": "90000000-0000-4000-8000-000001000002",
+      "listId": "80000000-0000-4000-8000-000000000001",
+      "songId": "40000000-0000-4000-8000-000000000009",
+      "position": 1,
+      "overrideKey": null,
+      "overrideBpm": null,
+      "overrideEnergy": "mid_worship",
+      "resourceId": null,
+      "notes": "Two times through the bridge"
+    },
+    {
+      "id": "90000000-0000-4000-8000-000001000003",
+      "listId": "80000000-0000-4000-8000-000000000001",
+      "songId": "40000000-0000-4000-8000-000000000005",
+      "position": 2,
+      "overrideKey": "C",
+      "overrideBpm": null,
+      "overrideEnergy": null,
+      "resourceId": null,
+      "notes": "Key change for new worship leader"
+    },
+    {
+      "id": "90000000-0000-4000-8000-000001000004",
+      "listId": "80000000-0000-4000-8000-000000000001",
+      "songId": "40000000-0000-4000-8000-000000000001",
+      "position": 3,
+      "overrideKey": null,
+      "overrideBpm": null,
+      "overrideEnergy": null,
+      "resourceId": null,
+      "notes": null
+    },
+    {
+      "id": "90000000-0000-4000-8000-000002000001",
+      "listId": "80000000-0000-4000-8000-000000000002",
+      "songId": "40000000-0000-4000-8000-000000000002",
+      "position": 0,
+      "overrideKey": null,
+      "overrideBpm": null,
+      "overrideEnergy": null,
+      "resourceId": null,
+      "notes": null
+    },
+    {
+      "id": "90000000-0000-4000-8000-000002000002",
+      "listId": "80000000-0000-4000-8000-000000000002",
+      "songId": "40000000-0000-4000-8000-000000000008",
+      "position": 1,
+      "overrideKey": "D",
+      "overrideBpm": null,
+      "overrideEnergy": null,
+      "resourceId": null,
+      "notes": null
+    },
+    {
+      "id": "90000000-0000-4000-8000-000003000001",
+      "listId": "80000000-0000-4000-8000-000000000003",
+      "songId": "40000000-0000-4000-8000-000000000007",
+      "position": 0,
+      "overrideKey": null,
+      "overrideBpm": null,
+      "overrideEnergy": null,
+      "resourceId": "60000000-0000-4000-8000-000007000002",
+      "notes": null
+    },
+    {
+      "id": "90000000-0000-4000-8000-000003000002",
+      "listId": "80000000-0000-4000-8000-000000000003",
+      "songId": "40000000-0000-4000-8000-000000000001",
+      "position": 1,
+      "overrideKey": null,
+      "overrideBpm": null,
+      "overrideEnergy": null,
+      "resourceId": "60000000-0000-4000-8000-000001000006",
+      "notes": null
+    },
+    {
+      "id": "90000000-0000-4000-8000-000003000003",
+      "listId": "80000000-0000-4000-8000-000000000003",
+      "songId": "40000000-0000-4000-8000-000000000001",
+      "position": 2,
+      "overrideKey": null,
+      "overrideBpm": null,
+      "overrideEnergy": null,
+      "resourceId": "60000000-0000-4000-8000-000001000007",
+      "notes": null
+    }
+  ]
+}

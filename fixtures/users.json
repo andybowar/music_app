@@ -1,0 +1,47 @@
+[
+  {
+    "id": "20000000-0000-4000-8000-000000000001",
+    "email": "jordan.ellis@example.com",
+    "name": "Jordan Ellis",
+    "branchId": "10000000-0000-4000-8000-000000000001",
+    "role": "admin",
+    "authProvider": "password",
+    "disabledAt": null
+  },
+  {
+    "id": "20000000-0000-4000-8000-000000000002",
+    "email": "maria.chen@example.com",
+    "name": "Maria Chen",
+    "branchId": "10000000-0000-4000-8000-000000000002",
+    "role": "music_leader",
+    "authProvider": "google",
+    "disabledAt": null
+  },
+  {
+    "id": "20000000-0000-4000-8000-000000000003",
+    "email": "sam.patel@example.com",
+    "name": "Sam Patel",
+    "branchId": "10000000-0000-4000-8000-000000000003",
+    "role": "contributor",
+    "authProvider": "microsoft",
+    "disabledAt": null
+  },
+  {
+    "id": "20000000-0000-4000-8000-000000000004",
+    "email": "lee.novak@example.com",
+    "name": "Lee Novak",
+    "branchId": "10000000-0000-4000-8000-000000000004",
+    "role": "member",
+    "authProvider": "saml",
+    "disabledAt": null
+  },
+  {
+    "id": "20000000-0000-4000-8000-000000000005",
+    "email": "riley.brooks@example.com",
+    "name": "Riley Brooks",
+    "branchId": null,
+    "role": "member",
+    "authProvider": "google",
+    "disabledAt": "2026-03-01T17:00:00Z"
+  }
+]

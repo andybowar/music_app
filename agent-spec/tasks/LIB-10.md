@@ -5,7 +5,7 @@ phase: 1
 wave: 4
 stream: frontend
 size: M
-status: in_progress
+status: done
 human_required: false
 depends_on: ["UI-01", "F-04"]
 blocks: ["LIB-11", "LIB-12", "LIB-13", "LIB-14", "LIB-15"]
@@ -32,13 +32,13 @@ requirements: ["REQ-LIB-02", "REQ-LIB-03"]
 - `REQ-LIB-03` — Composers carry a POP-membership flag: `none | past | current`. Past/current are color-highlighted in the UI.
 
 ## Deliverables
-- [ ] `SongFormValue` type file exactly per ui.md
-- [ ] Alt titles as chips; composers multi-select (command palette) with "create" option via `searchComposers`/`createComposer` passed as props
-- [ ] Drag to order composers
+- [x] `SongFormValue` type file exactly per ui.md
+- [x] Alt titles as chips; composers multi-select (command palette) with "create" option via `searchComposers`/`createComposer` passed as props
+- [x] Drag to order composers
 
 ## Acceptance criteria
-- [ ] Dev page works with fixture-backed fake search fn
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Dev page works with fixture-backed fake search fn
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/ui/form/types.ts`, `features/songs/ui/form/BasicInfoSection.tsx`, `app/dev/form-basic/`

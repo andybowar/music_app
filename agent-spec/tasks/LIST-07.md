@@ -2,7 +2,7 @@
 id: LIST-07
 title: "Setlist view + route"
 phase: 3
-wave: 8
+wave: 9
 stream: frontend
 size: L
 status: todo

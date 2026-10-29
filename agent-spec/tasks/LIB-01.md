@@ -2,7 +2,7 @@
 id: LIB-01
 title: "Song server actions (create/update/delete/get)"
 phase: 1
-wave: 6
+wave: 7
 stream: backend
 size: L
 status: todo

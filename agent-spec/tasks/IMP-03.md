@@ -2,7 +2,7 @@
 id: IMP-03
 title: "Import runner CLI"
 phase: 1
-wave: 7
+wave: 8
 stream: data
 size: M
 status: todo

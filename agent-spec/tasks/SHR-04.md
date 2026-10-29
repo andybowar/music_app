@@ -2,7 +2,7 @@
 id: SHR-04
 title: "ShareDialog + nav Share wiring"
 phase: 4
-wave: 10
+wave: 11
 stream: frontend
 size: S
 status: todo

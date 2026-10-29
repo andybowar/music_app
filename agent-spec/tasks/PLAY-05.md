@@ -2,13 +2,13 @@
 id: PLAY-05
 title: "PlaylistView"
 phase: 3
-wave: 9
+wave: 10
 stream: frontend
 size: M
 status: todo
 human_required: false
 depends_on: ["PLAY-02", "PLAY-03", "PLAY-04", "PLAY-06", "LIST-07"]
-blocks: ["H-04", "H-05", "SHR-04"]
+blocks: ["H-04", "SHR-04", "H-05"]
 owns: ["features/player/ui/PlaylistView.tsx", "features/player/ui/usePlayer.ts"]
 touches: ["app/(app)/lists/[id]/page.tsx"]
 requirements: ["REQ-LIST-05"]

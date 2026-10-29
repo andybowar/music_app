@@ -2,7 +2,7 @@
 id: LIB-17
 title: "Song create/edit pages"
 phase: 1
-wave: 7
+wave: 8
 stream: frontend
 size: L
 status: todo

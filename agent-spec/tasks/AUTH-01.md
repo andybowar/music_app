@@ -8,7 +8,7 @@ size: M
 status: done
 human_required: false
 depends_on: ["F-05", "UI-01"]
-blocks: ["AUTH-02"]
+blocks: ["AUTH-02", "AUTH-07"]
 owns: ["app/(auth)/login/", "app/(auth)/reset/", "features/auth/actions.ts", "features/auth/ui/LoginForm.tsx", "features/auth/ui/ResetForms.tsx"]
 touches: []
 requirements: ["REQ-AUTH-02", "REQ-NAV-02"]

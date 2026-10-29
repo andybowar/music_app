@@ -2,7 +2,7 @@
 id: SRCH-02
 title: "searchSongs action + default view"
 phase: 2
-wave: 7
+wave: 8
 stream: backend
 size: S
 status: todo

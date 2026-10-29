@@ -2,7 +2,7 @@
 id: LIB-03
 title: "Composers actions"
 phase: 1
-wave: 6
+wave: 7
 stream: backend
 size: S
 status: todo

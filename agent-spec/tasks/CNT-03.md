@@ -2,7 +2,7 @@
 id: CNT-03
 title: "Pilot data entry: first 50 songs"
 phase: 1
-wave: 8
+wave: 9
 stream: content
 size: L
 status: todo

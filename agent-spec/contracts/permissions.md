@@ -4,7 +4,7 @@
 - `lib/permissions.ts` (task `AUTH-05`): `can(user, action, ctx?) => boolean`, used by every server action.
 - RLS policies (task `DB-03`): defense in depth. Tests in `DB-05` assert parity.
 
-Disabled users (`disabled_at` not null) can do nothing. Unauthenticated users can do nothing except read a valid share (via server-side service role, `SHR-01`).
+Disabled users (`disabled_at` not null) can do nothing. Users whose `access_status` is not `'approved'` (pending or rejected, DB-07) can do nothing either, except read their own `users` row so the account-status page can show it. Unauthenticated users can do nothing except read a valid share (via server-side service role, `SHR-01`).
 
 ## Actions
 
@@ -51,8 +51,8 @@ export function assertCan(user: AppUser | null, action: Action, ctx?: PermCtx): 
 ## RLS helper functions (DB-03)
 
 ```sql
-create function app_user_role()   returns role  language sql stable security definer as $$ select role from users where id = auth.uid() and disabled_at is null $$;
-create function app_user_branch() returns uuid  language sql stable security definer as $$ select branch_id from users where id = auth.uid() and disabled_at is null $$;
+create function app_user_role()   returns role  language sql stable security definer as $$ select role from users where id = auth.uid() and disabled_at is null and access_status = 'approved' $$;
+create function app_user_branch() returns uuid  language sql stable security definer as $$ select branch_id from users where id = auth.uid() and disabled_at is null and access_status = 'approved' $$;
 create function app_role_at_least(r role) returns boolean language sql stable as $$ select coalesce(app_user_role() >= r, false) $$;
 ```
 (`role` enum order is member < contributor < music_leader < admin, so `>=` works.)

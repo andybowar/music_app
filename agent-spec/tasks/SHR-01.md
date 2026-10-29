@@ -2,7 +2,7 @@
 id: SHR-01
 title: "Share tokens server"
 phase: 4
-wave: 8
+wave: 9
 stream: backend
 size: M
 status: todo

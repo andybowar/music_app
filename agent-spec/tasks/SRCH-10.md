@@ -2,7 +2,7 @@
 id: SRCH-10
 title: "Facet options"
 phase: 2
-wave: 6
+wave: 7
 stream: backend
 size: S
 status: todo

@@ -13,6 +13,8 @@ export type Role = (typeof ROLES)[number];
 
 export const AUTH_PROVIDERS = ['google', 'microsoft', 'saml', 'password'] as const;
 export type AuthProvider = (typeof AUTH_PROVIDERS)[number];
+export const ACCESS_STATUSES = ['pending', 'approved', 'rejected'] as const; // DB-07
+export type AccessStatus = (typeof ACCESS_STATUSES)[number];
 
 /** Ordered highest → lowest energy. Sorting by energy uses this index. */
 export const ENERGY_LEVELS = ['high_praise', 'high_worship', 'mid_worship', 'deep_worship', 'quiet_worship'] as const;
@@ -89,6 +91,7 @@ export interface Branch { id: UUID; name: string; code: string; ssoGroup: string
 export interface AppUser {
   id: UUID; email: string; name: string; branchId: UUID | null; role: Role;
   authProvider: AuthProvider; disabledAt: ISODateTime | null;
+  accessStatus: AccessStatus; // only 'approved' users have any permissions (REQ-AUTH-03)
 }
 
 export interface Composer { id: UUID; name: string; popMember: PopMember }

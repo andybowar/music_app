@@ -9,7 +9,7 @@ You are one of several agents building this app at the same time. This file tell
 3. Your task file in `tasks/<ID>.md` — goal, deliverables, acceptance criteria, the exact paths you own.
 4. The contracts your task lists under "Read first" (`contracts/*.md`). Contracts are frozen interfaces; code against them even if the implementing task hasn't merged yet.
 
-`INDEX.md` shows all tasks by wave; `tasks.json` is the same data for orchestrators. The human-facing proposal is `../Music_App_Technical_Proposal.docx` — background only; `SPEC.md` wins on any conflict.
+`INDEX.md` shows all tasks by wave; `tasks.json` is the same data for orchestrators. Both, plus each task's `wave:` and `blocks:`, are generated: after adding a task or changing any `depends_on`, run `python3 agent-spec/scripts/gen_index.py` (CI-style check: `--check`). `HUMAN-TASKS.md` lists work only the project owner can do; skip it. The human-facing proposal is `../Music_App_Technical_Proposal.docx` — background only; `SPEC.md` wins on any conflict.
 
 ## 2. Picking a task
 

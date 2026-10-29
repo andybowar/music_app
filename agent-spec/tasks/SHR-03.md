@@ -2,13 +2,13 @@
 id: SHR-03
 title: "Share by email"
 phase: 4
-wave: 9
+wave: 10
 stream: backend
 size: S
 status: todo
 human_required: false
 depends_on: ["SHR-01", "F-05"]
-blocks: ["SHR-04"]
+blocks: ["ADM-04", "SHR-04"]
 owns: ["lib/email.ts", "emails/ShareList.tsx"]
 touches: ["features/sharing/server.ts"]
 requirements: ["REQ-SHARE-02"]

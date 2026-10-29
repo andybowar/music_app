@@ -2,7 +2,7 @@
 id: LIST-02
 title: "List items server"
 phase: 3
-wave: 6
+wave: 7
 stream: backend
 size: M
 status: todo

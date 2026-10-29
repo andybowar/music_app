@@ -2,7 +2,7 @@
 id: LIB-19
 title: "Song change history"
 phase: 1
-wave: 8
+wave: 9
 stream: frontend
 size: S
 status: todo

@@ -2,7 +2,7 @@
 id: ADM-02
 title: "Admin: branches"
 phase: 1
-wave: 7
+wave: 8
 stream: frontend
 size: S
 status: todo

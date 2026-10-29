@@ -1,6 +1,6 @@
 # CR LIST-04 · `readCurrentListId()` needs a server-only home
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-28.
 
 ## Problem
 
@@ -45,3 +45,10 @@ The delete-list action may also clear the cookie server-side and `revalidatePath
 - **LIST-04**: helper not delivered until approved.
 - **LIST-09 / UI-02**: call `readCurrentListId()` in `app/(app)/layout.tsx` and pass `initial`.
 - **LIST-01** (list delete): optionally clear the cookie when deleting the current list.
+
+## Implementation note
+
+The cookie name and max-age live in `features/lists/currentListCookie.ts` (plain constants, no
+`'use client'` or `server-only`), also added to LIST-04's `owns`. Both `ui/CurrentList.tsx` and
+`server/currentList.ts` import it: the exports of a `'use client'` module become client references
+on the server rather than values, so the server cannot import the constant from the client file.

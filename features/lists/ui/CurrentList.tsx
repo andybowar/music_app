@@ -5,18 +5,17 @@ import type { ReactNode } from 'react';
 
 import type { List, UUID } from '@/types/domain';
 
+import { CURRENT_LIST_COOKIE, CURRENT_LIST_MAX_AGE_SECONDS } from '../currentListCookie';
+
 /**
  * Session's current list (REQ-LIST-01, REQ-NAV-04).
  *
  * Persistence: cookie `current_list` holding only the list id, 12 h max-age, set from
- * the browser. The server resolves that id to a `List` (via `readCurrentListId()`, see
- * change request LIST-04-server-helper) and passes it in as `initial`, so the first
- * render is identical on server and client. If the server finds no such list (deleted,
+ * the browser. The server reads that id with `readCurrentListId()` (in
+ * `features/lists/server/currentList.ts`), resolves it to a `List` and passes it in as
+ * `initial`, so the first render is identical on server and client. If the server finds no such list (deleted,
  * or no longer visible) it passes `null`, and the provider clears the stale cookie.
  */
-
-const COOKIE_NAME = 'current_list';
-const MAX_AGE_SECONDS = 12 * 60 * 60;
 
 export interface CurrentListContextValue {
   current: List | null;
@@ -35,7 +34,7 @@ function readCookieId(): string | null {
     if (typeof document === 'undefined') return null;
     for (const part of document.cookie.split(';')) {
       const [rawName, ...rest] = part.trim().split('=');
-      if (rawName === COOKIE_NAME) {
+      if (rawName === CURRENT_LIST_COOKIE) {
         const value = decodeURIComponent(rest.join('='));
         return value === '' ? null : value;
       }
@@ -52,8 +51,8 @@ function writeCookieId(id: UUID | null): void {
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
     document.cookie =
       id === null
-        ? `${COOKIE_NAME}=; Path=/; Max-Age=0; SameSite=Lax${secure}`
-        : `${COOKIE_NAME}=${encodeURIComponent(id)}; Path=/; Max-Age=${MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
+        ? `${CURRENT_LIST_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax${secure}`
+        : `${CURRENT_LIST_COOKIE}=${encodeURIComponent(id)}; Path=/; Max-Age=${CURRENT_LIST_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
   } catch {
     // Cookies blocked: the current list still works for this page view.
   }

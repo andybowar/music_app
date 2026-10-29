@@ -23,7 +23,7 @@ A task is **ready** when its `status` is `todo`, every `depends_on` task is `don
 2. Branch: `task/<ID>-<short-slug>`, e.g. `task/LIB-16-lyrics-parser`.
 3. If two agents claim the same task, the one whose PR is opened first keeps it; the other stops and picks another.
 
-Status values: `todo` → `in_progress` → `review` (PR open) → `done` (merged). Use `blocked` plus a note at the bottom of the task file if you cannot proceed.
+Status values: `todo` → `in_progress` (claimed on your branch) → `done` (set in your PR before review). A status only reaches main when your PR merges, so setting `done` in the PR means main flips to `done` at the moment of merge, and a PR closed without merging leaves the task `todo`. Don't use `review`; the open PR already shows that. Use `blocked` plus a note at the bottom of the task file if you cannot proceed.
 
 ## 3. File ownership — the rule that makes concurrency work
 
@@ -87,7 +87,7 @@ music-app/
 - [ ] UI: props match `contracts/ui.md`; has loading, empty and error states; keyboard accessible; works at 360px wide; a `/dev/<name>` page with fixtures exists for new components.
 - [ ] No secrets, real lyrics beyond first lines, or personal data committed.
 - [ ] PR title `[<ID>] <title>`; body lists deliverables, any **touches**, how to test, and screenshots for UI.
-- [ ] Task file `status: review` in the PR; the merger sets `done`.
+- [ ] Task file `status: done` in the PR. The merger doesn't update statuses; merging the PR is what marks the task done on main.
 
 ## 6. Change requests
 

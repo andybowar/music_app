@@ -1,6 +1,6 @@
 # CR UI-01 · Let UI-01 own a Playwright viewport spec
 
-**Status:** proposed
+**Status:** approved by project owner 2026-10-28. Implemented in UI-01 as `tests/e2e/responsive-panel.spec.ts`, which skips itself when `/dev/tokens` returns 404 (production builds, Vercel previews).
 
 ## Problem
 

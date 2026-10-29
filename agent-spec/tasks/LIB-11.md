@@ -5,7 +5,7 @@ phase: 1
 wave: 5
 stream: frontend
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["UI-04", "LIB-10"]
 blocks: ["LIB-17"]
@@ -31,13 +31,18 @@ requirements: ["REQ-LIB-08"]
 - `REQ-LIB-08` — Musical tags: one primary key + 0..n alternate keys; each key has first chords for intro, verse, chorus, bridge; tempo (BPM), time signature, energy level (5 levels, see §4), free-text energy notes (e.g. "starts light, slow build, big bridge build").
 
 ## Deliverables
-- [ ] Keys repeater: key select (MAJOR_KEYS + minor toggle), primary radio, 4 chord inputs validated by CHORD_RE
-- [ ] Energy select showing color + label; energy notes textarea
+- [x] Keys repeater: key select (MAJOR_KEYS + minor toggle), primary radio, 4 chord inputs validated by CHORD_RE
+- [x] Energy select showing color + label; energy notes textarea
 
 ## Acceptance criteria
-- [ ] Cannot submit with zero or two primaries (inline error)
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Cannot submit with zero or two primaries (inline error)
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/ui/form/MusicalSection.tsx`, `app/dev/form-musical/`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
+
+## Notes
+- Zero/two primaries show an inline error on the keys group; `validateMusical()` (exported from `MusicalSection.tsx`) returns the same errors so LIB-17 can block submit. Removing the primary row promotes the first remaining key.
+- Also built: tempo (20–300), time signature (`TIME_SIGNATURE_RE`), energy notes (≤500), plus `MUSICAL_LIMITS`, `emptyMusicalInfo`, `musicalInfoFromSong` in `MusicalSection.tsx` (types.ts is LIB-10's).
+- Assumed server field-error paths: `keys`, `keys.<i>`, `keys.<i>.key`, `keys.<i>.firstChords.<slot>`, `tempoBpm`, `timeSignature`, `energyLevel`, `energyNotes`.

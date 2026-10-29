@@ -5,7 +5,7 @@ phase: 1
 wave: 4
 stream: content
 size: S
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["F-04"]
 blocks: ["CNT-02", "H-02"]

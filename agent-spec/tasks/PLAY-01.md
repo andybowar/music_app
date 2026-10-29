@@ -5,7 +5,7 @@ phase: 3
 wave: 3
 stream: frontend
 size: S
-status: todo
+status: review
 human_required: false
 depends_on: ["F-03"]
 blocks: ["PLAY-02", "PLAY-03", "PLAY-04"]
@@ -31,11 +31,11 @@ requirements: ["REQ-LIST-05"]
 - `REQ-LIST-05` — Playlist: per-song chosen audio item (MP3 or YouTube link); play, pause, stop, skip ahead/back, auto-advance; edit order; rename; delete; share.
 
 ## Deliverables
-- [ ] playerReducer + tests for every event in every status
+- [x] playerReducer + tests for every event in every status
 
 ## Acceptance criteria
-- [ ] TRACK_ERROR skips; NEXT at end → ended; PREV at start restarts
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] TRACK_ERROR skips; NEXT at end → ended; PREV at start restarts
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/player/engine.ts`

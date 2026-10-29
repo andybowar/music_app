@@ -339,7 +339,9 @@
         "LIST-09"
       ],
       "owns": [
-        "features/lists/ui/CurrentList.tsx"
+        "features/lists/ui/CurrentList.tsx",
+        "features/lists/server/currentList.ts",
+        "features/lists/currentListCookie.ts"
       ],
       "touches": [],
       "reqs": [

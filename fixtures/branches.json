@@ -1,0 +1,26 @@
+[
+  {
+    "id": "10000000-0000-4000-8000-000000000001",
+    "name": "Servant",
+    "code": "SV",
+    "ssoGroup": "pop-branch-sv"
+  },
+  {
+    "id": "10000000-0000-4000-8000-000000000002",
+    "name": "Portland",
+    "code": "OR",
+    "ssoGroup": "pop-branch-or"
+  },
+  {
+    "id": "10000000-0000-4000-8000-000000000003",
+    "name": "CO Springs",
+    "code": "CO",
+    "ssoGroup": "pop-branch-co"
+  },
+  {
+    "id": "10000000-0000-4000-8000-000000000004",
+    "name": "Rockford",
+    "code": "RF",
+    "ssoGroup": null
+  }
+]

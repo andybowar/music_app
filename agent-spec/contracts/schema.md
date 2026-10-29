@@ -6,9 +6,11 @@ Conventions: `snake_case` columns, `uuid` PKs (`gen_random_uuid()`), `timestampt
 
 ## Extensions & enums
 
+Extensions live in Supabase's `extensions` schema, not `public`, so their functions and operator classes are reached through that schema. The `postgres` role, which runs migrations and is the `DATABASE_URL` user, has `extensions` on its `search_path`. PostgREST adds it for API requests via `extra_search_path` in `supabase/config.toml`. DDL that can run with a different or empty `search_path` must schema-qualify, for example `extensions.gin_trgm_ops` in index opclasses, or `extensions.unaccent(...)` in generated columns, index expressions and trigger functions (especially `set search_path = ''` functions).
+
 ```sql
-create extension if not exists pg_trgm;
-create extension if not exists unaccent;
+create extension if not exists pg_trgm with schema extensions;
+create extension if not exists unaccent with schema extensions;
 
 create type role           as enum ('member','contributor','music_leader','admin');
 create type auth_provider  as enum ('google','microsoft','saml','password');
@@ -209,7 +211,7 @@ create table audit_log (
 
 ```sql
 create index songs_search_gin     on songs using gin (search_vector);
-create index songs_title_trgm     on songs using gin (lower(title) gin_trgm_ops);
+create index songs_title_trgm     on songs using gin (lower(title) extensions.gin_trgm_ops);
 create index songs_created_at     on songs (created_at desc, title);
 create index songs_energy         on songs (energy_level);
 create index songs_year           on songs (year);
@@ -241,13 +243,13 @@ create index audit_entity         on audit_log (entity, entity_id, created_at de
 | C | `composer` | `composer_names` |
 | D | `lyrics` | all 7 lyric columns |
 
-Use config `english` with `unaccent`. Example:
+Use config `english` with `extensions.unaccent`. `unaccent` is only STABLE, so use it here, in the trigger function, and never in an index expression or generated column. Example:
 ```sql
 new.search_vector :=
-  setweight(to_tsvector('english', unaccent(coalesce(new.title,'') || ' ' || array_to_string(new.alt_titles,' '))), 'A') ||
-  setweight(to_tsvector('english', unaccent(new.theme_names)), 'B') ||
-  setweight(to_tsvector('simple',  unaccent(new.composer_names)), 'C') ||
-  setweight(to_tsvector('english', unaccent(concat_ws(' ', new.chorus_lyrics, new.verse_1_lyrics, new.verse_2_lyrics,
+  setweight(to_tsvector('english', extensions.unaccent(coalesce(new.title,'') || ' ' || array_to_string(new.alt_titles,' '))), 'A') ||
+  setweight(to_tsvector('english', extensions.unaccent(new.theme_names)), 'B') ||
+  setweight(to_tsvector('simple',  extensions.unaccent(new.composer_names)), 'C') ||
+  setweight(to_tsvector('english', extensions.unaccent(concat_ws(' ', new.chorus_lyrics, new.verse_1_lyrics, new.verse_2_lyrics,
      new.verse_3_lyrics, new.verse_4_lyrics, new.verse_5_lyrics, new.bridge_lyrics))), 'D');
 ```
 

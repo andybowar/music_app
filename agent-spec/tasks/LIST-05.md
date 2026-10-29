@@ -5,7 +5,7 @@ phase: 3
 wave: 4
 stream: frontend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["UI-01", "F-03"]
 blocks: ["LIST-06", "LIST-09"]
@@ -31,11 +31,11 @@ requirements: ["REQ-LIST-01"]
 - `REQ-LIST-01` — Create setlist or playlist: enter event date + name. It becomes the session's *current list*.
 
 ## Deliverables
-- [ ] Date picker (required for setlist), name with suggestion e.g. "Lord's Day 4/19/26"
+- [x] Date picker (required for setlist), name with suggestion e.g. "Lord's Day 4/19/26"
 
 ## Acceptance criteria
-- [ ] Validation errors from ActionResult shown inline
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Validation errors from ActionResult shown inline
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/lists/ui/CreateListDialog.tsx`, `app/dev/create-list/`

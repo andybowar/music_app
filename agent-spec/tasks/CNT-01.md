@@ -5,7 +5,7 @@ phase: 1
 wave: 4
 stream: content
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["F-04"]
 blocks: ["CNT-02", "H-02"]
@@ -25,11 +25,11 @@ requirements: []
 - Output of `F-04` (merged on main)
 
 ## Deliverables
-- [ ] JSON `{ name, synonyms[] }[]`; grouped markdown for human review (e.g. Lamb / lamb of god → one theme)
+- [x] JSON `{ name, synonyms[] }[]`; grouped markdown for human review (e.g. Lamb / lamb of god → one theme)
 
 ## Acceptance criteria
-- [ ] All names pass themeNameSchema; no duplicates across names/synonyms
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] All names pass themeNameSchema; no duplicates across names/synonyms
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `content/themes-v1.json`, `content/themes-v1.md`

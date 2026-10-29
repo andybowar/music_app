@@ -1,0 +1,3 @@
+title,alt_titles,composers,source_group,year,primary_key,alt_keys,tempo_bpm,time_signature,energy_level,energy_notes,intro_chord,verse_chord,chorus_chord,bridge_chord,themes_chorus,themes_verse_1,themes_verse_2,themes_verse_3,themes_verse_4,themes_verse_5,themes_bridge,usage_SV,usage_OR,usage_CO,usage_RF,added_by,youtube_links
+Example Song of Praise,Example Praise Song;Song of Praise,Jane Example [current];John Sample,Example Music Group,2004,D,C;Eb,128,4/4,high_praise,"Builds after verse 2; ""big"" final chorus",D,D,G,Bm,praise;joy,creation,,,,,trust,high,low,rare,none,SV,https://www.youtube.com/watch?v=abcdefghijk
+Example Quiet Hymn,,Mary Placeholder [past],,1987,Bbm,,72,3/4,quiet_worship,,,Bbm,Gb,,peace;rest,,,,,,,low,,,,OR,

@@ -1,7 +1,9 @@
 -- Extensions (contracts/schema.md "Extensions & enums"). drizzle-kit does not emit these;
 -- they were added by hand. pg_trgm and unaccent are used by DB-02 search indexes/triggers.
-CREATE EXTENSION IF NOT EXISTS pg_trgm;--> statement-breakpoint
-CREATE EXTENSION IF NOT EXISTS unaccent;--> statement-breakpoint
+-- The `extensions` schema is created by Supabase (local stack, CI and hosted), so it is not
+-- created here.
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA extensions;--> statement-breakpoint
+CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA extensions;--> statement-breakpoint
 CREATE TYPE "public"."audit_action" AS ENUM('create', 'update', 'delete');--> statement-breakpoint
 CREATE TYPE "public"."auth_provider" AS ENUM('google', 'microsoft', 'saml', 'password');--> statement-breakpoint
 CREATE TYPE "public"."energy_level" AS ENUM('high_praise', 'high_worship', 'mid_worship', 'deep_worship', 'quiet_worship');--> statement-breakpoint

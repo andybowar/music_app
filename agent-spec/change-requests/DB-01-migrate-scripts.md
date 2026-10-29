@@ -25,7 +25,7 @@ New files: `db/migrations/meta/_journal.json`, `db/migrations/meta/0001_snapshot
 ## Notes for later migration tasks (DB-02, DB-03, ...)
 
 - drizzle-kit names files `<idx>_<name>.sql` with `idx = last journal idx + 1`. The first entry was renamed to idx `1` / tag `0001_init` (drizzle-kit would have called it `0000`), so the next `pnpm db:generate --name <x>` (or `--custom --name <x>` for hand-written SQL such as triggers and RLS) produces `0002_<x>.sql`.
-- `0001_init.sql` starts with two hand-added statements, `create extension if not exists pg_trgm` / `unaccent`, which drizzle-kit doesn't emit.
+- `0001_init.sql` starts with two hand-added statements, `create extension if not exists pg_trgm` / `unaccent` (both `with schema extensions`, see CR DB-01-extensions-schema), which drizzle-kit doesn't emit.
 - Applied migrations are recorded in `drizzle.__drizzle_migrations`. `pnpm db:migrate` is idempotent.
 - Fresh local DB: `pnpm db:start`, `pnpm db:reset`, `pnpm db:migrate`.
 

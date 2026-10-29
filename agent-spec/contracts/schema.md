@@ -6,9 +6,11 @@ Conventions: `snake_case` columns, `uuid` PKs (`gen_random_uuid()`), `timestampt
 
 ## Extensions & enums
 
+Extensions live in Supabase's `extensions` schema, not `public`, so their functions and operator classes are reached through that schema. The `postgres` role, which runs migrations and is the `DATABASE_URL` user, has `extensions` on its `search_path`. PostgREST adds it for API requests via `extra_search_path` in `supabase/config.toml`. DDL that can run with a different or empty `search_path` must schema-qualify, for example `extensions.gin_trgm_ops` in index opclasses, or `extensions.unaccent(...)` in generated columns, index expressions and trigger functions (especially `set search_path = ''` functions).
+
 ```sql
-create extension if not exists pg_trgm;
-create extension if not exists unaccent;
+create extension if not exists pg_trgm with schema extensions;
+create extension if not exists unaccent with schema extensions;
 
 create type role           as enum ('member','contributor','music_leader','admin');
 create type auth_provider  as enum ('google','microsoft','saml','password');

@@ -5,7 +5,7 @@ phase: 0
 wave: 3
 stream: security
 size: S
-status: review
+status: done
 human_required: false
 depends_on: ["F-03"]
 blocks: ["ADM-01", "DB-05", "LIB-01", "LIB-02", "LIB-03", "LIB-04", "LIB-05", "LIB-06", "LIB-07", "LIST-01", "LIST-02", "SHR-01"]

@@ -5,7 +5,7 @@ phase: 3
 wave: 4
 stream: backend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["F-03", "F-04"]
 blocks: ["LIST-01"]
@@ -33,11 +33,11 @@ requirements: ["REQ-LIST-04"]
 - `REQ-LIST-04` — Setlist per-song overrides: key, BPM, energy — independent of library files. If no `song_keys` row exists for the override key, first chords display **"X"** and resources are empty, with a prompt to upload files for that key.
 
 ## Deliverables
-- [ ] `resolveItemDisplay` + tests using fixtures (override to existing key, to missing key → X + needsUpload, no overrides, bpm/energy only)
+- [x] `resolveItemDisplay` + tests using fixtures (override to existing key, to missing key → X + needsUpload, no overrides, bpm/energy only)
 
 ## Acceptance criteria
-- [ ] 100% branch coverage
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] 100% branch coverage
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `lib/lists/`

@@ -1,6 +1,6 @@
 # CR UI-07 · ResourcesPanel: `hasLyrics` and `addFilesSlot` props
 
-**Status:** proposed. UI-07 is implemented to the proposed contract below, so no code change is needed if this is approved.
+**Status:** approved by project owner 2026-10-30. `contracts/ui.md` updated in the same commit; UI-07 already implements it.
 
 ## Problem
 

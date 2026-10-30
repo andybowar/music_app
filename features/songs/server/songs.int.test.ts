@@ -156,10 +156,10 @@ describe('createSong', () => {
     expect(entry!.diff.composerIds).toEqual({ from: null, to: [composerB!.id, composerA!.id] });
   });
 
-  test('a member is denied and nothing is written', async () => {
+  test('a member gets FORBIDDEN and nothing is written', async () => {
     const before = await getDb().$count(songsTable);
     const result = await create(member);
-    expect(result.ok).toBe(false);
+    expect(result).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
     expect(await getDb().$count(songsTable)).toBe(before);
   });
 
@@ -188,7 +188,7 @@ describe('createSong', () => {
   test('only an admin may choose another added-by branch', async () => {
     const other = fixtures.branches.find((b) => b.id !== contributor.branchId)!;
     const denied = await create(contributor, { addedByBranchId: other.id });
-    expect(denied).toMatchObject({ ok: false });
+    expect(denied).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
 
     const same = await create(contributor, { addedByBranchId: contributor.branchId });
     expect(same.ok).toBe(true);
@@ -224,12 +224,15 @@ describe('updateSong', () => {
     expect(update!.diff.year).toEqual({ from: 2020, to: 2021 });
   });
 
-  test('member denied, missing song NOT_FOUND, bad input VALIDATION', async () => {
+  test('member FORBIDDEN, missing song NOT_FOUND, bad input VALIDATION', async () => {
     const result = await create(contributor);
     if (!result.ok) throw new Error('create failed');
 
     currentUser = member;
-    expect(await updateSong(result.data.id, input())).toMatchObject({ ok: false });
+    expect(await updateSong(result.data.id, input())).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
     currentUser = contributor;
     expect(await updateSong('00000000-0000-4000-8000-0000000000ff', input())).toMatchObject({
       ok: false,
@@ -249,6 +252,7 @@ describe('updateSong', () => {
     currentUser = contributor;
     expect(await updateSong(result.data.id, input({ addedByBranchId: other.id }))).toMatchObject({
       ok: false,
+      error: { code: 'FORBIDDEN' },
     });
 
     currentUser = admin;
@@ -267,7 +271,7 @@ describe('deleteSong', () => {
     const id = result.data.id;
 
     currentUser = contributor;
-    expect(await deleteSong(id)).toMatchObject({ ok: false });
+    expect(await deleteSong(id)).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
 
     currentUser = admin;
     expect(await deleteSong(id)).toEqual({ ok: true, data: undefined });

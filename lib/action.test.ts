@@ -4,6 +4,7 @@ import { expect, test, vi } from 'vitest';
 import { notFound, redirect } from 'next/navigation';
 
 import { ActionError, setSentryCapture, withAction } from './action';
+import { assertCan } from './permissions';
 import { z } from 'zod';
 
 test('success resolves to ok:true with the function data', async () => {
@@ -30,6 +31,44 @@ test('ActionError without fieldErrors omits the fieldErrors key', async () => {
   expect(result).toEqual({ ok: false, error: { code: 'NOT_FOUND', message: 'missing' } });
   expect(result.ok).toBe(false);
   if (!result.ok) expect(result.error).not.toHaveProperty('fieldErrors');
+});
+
+test('assertCan denial (Error named ActionError) maps to FORBIDDEN without capture', async () => {
+  const sink = vi.fn();
+  setSentryCapture(sink);
+  try {
+    const result = await withAction(() => {
+      assertCan(null, 'song:write');
+    })();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('FORBIDDEN');
+      expect(result.error.message).toMatch(/permission/);
+      expect(result.error).not.toHaveProperty('fieldErrors');
+    }
+    expect(sink).not.toHaveBeenCalled();
+  } finally {
+    setSentryCapture(null);
+  }
+});
+
+test('an Error named ActionError without a string code is still INTERNAL', async () => {
+  const sink = vi.fn();
+  setSentryCapture(sink);
+  try {
+    const result = await withAction(() => {
+      const error = new Error('odd');
+      error.name = 'ActionError';
+      throw error;
+    })();
+    expect(result).toEqual({
+      ok: false,
+      error: { code: 'INTERNAL', message: 'Something went wrong. Please try again.' },
+    });
+    expect(sink).toHaveBeenCalledOnce();
+  } finally {
+    setSentryCapture(null);
+  }
 });
 
 test('ZodError maps to VALIDATION with per-field messages', async () => {

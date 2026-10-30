@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: backend
 size: L
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-02", "DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["IMP-03", "LIB-17", "LIB-18", "LIST-01", "SRCH-02"]
@@ -39,14 +39,14 @@ requirements: ["REQ-LIB-01", "REQ-LIB-02", "REQ-LIB-04", "REQ-LIB-06", "REQ-LIB-
 - `REQ-LIB-12` — Edits are recorded in an audit log (who, when, what changed) viewable on the song.
 
 ## Deliverables
-- [ ] Actions per contract; `addedByBranchId` from creator unless admin sets it
-- [ ] `assemble.ts`: build `SongDetail`/`SongSummary` from rows (keys primary-first, usage filled to every branch)
-- [ ] Audit entries on create/update/delete
+- [x] Actions per contract; `addedByBranchId` from creator unless admin sets it
+- [x] `assemble.ts`: build `SongDetail`/`SongSummary` from rows (keys primary-first, usage filled to every branch)
+- [x] Audit entries on create/update/delete
 
 ## Acceptance criteria
-- [ ] Integration tests: contributor creates; member gets FORBIDDEN; invalid arrangement (section without lyrics) → VALIDATION with fieldErrors
-- [ ] getSong of seeded "1000 Hallelujahs" deep-equals fixture
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Integration tests: contributor creates; member gets FORBIDDEN; invalid arrangement (section without lyrics) → VALIDATION with fieldErrors
+- [x] getSong of seeded "1000 Hallelujahs" deep-equals fixture
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/server/songs.ts`, `features/songs/server/assemble.ts`

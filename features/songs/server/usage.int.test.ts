@@ -180,10 +180,11 @@ describe('setBranchUsage', () => {
     expect(await audits()).toHaveLength(1);
   });
 
-  test('member is denied and nothing is written', async () => {
+  test('member → FORBIDDEN and nothing is written', async () => {
     currentUser = { ...actor, role: 'member' };
     const result = await setBranchUsage(songId, [{ branchId: A, level: 'high' }]);
     expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('FORBIDDEN');
     expect(await rows()).toEqual({});
     expect(await audits()).toHaveLength(0);
   });

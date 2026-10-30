@@ -51,11 +51,11 @@ describe('setBranchUsage', () => {
     expect(withTx).not.toHaveBeenCalled();
   });
 
-  it('denies a member before any DB work', async () => {
+  it('returns FORBIDDEN for a member before any DB work', async () => {
     requireUser.mockResolvedValue(userWith('member'));
     const result = await setBranchUsage(SONG, valid);
-    // Code is FORBIDDEN once CR LIB-07-assertcan-actionerror lands; INTERNAL until then.
     expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('FORBIDDEN');
     expect(withTx).not.toHaveBeenCalled();
   });
 

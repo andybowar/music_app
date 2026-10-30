@@ -1,7 +1,7 @@
 import { foreignKey, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { authUsers } from 'drizzle-orm/supabase';
 import { branches } from './branches';
-import { authProviderEnum, roleEnum } from './enums';
+import { accessStatusEnum, authProviderEnum, roleEnum } from './enums';
 
 // `authUsers` (Supabase's auth.users) is referenced but deliberately not
 // re-exported, so drizzle-kit never tries to create or alter the auth schema.
@@ -18,6 +18,10 @@ export const users = pgTable(
     ssoSubject: text('sso_subject'),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     disabledAt: timestamp('disabled_at', { withTimezone: true }),
+    // DB-07: only 'approved' users pass the RLS helpers; rows from before 0004 were backfilled.
+    accessStatus: accessStatusEnum('access_status').notNull().default('pending'),
+    accessDecidedBy: uuid('access_decided_by'),
+    accessDecidedAt: timestamp('access_decided_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -28,6 +32,11 @@ export const users = pgTable(
       name: 'users_branch_id_fkey',
       columns: [t.branchId],
       foreignColumns: [branches.id],
+    }),
+    foreignKey({
+      name: 'users_access_decided_by_fkey',
+      columns: [t.accessDecidedBy],
+      foreignColumns: [t.id],
     }),
   ],
 );

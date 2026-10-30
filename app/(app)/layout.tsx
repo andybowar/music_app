@@ -31,6 +31,7 @@ async function requireUser(): Promise<AppUser> {
       role: users.role,
       authProvider: users.authProvider,
       disabledAt: users.disabledAt,
+      accessStatus: users.accessStatus,
     })
     .from(users)
     .where(eq(users.id, data.user.id))

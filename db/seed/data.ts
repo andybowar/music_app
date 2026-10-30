@@ -41,7 +41,9 @@ const ROLE_LABEL: Record<Role, string> = {
 /** Fixture users plus one generated active user per (branch, role) the fixtures don't cover. */
 export function buildUsers(): AppUser[] {
   const covered = new Set(
-    fixtureUsers.filter((u) => !u.disabledAt && u.branchId).map((u) => `${u.branchId}:${u.role}`),
+    fixtureUsers
+      .filter((u) => !u.disabledAt && u.accessStatus === 'approved' && u.branchId)
+      .map((u) => `${u.branchId}:${u.role}`),
   );
   const generated: AppUser[] = [];
   for (const branch of fixtureBranches) {
@@ -55,6 +57,7 @@ export function buildUsers(): AppUser[] {
         role,
         authProvider: 'password',
         disabledAt: null,
+        accessStatus: 'approved',
       });
     }
   }
@@ -81,6 +84,7 @@ export function buildSeedData() {
     role: u.role,
     authProvider: u.authProvider,
     disabledAt: u.disabledAt ? new Date(u.disabledAt) : null,
+    accessStatus: u.accessStatus,
   }));
 
   const composers: Insert<typeof schema.composers>[] = fixtureComposers.map((c) => ({

@@ -148,9 +148,9 @@ beforeAll(async () => {
     const email = `rls-${key.toLowerCase()}-${tag}@example.test`;
     await sql`insert into auth.users (id, email, aud, role) values (${id}, ${email}, 'authenticated', 'authenticated')`;
     await sql`
-      insert into users (id, email, name, branch_id, role, auth_provider, disabled_at)
+      insert into users (id, email, name, branch_id, role, auth_provider, disabled_at, access_status)
       values (${id}, ${email}, ${`RLS ${key}`}, ${spec.branch === 'a' ? ids.branchA : ids.branchB},
-              ${spec.role}, 'password', ${'disabled' in spec ? new Date() : null})`;
+              ${spec.role}, 'password', ${'disabled' in spec ? new Date() : null}, 'approved')`;
     ids.user[key] = id;
   }
 

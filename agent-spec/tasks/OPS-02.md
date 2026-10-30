@@ -5,7 +5,7 @@ phase: 5
 wave: 5
 stream: ops
 size: S
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["F-01", "DB-06"]
 blocks: []

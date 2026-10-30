@@ -7,6 +7,7 @@
 import { z } from 'zod';
 
 import {
+  ACCESS_STATUSES,
   AUTH_PROVIDERS,
   CHORD_RE,
   CHORD_SLOTS,
@@ -45,6 +46,7 @@ export const appUserSchema = z.strictObject({
   role: z.enum(ROLES),
   authProvider: z.enum(AUTH_PROVIDERS),
   disabledAt: isoDateTime.nullable(),
+  accessStatus: z.enum(ACCESS_STATUSES),
 });
 
 export const themeSchema = z.strictObject({ id: uuid, name: z.string().min(1).max(60) });

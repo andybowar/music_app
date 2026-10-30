@@ -87,6 +87,7 @@ function makeUser(role: Role, overrides: Partial<AppUser> = {}): AppUser {
     role,
     authProvider: 'password',
     disabledAt: null,
+    accessStatus: 'approved',
     ...overrides,
   };
 }

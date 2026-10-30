@@ -164,10 +164,19 @@ describe('seed', () => {
   });
 
   test('fixture users are stored as the fixtures say', async () => {
-    const rows = await sql<{ id: string; email: string; role: string; auth_provider: string }[]>`
-      select id, email, role::text, auth_provider::text from users where id = any(${users.map((u) => u.id)})`;
+    const rows = await sql<
+      { id: string; email: string; role: string; auth_provider: string; access_status: string }[]
+    >`
+      select id, email, role::text, auth_provider::text, access_status::text
+      from users where id = any(${users.map((u) => u.id)})`;
     expect(rows.sort((a, b) => a.id.localeCompare(b.id))).toEqual(
-      users.map((u) => ({ id: u.id, email: u.email, role: u.role, auth_provider: u.authProvider })),
+      users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        role: u.role,
+        auth_provider: u.authProvider,
+        access_status: u.accessStatus,
+      })),
     );
   });
 

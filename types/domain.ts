@@ -4,6 +4,8 @@ export type Role = (typeof ROLES)[number];
 
 export const AUTH_PROVIDERS = ['google', 'microsoft', 'saml', 'password'] as const;
 export type AuthProvider = (typeof AUTH_PROVIDERS)[number];
+export const ACCESS_STATUSES = ['pending', 'approved', 'rejected'] as const; // DB-07
+export type AccessStatus = (typeof ACCESS_STATUSES)[number];
 
 /** Ordered highest → lowest energy. Sorting by energy uses this index. */
 export const ENERGY_LEVELS = [
@@ -140,6 +142,7 @@ export interface AppUser {
   role: Role;
   authProvider: AuthProvider;
   disabledAt: ISODateTime | null;
+  accessStatus: AccessStatus; // only 'approved' users have any permissions (REQ-AUTH-03)
 }
 
 export interface Composer {

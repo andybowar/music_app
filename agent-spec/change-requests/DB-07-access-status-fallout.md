@@ -1,6 +1,6 @@
 # CR DB-07 · One-line fallout edits outside DB-07's touches
 
-**Status:** proposed by DB-07, 2026-10-30. Edits are already in the DB-07 PR; needs lead approval (or a request to split them out).
+**Status:** approved by project owner 2026-10-30. The edits ship in the DB-07 PR; no contract change.
 
 ## Problem
 

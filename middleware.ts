@@ -49,37 +49,40 @@ export function isProtectedAppRoute(pathname: string): boolean {
   );
 }
 
-function requirePublicEnv(name: string, value: string | undefined): string {
-  // NEXT_PUBLIC_* values are inlined at build time; fail loudly rather than build a client that
-  // 500s on every request.
-  if (!value) throw new Error(`${name} is not set. Set it before building (see .env.example).`);
-  return value;
-}
-
 export async function middleware(req: NextRequest): Promise<NextResponse> {
+  const protectedRoute = isProtectedAppRoute(req.nextUrl.pathname);
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // NEXT_PUBLIC_* values are inlined at build time. Without them there is no session to refresh,
+  // so public routes (the `/dev` gallery on unprovisioned previews, `/login`) pass straight
+  // through; protected routes fail loudly rather than serve the app unguarded.
+  if (!url || !anonKey) {
+    if (!protectedRoute) return NextResponse.next();
+    throw new Error(
+      'NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set. Set them before building (see .env.example).',
+    );
+  }
+
   let response = NextResponse.next({ request: req });
 
-  const supabase = createServerClient(
-    requirePublicEnv('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL),
-    requirePublicEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-    {
-      cookies: {
-        getAll() {
-          return req.cookies.getAll();
-        },
-        setAll(cookiesToSet, headers) {
-          for (const { name, value } of cookiesToSet) req.cookies.set(name, value);
-          response = NextResponse.next({ request: req });
-          for (const { name, value, options } of cookiesToSet) {
-            response.cookies.set(name, value, options);
-          }
-          for (const [key, value] of Object.entries(headers ?? {})) {
-            response.headers.set(key, value);
-          }
-        },
+  const supabase = createServerClient(url, anonKey, {
+    cookies: {
+      getAll() {
+        return req.cookies.getAll();
+      },
+      setAll(cookiesToSet, headers) {
+        for (const { name, value } of cookiesToSet) req.cookies.set(name, value);
+        response = NextResponse.next({ request: req });
+        for (const { name, value, options } of cookiesToSet) {
+          response.cookies.set(name, value, options);
+        }
+        for (const [key, value] of Object.entries(headers ?? {})) {
+          response.headers.set(key, value);
+        }
       },
     },
-  );
+  });
 
   // Always call getUser (it performs the refresh), even on public routes.
   const {
@@ -87,7 +90,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   } = await supabase.auth.getUser();
 
   const { pathname, search } = req.nextUrl;
-  if (!isProtectedAppRoute(pathname)) return response;
+  if (!protectedRoute) return response;
 
   if (!user) {
     const login = new URL(LOGIN_PATH, req.nextUrl.origin);
@@ -132,5 +135,7 @@ function redirectWithCookies(url: URL, from: NextResponse): NextResponse {
 // (`/login`, `/auth/callback`, `/account-status`); access gating is limited to
 // `isProtectedAppRoute` above.
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+  ],
 };

@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const USER_ID = '00000000-0000-4000-8000-000000000001';
 
@@ -49,6 +49,7 @@ vi.mock('@supabase/ssr', () => ({
 vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://localhost:54321');
 vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
 
+const { createServerClient } = await import('@supabase/ssr');
 const { config, isProtectedAppRoute, middleware } = await import('./middleware');
 
 function request(path: string): NextRequest {
@@ -70,12 +71,17 @@ beforeEach(() => {
 });
 
 describe('isProtectedAppRoute', () => {
-  it.each(['/library', '/library/sv', '/songs/1', '/lists/2', '/branches', '/quick', '/admin/users'])(
-    'protects %s',
-    (pathname) => {
-      expect(isProtectedAppRoute(pathname)).toBe(true);
-    },
-  );
+  it.each([
+    '/library',
+    '/library/sv',
+    '/songs/1',
+    '/lists/2',
+    '/branches',
+    '/quick',
+    '/admin/users',
+  ])('protects %s', (pathname) => {
+    expect(isProtectedAppRoute(pathname)).toBe(true);
+  });
 
   it.each([
     '/login',
@@ -174,5 +180,29 @@ describe('middleware: session refresh', () => {
     expect(location(res)?.pathname).toBe('/account-status');
     expect(res.cookies.get('sb-auth')?.value).toBe('fresh');
     expect(res.headers.get('cache-control')).toBe('private, no-store');
+  });
+});
+
+describe('middleware: Supabase not configured (unprovisioned preview)', () => {
+  afterEach(() => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://localhost:54321');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
+  });
+
+  it.each(['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY'])(
+    'passes public routes straight through without %s',
+    async (name) => {
+      vi.stubEnv(name, '');
+      for (const path of ['/', '/dev/tokens', '/login']) {
+        const res = await middleware(request(path));
+        expect(location(res)).toBeNull();
+      }
+      expect(createServerClient).not.toHaveBeenCalled();
+    },
+  );
+
+  it('fails loudly on protected routes rather than serving them unguarded', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
+    await expect(middleware(request('/library'))).rejects.toThrow(/NEXT_PUBLIC_SUPABASE/);
   });
 });

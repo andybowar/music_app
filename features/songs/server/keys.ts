@@ -6,13 +6,11 @@
  *
  * The input carries no row ids, so existing rows are matched to input entries:
  *   1. by key name (an unchanged key keeps its row, id and resources);
- *   2. leftover existing rows are then paired, in order, with leftover input
- *      entries: a "rename" (the row keeps its id, so its resources stay attached).
- *      Existing rows are ordered primary first, then alphabetically (the order
- *      `SongDetail.keys` hands to the editor); input entries keep their order.
- *   3. existing rows still unpaired are deleted, which is refused with CONFLICT
- *      while they have resources (the FK would otherwise cascade-delete them);
- *      input entries still unpaired are inserted.
+ *   2. if exactly one existing row and exactly one input entry are left over, that is
+ *      an unambiguous rename: the row keeps its id, so its resources stay attached;
+ *   3. otherwise leftovers are delete-plus-insert. Deleting a row that still has
+ *      resources is refused with CONFLICT (the FK would otherwise cascade-delete them).
+ * TODO(CR LIB-02-song-key-input-id): match on an optional `id` once SongKeyInput has one.
  */
 
 import 'server-only';
@@ -33,21 +31,6 @@ type SongKeyRow = typeof songKeys.$inferSelect;
 type ChordColumns = Pick<SongKeyRow, 'introChord' | 'verseChord' | 'chorusChord' | 'bridgeChord'>;
 
 const songIdSchema = z.guid();
-
-/**
- * `assertCan` throws a plain `Error` named `ActionError` (lib/permissions.ts predates
- * lib/action.ts), which `withAction` would report as INTERNAL. Re-throw it as a real
- * `ActionError` so the caller gets FORBIDDEN.
- */
-function assertCanWrite(user: AppUser): void {
-  try {
-    assertCan(user, 'song:write');
-  } catch (error) {
-    if (error instanceof ActionError) throw error;
-    const message = error instanceof Error ? error.message : 'Forbidden.';
-    throw new ActionError('FORBIDDEN', message);
-  }
-}
 
 function chordColumns(input: SongKeyInput): ChordColumns {
   const c = input.firstChords;
@@ -114,16 +97,11 @@ function planKeyChanges(existing: SongKeyRow[], keys: SongKeyInput[]): KeyPlan {
   }
 
   const unmatchedRows = [...byKey.values()].sort(byPrimaryThenKey);
-  const pairs = Math.min(unmatchedRows.length, unmatchedInputs.length);
-  for (let i = 0; i < pairs; i++) {
-    updates.push({ row: unmatchedRows[i]!, input: unmatchedInputs[i]! });
+  if (unmatchedRows.length === 1 && unmatchedInputs.length === 1) {
+    updates.push({ row: unmatchedRows[0]!, input: unmatchedInputs[0]! });
+    return { updates, inserts: [], deletes: [] };
   }
-
-  return {
-    updates,
-    inserts: unmatchedInputs.slice(pairs),
-    deletes: unmatchedRows.slice(pairs),
-  };
+  return { updates, inserts: unmatchedInputs, deletes: unmatchedRows };
 }
 
 async function refuseDeletingKeysWithResources(tx: Tx, deletes: SongKeyRow[]): Promise<void> {
@@ -251,7 +229,7 @@ async function replaceSongKeys(
 export const setSongKeys = withAction(
   async (songId: string, keys: SongKeyInput[]): Promise<SongKey[]> => {
     const user = await requireUser();
-    assertCanWrite(user);
+    assertCan(user, 'song:write');
     const id = songIdSchema.parse(songId);
     const parsed = songKeysInputSchema.parse(keys);
     return replaceSongKeys(user, id, parsed);

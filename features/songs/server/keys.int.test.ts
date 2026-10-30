@@ -192,6 +192,25 @@ describe('setSongKeys', () => {
     expect(rows.find((r) => r.key === 'G')?.introChord).toBeNull();
   });
 
+  test('ambiguous change (two removed, two added) is delete-plus-insert, so CONFLICT applies', async () => {
+    const saved = await save([k('G', true), k('D')]);
+    await addFile(saved.find((s) => s.key === 'G')!.id, 'Lead sheet');
+
+    const res = await setSongKeys(songId, [k('A', true), k('E')]);
+    expect(res).toMatchObject({
+      ok: false,
+      error: { code: 'CONFLICT', fieldErrors: { G: ['Lead sheet'] } },
+    });
+    expect((await keyRows()).map((r) => r.key).sort()).toEqual(['D', 'G']);
+  });
+
+  test('ambiguous change without files deletes and inserts new ids', async () => {
+    const before = await save([k('G', true), k('D')]);
+    const after = await save([k('A', true), k('E')]);
+    expect(after.map((s) => s.key)).toEqual(['A', 'E']);
+    expect(after.some((s) => before.some((b) => b.id === s.id))).toBe(false);
+  });
+
   test('deleting a key without files removes it', async () => {
     await save([k('G', true), k('D')]);
     const saved = await save([k('G', true)]);

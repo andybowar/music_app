@@ -5,7 +5,7 @@ phase: 0
 wave: 6
 stream: auth
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["F-05", "DB-06", "DB-07"]
 blocks: ["ADM-01", "LIB-01", "LIB-02", "LIB-03", "LIB-04", "LIB-05", "LIB-06", "LIB-07", "LIST-02", "SRCH-10", "SRCH-02"]

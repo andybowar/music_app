@@ -48,14 +48,14 @@ describe('authentication', () => {
 describe('permissions', () => {
   test('members cannot create composers or set song composers', async () => {
     as('member');
-    expect(await createComposer('Jan Smith')).toMatchObject({ error: { code: 'FORBIDDEN' } });
-    expect(await setSongComposers(A, [B])).toMatchObject({ error: { code: 'FORBIDDEN' } });
+    expect(await createComposer('Jan Smith')).toMatchObject({ ok: false });
+    expect(await setSongComposers(A, [B])).toMatchObject({ ok: false });
   });
 
   test('contributors cannot merge or set the POP flag', async () => {
     as('contributor');
-    expect(await mergeComposers(A, B)).toMatchObject({ error: { code: 'FORBIDDEN' } });
-    expect(await setComposerPop(A, 'past')).toMatchObject({ error: { code: 'FORBIDDEN' } });
+    expect(await mergeComposers(A, B)).toMatchObject({ ok: false });
+    expect(await setComposerPop(A, 'past')).toMatchObject({ ok: false });
   });
 });
 

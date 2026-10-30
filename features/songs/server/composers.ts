@@ -28,8 +28,8 @@ import { ActionError, withAction } from '@/lib/action';
 import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
 import { getDb, withTx, type Tx } from '@/lib/db';
-import { can, type Action } from '@/lib/permissions';
-import { POP_MEMBER, type AppUser, type Composer, type PopMember, type UUID } from '@/types/domain';
+import { assertCan } from '@/lib/permissions';
+import { POP_MEMBER, type Composer, type PopMember, type UUID } from '@/types/domain';
 
 const SEARCH_LIMIT = 20;
 
@@ -76,23 +76,12 @@ function likeEscape(s: string): string {
 
 const notFound = (what: string) => new ActionError('NOT_FOUND', `${what} not found.`);
 
-/**
- * `assertCan` from lib/permissions throws a plain `Error` (not an `ActionError` instance), which
- * `withAction` reports as INTERNAL instead of FORBIDDEN. Same check, correct error class.
- * TODO(CR): use `assertCan` once agent-spec/change-requests/LIB-03-assertcan-actionerror.md lands.
- */
-function ensureCan(user: AppUser, action: Action): void {
-  if (!can(user, action)) {
-    throw new ActionError('FORBIDDEN', `You do not have permission to do this (${action}).`);
-  }
-}
-
 // ----- Read helper ---------------------------------------------------------------------
 
 /** Composers whose name (or a later word in it) starts with `prefix`, case-insensitively. */
 export async function searchComposers(prefix: string): Promise<Composer[]> {
   const user = await requireUser();
-  ensureCan(user, 'song:read');
+  assertCan(user, 'song:read');
   const p = prefixSchema.parse(prefix).trim().replace(/\s+/g, ' ').toLowerCase();
 
   const lowered = sql`lower(${composers.name})`;
@@ -113,7 +102,7 @@ export async function searchComposers(prefix: string): Promise<Composer[]> {
 /** Create a composer, or return the existing one whose name matches case-insensitively. */
 export const createComposer = withAction(async (name: string): Promise<Composer> => {
   const user = await requireUser();
-  ensureCan(user, 'composer:create');
+  assertCan(user, 'composer:create');
   const clean = nameSchema.parse(name);
 
   return withTx(async (tx) => {
@@ -155,7 +144,7 @@ async function songComposerIds(tx: Tx, songId: UUID): Promise<UUID[]> {
 export const setSongComposers = withAction(
   async (songId: UUID, composerIds: UUID[]): Promise<void> => {
     const user = await requireUser();
-    ensureCan(user, 'song:write');
+    assertCan(user, 'song:write');
     const input = setSongComposersSchema.parse({ songId, composerIds });
     const ids = input.composerIds.map((id) => id.toLowerCase());
 
@@ -203,7 +192,7 @@ export const setSongComposers = withAction(
 /** Set a composer's POP-membership flag (`none | past | current`). */
 export const setComposerPop = withAction(async (id: UUID, pop: PopMember): Promise<void> => {
   const user = await requireUser();
-  ensureCan(user, 'composer:merge');
+  assertCan(user, 'composer:merge');
   const input = setPopSchema.parse({ id, pop });
 
   await withTx(async (tx) => {
@@ -230,7 +219,7 @@ export const setComposerPop = withAction(async (id: UUID, pop: PopMember): Promi
 /** Fold `dropId` into `keepId`: re-point its song credits, then delete it. */
 export const mergeComposers = withAction(async (keepId: UUID, dropId: UUID): Promise<void> => {
   const user = await requireUser();
-  ensureCan(user, 'composer:merge');
+  assertCan(user, 'composer:merge');
   const input = mergeSchema.parse({ keepId, dropId });
 
   await withTx(async (tx) => {

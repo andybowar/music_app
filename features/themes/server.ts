@@ -27,8 +27,8 @@ import { ActionError, withAction } from '@/lib/action';
 import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
 import { getDb, withTx, type Tx } from '@/lib/db';
-import { can, type Action } from '@/lib/permissions';
-import { SECTIONS, type AppUser, type Section, type Theme } from '@/types/domain';
+import { assertCan } from '@/lib/permissions';
+import { SECTIONS, type Section, type Theme } from '@/types/domain';
 import { themeNameSchema } from '@/types/validation';
 
 const MAX_LIMIT = 100;
@@ -48,20 +48,6 @@ const mergeSchema = z.object({ keepId: uuid, dropId: uuid }).refine((v) => v.kee
   path: ['dropId'],
   message: 'Pick two different themes to merge.',
 });
-
-/**
- * Permission check that throws a real `ActionError`, so `withAction` maps it to
- * FORBIDDEN. (`assertCan` from lib/permissions throws a plain `Error` named
- * `ActionError`, which `withAction` would report as INTERNAL; see
- * agent-spec/change-requests/LIB-04-assertcan-action-error.md.)
- */
-async function authorize(action: Action): Promise<AppUser> {
-  const user = await requireUser();
-  if (!can(user, action)) {
-    throw new ActionError('FORBIDDEN', `You do not have permission to do this (${action}).`);
-  }
-  return user;
-}
 
 /** Escape LIKE metacharacters (Postgres' default escape character is backslash). */
 function escapeLike(s: string): string {
@@ -87,7 +73,8 @@ function clampLimit(limit: unknown): number {
  * when signed out or not allowed.
  */
 export async function searchThemes(prefix: string, limit = 20): Promise<Theme[]> {
-  await authorize('song:read');
+  const user = await requireUser();
+  assertCan(user, 'song:read');
   const q = normalizeQuery(prefix);
   const n = clampLimit(limit);
   const cols = { id: themes.id, name: themes.name };
@@ -115,7 +102,8 @@ export async function searchThemes(prefix: string, limit = 20): Promise<Theme[]>
  * Needs `theme:create`.
  */
 export const createTheme = withAction(async (name: string): Promise<Theme> => {
-  const user = await authorize('theme:create');
+  const user = await requireUser();
+  assertCan(user, 'theme:create');
   const normalized = themeNameSchema.parse(name);
 
   return withTx(async (tx) => {
@@ -194,7 +182,8 @@ async function auditSongThemes(
  */
 export const setSongThemes = withAction(
   async (songId: string, entries: { section: Section; themeId: string }[]): Promise<void> => {
-    const user = await authorize('song:write');
+    const user = await requireUser();
+    assertCan(user, 'song:write');
     const input = songThemesSchema.parse({ songId, entries });
 
     const unique = new Map<string, { section: Section; themeId: string }>();
@@ -243,7 +232,8 @@ export const setSongThemes = withAction(
  * deleted. Needs `theme:merge`. NOT_FOUND when either theme is missing.
  */
 export const mergeThemes = withAction(async (keepId: string, dropId: string): Promise<void> => {
-  const user = await authorize('theme:merge');
+  const user = await requireUser();
+  assertCan(user, 'theme:merge');
   const input = mergeSchema.parse({ keepId, dropId });
 
   await withTx(async (tx) => {

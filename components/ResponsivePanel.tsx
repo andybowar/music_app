@@ -1,13 +1,21 @@
 'use client';
 
-import { isValidElement, useId, useState, type ReactNode } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { isValidElement, useId, useRef, useState, type ReactNode } from 'react';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { DESKTOP_QUERY, useMediaQuery } from '@/components/ui/use-media-query';
 
 export type ResponsivePanelProps = {
   /** The control that opens the panel. A single element (e.g. a `<button>`) is used as-is. */
-  trigger: ReactNode;
+  trigger?: ReactNode;
+  /**
+   * Without a `trigger`: what the popover is positioned against (e.g. a whole `SongRow`).
+   * Rendered as-is; it does not open the panel itself.
+   */
+  anchor?: ReactNode;
+  /** Controlled open state; pass with `onOpenChange` to open the panel from a callback. */
+  open?: boolean;
+  onOpenChange?(open: boolean): void;
   /** Accessible name of the panel; shown as its heading. */
   title: string;
   children: ReactNode;
@@ -21,11 +29,27 @@ const fallbackTriggerClass =
  * Radix moves focus into the panel on open, traps it in the sheet, closes on Escape and returns
  * focus to the trigger. Open state is shared, so resizing across 768px keeps the panel open.
  * Server render and hydration use the sheet (mobile-first); the real mode applies right after.
+ * Controlled without a trigger (`open` + `onOpenChange`, optional `anchor`), focus returns on
+ * close to whatever was focused when it opened, e.g. the row button whose callback opened it.
  */
-export function ResponsivePanel({ trigger, title, children }: ResponsivePanelProps) {
-  const [open, setOpen] = useState(false);
+export function ResponsivePanel({
+  trigger,
+  anchor,
+  open: openProp,
+  onOpenChange,
+  title,
+  children,
+}: ResponsivePanelProps) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setOpenState(next);
+    onOpenChange?.(next);
+  };
   const isDesktop = useMediaQuery(DESKTOP_QUERY, false);
   const titleId = useId();
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const hasTrigger = trigger !== undefined;
 
   // `asChild` needs a single element; wrap text or fragments in a real button.
   const triggerChild = isValidElement(trigger) ? (
@@ -36,11 +60,31 @@ export function ResponsivePanel({ trigger, title, children }: ResponsivePanelPro
     </button>
   );
 
+  // Radix returns focus to its trigger; with none, return it to the opener ourselves.
+  const focusProps = hasTrigger
+    ? {}
+    : {
+        onOpenAutoFocus: () => {
+          returnFocus.current =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        },
+        onCloseAutoFocus: (e: Event) => {
+          if (!returnFocus.current?.isConnected) return;
+          e.preventDefault();
+          returnFocus.current.focus();
+        },
+      };
+
   if (isDesktop) {
     return (
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>{triggerChild}</PopoverTrigger>
+        {hasTrigger ? (
+          <PopoverTrigger asChild>{triggerChild}</PopoverTrigger>
+        ) : (
+          <PopoverAnchor asChild={isValidElement(anchor)}>{anchor}</PopoverAnchor>
+        )}
         <PopoverContent
+          {...focusProps}
           aria-labelledby={titleId}
           data-mode="popover"
           className="max-h-[min(32rem,var(--radix-popover-content-available-height))] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto"
@@ -56,8 +100,9 @@ export function ResponsivePanel({ trigger, title, children }: ResponsivePanelPro
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{triggerChild}</SheetTrigger>
+      {hasTrigger ? <SheetTrigger asChild>{triggerChild}</SheetTrigger> : anchor}
       <SheetContent
+        {...focusProps}
         side="bottom"
         data-mode="sheet"
         aria-describedby={undefined}

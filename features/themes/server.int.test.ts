@@ -256,7 +256,7 @@ describe('mergeThemes', () => {
     expect(audits.map((r) => r.action).sort()).toEqual(['create', 'delete']);
   });
 
-  test('missing themes are NOT_FOUND; contributors are denied', async () => {
+  test('missing themes are NOT_FOUND; contributors are FORBIDDEN', async () => {
     const keep = await newTheme(`lonely ${tag}`);
     expect(await mergeThemes(keep, randomUUID())).toMatchObject({
       ok: false,
@@ -265,6 +265,9 @@ describe('mergeThemes', () => {
 
     signInAs('contributor');
     const other = await newTheme(`other ${tag}`);
-    expect(await mergeThemes(keep, other)).toMatchObject({ ok: false });
+    expect(await mergeThemes(keep, other)).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
   });
 });

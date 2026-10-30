@@ -1,6 +1,6 @@
 # CR LIB-07: `assertCan` failures surface as INTERNAL, not FORBIDDEN
 
-**Status:** proposed
+**Status:** approved 2026-10-30 by the PM and lead dev (AGENTS.md §6). Applied with the alternative: `withAction` (`lib/action.ts`) also maps any `Error` named `'ActionError'` with a string `code`, so `lib/permissions.ts` stays pure. The `authorize()` wrapper in `features/resources/server/links.ts` was removed in the same PR.
 
 ## Problem
 

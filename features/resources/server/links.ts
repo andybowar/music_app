@@ -13,7 +13,7 @@
 
 import 'server-only';
 
-import type { AppUser, Resource } from '@/types/domain';
+import type { Resource } from '@/types/domain';
 
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
@@ -33,18 +33,6 @@ type LinkInput = z.input<typeof resourceLinkInputSchema>;
 const SONG_NOT_FOUND = 'Song not found.';
 const KEY_NOT_FOUND = 'That key does not belong to this song.';
 const LINK_NOT_FOUND = 'Link not found.';
-
-/**
- * `assertCan` throws an `Error` *named* ActionError (lib/permissions predates lib/action), which
- * `withAction`'s `instanceof` check would report as INTERNAL. Re-throw it as a real ActionError.
- */
-function authorize(user: AppUser): void {
-  try {
-    assertCan(user, 'resource:write');
-  } catch (error) {
-    throw new ActionError('FORBIDDEN', error instanceof Error ? error.message : 'Forbidden.');
-  }
-}
 
 function toResource(row: ResourceRow): Resource {
   return {
@@ -83,7 +71,7 @@ async function assertTarget(tx: Tx, input: ResourceLinkInput): Promise<void> {
 /** Attach an external link to a song key (or to the song, for a projection link). */
 export const addLink = withAction(async (input: LinkInput): Promise<Resource> => {
   const user = await requireUser();
-  authorize(user);
+  assertCan(user, 'resource:write');
   const data = resourceLinkInputSchema.parse(input);
 
   return withTx(async (tx) => {
@@ -119,7 +107,7 @@ export const addLink = withAction(async (input: LinkInput): Promise<Resource> =>
  */
 export const updateLink = withAction(async (id: string, input: LinkInput): Promise<Resource> => {
   const user = await requireUser();
-  authorize(user);
+  assertCan(user, 'resource:write');
   const resourceId = z.uuid().parse(id);
   const data = resourceLinkInputSchema.parse(input);
 

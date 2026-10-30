@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: backend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["IMP-03", "LIB-17"]
@@ -34,11 +34,11 @@ requirements: ["REQ-LIB-09"]
 - `REQ-LIB-09` — Files attach to a specific key: full score PDF, lead sheet PDF, chord chart PDF (several allowed), MP3. Links attach to a key: YouTube, other audio/video, instruction links.
 
 ## Deliverables
-- [ ] addLink/updateLink; `parseYouTubeId` pure function
+- [x] addLink/updateLink; `parseYouTubeId` pure function
 
 ## Acceptance criteria
-- [ ] parseYouTubeId handles watch, youtu.be, shorts, embed, with extra params; rejects non-YouTube
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] parseYouTubeId handles watch, youtu.be, shorts, embed, with extra params; rejects non-YouTube
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/resources/server/links.ts`, `lib/youtube.ts`

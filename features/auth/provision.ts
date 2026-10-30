@@ -10,10 +10,10 @@
  *   subject and login time. A branch is filled in from the IdP groups only when
  *   the account has none; an admin-assigned branch or role is never overwritten.
  * - **Disabled account** (`disabled_at` set): rejected with `FORBIDDEN`.
- * - **New identity** whose IdP groups map to a branch (`branches.sso_group`): a
- *   `member` of that branch is created.
- * - **New identity with no mapped group**: rejected with `FORBIDDEN`, because
- *   there is no public signup (REQ-AUTH-03). An admin can invite them instead.
+ *   The access status is never changed here (pending stays pending).
+ * - **New identity**: a `pending` `member` is created (REQ-AUTH-03, AUTH-07). If
+ *   the IdP groups map to a branch (`branches.sso_group`) it is filled in as a
+ *   suggestion for the approving admin (REQ-AUTH-04); otherwise branch is null.
  * - **Email already used by another account** that Supabase did not link (the
  *   email was not verified by the IdP): rejected with `CONFLICT`.
  *
@@ -199,8 +199,9 @@ export async function provisionUser(authUser: User, idpGroups: string[]): Promis
       .limit(1);
     if (sameEmail) throw new ActionError('CONFLICT', EMAIL_CONFLICT_MESSAGE);
 
+    // AUTH-07: every new identity becomes a pending access request; the mapped
+    // branch (or none) is only a suggestion for the approving admin.
     const branchId = await mappedBranch(tx, idpGroups);
-    if (!branchId) throw new ActionError('FORBIDDEN', NO_ACCOUNT_MESSAGE);
 
     const [created] = await tx
       .insert(users)
@@ -213,6 +214,7 @@ export async function provisionUser(authUser: User, idpGroups: string[]): Promis
         authProvider: identity.provider,
         ssoSubject: identity.subject,
         lastLoginAt: now,
+        accessStatus: 'pending',
       })
       .returning();
     return toAppUser(created!);

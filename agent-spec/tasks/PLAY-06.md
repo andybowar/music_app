@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["UI-01", "F-03"]
 blocks: ["PLAY-05"]
-owns: ["features/player/ui/AudioPicker.tsx"]
+owns: ["features/player/ui/AudioPicker.tsx", "features/player/ui/AudioPicker.test.tsx", "app/dev/audio-picker/"]
 touches: []
 requirements: ["REQ-LIST-05"]
 ---
@@ -38,7 +38,7 @@ requirements: ["REQ-LIST-05"]
 - [ ] Definition of Done in `AGENTS.md` §5 is satisfied — all items met except the `/dev/<name>` gallery, pending CR PLAY-06-audio-picker-gallery
 
 ## Boundaries
-- **Owns** (create/modify freely): `features/player/ui/AudioPicker.tsx`
+- **Owns** (create/modify freely): `features/player/ui/AudioPicker.tsx`, `features/player/ui/AudioPicker.test.tsx`, `app/dev/audio-picker/`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
 
 ## Notes (PLAY-06)

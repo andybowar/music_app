@@ -24,7 +24,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx db/seed/index.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^11.10.0",

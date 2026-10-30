@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["UI-01", "SRCH-04"]
 blocks: ["SRCH-09"]
-owns: ["features/search/ui/SortControl.tsx"]
+owns: ["features/search/ui/SortControl.tsx", "app/dev/sort-control/"]
 touches: []
 requirements: ["REQ-SRCH-04"]
 ---
@@ -38,7 +38,7 @@ requirements: ["REQ-SRCH-04"]
 - [ ] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `features/search/ui/SortControl.tsx`
+- **Owns** (create/modify freely): `features/search/ui/SortControl.tsx`, `app/dev/sort-control/`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
 
 ## Notes

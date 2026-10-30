@@ -1,6 +1,6 @@
 # CR UI-08 · Let UI-08 own its gallery page and the sample PDF
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-30. `tasks/UI-08.md` owns updated; the gallery page and `public/dev/sample.pdf` are still to be added.
 
 ## Problem
 

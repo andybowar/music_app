@@ -1,6 +1,6 @@
 # CR PLAY-03 · YouTube adapter factory, mount point and adapter semantics
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-30. `contracts/api.md` updated. PLAY-02 must align its callback and rejection semantics.
 
 ## Problem
 

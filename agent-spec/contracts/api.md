@@ -20,7 +20,7 @@ Read helpers (non-action, server-only, used by RSC pages) return plain data or `
 | `lib/supabase/client.ts` | `createBrowserSupabase()` | F-05 |
 | `lib/db.ts` | `db` (Drizzle, server-only), `withTx(fn)` | DB-06 |
 | `lib/audit.ts` | `recordAudit(tx, { actorId, entity, entityId, action, before?, after? })` computes `diff` | DB-06 |
-| `lib/action.ts` | `class ActionError(code, message, fieldErrors?)`, `withAction<A,T>(fn): (...a:A)=>Promise<ActionResult<T>>` | DB-06 |
+| `lib/action.ts` | `class ActionError(code, message, fieldErrors?)`, `withAction<A,T>(fn): (...a:A)=>Promise<ActionResult<T>>`, `setSentryCapture(fn: ((error, context?) => void) \| null)` (default: `console.error`; OPS-02 installs it from `instrumentation.ts`) | DB-06 |
 | `lib/auth.ts` | `getUser(): Promise<AppUser\|null>` (any access status), `requireUser(): Promise<AppUser>` (approved only: throws UNAUTHENTICATED when signed out, FORBIDDEN when pending/rejected; pages redirect pending/rejected users to `/account-status`), `requireRole(r: Role)` | AUTH-04 |
 | `lib/permissions.ts` | `can`, `assertCan`, `Action`, `PermCtx` — see `permissions.md` | AUTH-05 |
 | `lib/storage.ts` | `createUploadUrl(path)`, `objectExists(path) → {size}\|null`, `signedReadUrl(path, ttl?)`, `removeObject(path)`, `resourcePath(songId, songKeyId\|null, resourceId, ext)` | LIB-06 |
@@ -52,11 +52,37 @@ export type PlayerEvent =
   | { type: 'NEXT' } | { type: 'PREV' } | { type: 'TRACK_ENDED' } | { type: 'TRACK_READY' } | { type: 'TRACK_ERROR' };
 export function playerReducer(s: PlayerState, e: PlayerEvent): PlayerState;   // TRACK_ERROR → skip to next
 export interface PlayerAdapter { load(t: Track): Promise<void>; play(): void; pause(): void; stop(): void; onEnded(cb: () => void): void; onError(cb: () => void): void; destroy(): void }
+// Adapter semantics (all adapters; CR PLAY-03):
+// - onEnded/onError set a single callback; a later call replaces the earlier one.
+// - load() rejects on failure and does NOT also call onError; onError is for failures after load resolved.
+// - A load() superseded by a newer load() or by destroy() rejects with an Error named 'AbortError'
+//   (callers ignore it; it is not a TRACK_ERROR).
+// - After destroy(), load() rejects and the other methods are no-ops.
+// features/player/adapters/youtube.ts  (PLAY-03)
+export function createYouTubeAdapter(opts?: {
+  container?: HTMLElement;   // where the iframe mounts; default: compact 200×200 fixed box on document.body
+  loadTimeoutMs?: number;    // default 20 000
+  scriptTimeoutMs?: number;  // default 15 000
+}): PlayerAdapter;         // PLAY-04/05 pass a `container` inside the player bar
 
 // features/import/parse.ts  (IMP-01)
 export function parseImportCsv(csv: string): { rows: ImportRow[]; errors: Array<{ line: number; message: string }> };
 // features/import/match.ts  (IMP-02)
 export function matchFiles(paths: string[], rows: ImportRow[]): { matched: FileMatch[]; unmatched: string[] };
+// FileMatch is exported from features/import/match.ts (CR IMP-02); IMP-03 imports it from there.
+export interface FileMatch {
+  path: string;                       // as given
+  idempotencyKey: string;             // matched ImportRow.idempotencyKey
+  line: number;                       // matched ImportRow.line
+  matchedOn: 'title' | 'alt_title';
+  confidence: number;                 // 1 exact (normalized); [0.85, 1) fuzzy
+  key: MusicalKey | null;             // null for projection
+  keyInRow: boolean;                  // key is the row's primaryKey or in altKeys (true for projection)
+  kind: ResourceKind;
+  format: ResourceFormat;
+  index: number;                      // <n> from "Chord Chart 2"; 1 when absent
+  label: string;                      // "Chord Chart", "Chord Chart 2", "Projection"
+}
 
 // lib/usage/derive.ts  (BR-03)
 export function deriveUsageLevel(setlistCountLast365d: number): UsageLevel; // >=6 high, 2–5 low, 1 rare, 0 none
@@ -86,7 +112,7 @@ export function deriveUsageLevel(setlistCountLast365d: number): UsageLevel; // >
 | | `createTheme(name)` (idempotent on normalized name) | `ActionResult<Theme>` | theme:create | LIB-04 |
 | | `setSongThemes(songId, entries: {section, themeId}[])` (replace-all) | `ActionResult<void>` | song:write | LIB-04 |
 | | `mergeThemes(keepId, dropId)` / `setThemeSynonyms(id, synonyms)` | `ActionResult<void>` | theme:merge | LIB-04 / H-02 |
-| `features/songs/server/usage.ts` | `setBranchUsage(songId, entries)` | `ActionResult<void>` | usage:write | LIB-05 |
+| `features/songs/server/usage.ts` | `setBranchUsage(songId, entries: UsageInput)` (replace-all of **manual** rows: each entry is upserted with `source='manual'`; manual rows not in `entries` are deleted; derived rows are kept unless an entry overrides them; `fieldErrors` keys index into `entries`) | `ActionResult<void>` | usage:write | LIB-05 |
 | `features/resources/server/files.ts` | `requestUpload(req)` | `ActionResult<{ resourceId, uploadUrl, path }>` | resource:write | LIB-06 |
 | | `finalizeUpload(resourceId)` | `ActionResult<Resource>` | resource:write | LIB-06 |
 | | `deleteResource(id)` | `ActionResult<void>` | resource:write | LIB-06 |

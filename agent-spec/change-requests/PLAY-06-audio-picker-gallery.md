@@ -1,6 +1,6 @@
 # CR PLAY-06 · Gallery page for AudioPicker
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-30. `tasks/PLAY-06.md` owns updated and `contracts/ui.md` row updated; the gallery page itself is still to be written.
 
 ## Problem
 

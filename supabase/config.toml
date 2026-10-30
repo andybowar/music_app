@@ -162,8 +162,8 @@ site_url = "http://127.0.0.1:3000"
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 additional_redirect_urls = [
-  "http://127.0.0.1:3000/auth/callback",
-  "http://localhost:3000/auth/callback",
+  "http://127.0.0.1:3000/auth/callback**",
+  "http://localhost:3000/auth/callback**",
   "http://127.0.0.1:3000/reset/confirm",
   "http://localhost:3000/reset/confirm",
 ]
@@ -326,6 +326,26 @@ max_frequency = "5s"
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+redirect_uri = ""
+url = ""
+# Required for local sign-in with Google (Supabase docs).
+skip_nonce_check = true
+email_optional = false
+
+[auth.external.azure]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_AZURE_SECRET)"
+redirect_uri = ""
+# Single-tenant: https://login.microsoftonline.com/<tenant-id>/v2.0
+url = "env(SUPABASE_AUTH_EXTERNAL_AZURE_URL)"
+skip_nonce_check = false
+email_optional = false
+
 [auth.external.apple]
 enabled = false
 client_id = ""

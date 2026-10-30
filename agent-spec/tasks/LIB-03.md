@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: backend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["IMP-03", "LIB-17"]
@@ -35,12 +35,12 @@ requirements: ["REQ-LIB-02", "REQ-LIB-03"]
 - `REQ-LIB-03` — Composers carry a POP-membership flag: `none | past | current`. Past/current are color-highlighted in the UI.
 
 ## Deliverables
-- [ ] Functions per contract; case-insensitive dedupe on create
-- [ ] merge re-points song_composers and deletes the dropped composer
+- [x] Functions per contract; case-insensitive dedupe on create
+- [x] merge re-points song_composers and deletes the dropped composer
 
 ## Acceptance criteria
-- [ ] Tests for prefix search, dedupe, ordering, merge
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Tests for prefix search, dedupe, ordering, merge
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/server/composers.ts`

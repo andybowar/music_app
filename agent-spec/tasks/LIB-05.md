@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: backend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["IMP-03", "LIB-17", "BR-03"]
@@ -34,11 +34,11 @@ requirements: ["REQ-LIB-05"]
 - `REQ-LIB-05` — Branch usage per branch: `high | low | rare | none`.
 
 ## Deliverables
-- [ ] setBranchUsage upserts with source=manual
+- [x] setBranchUsage upserts with source=manual
 
 ## Acceptance criteria
-- [ ] Tests; member → FORBIDDEN
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Tests; member → FORBIDDEN
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/server/usage.ts`

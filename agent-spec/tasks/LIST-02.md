@@ -5,7 +5,7 @@ phase: 3
 wave: 7
 stream: backend
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["LIST-07", "LIST-09"]
@@ -37,13 +37,13 @@ requirements: ["REQ-LIST-02", "REQ-LIST-03", "REQ-LIST-04", "REQ-LIST-05"]
 - `REQ-LIST-05` — Playlist: per-song chosen audio item (MP3 or YouTube link); play, pause, stop, skip ahead/back, auto-advance; edit order; rename; delete; share.
 
 ## Deliverables
-- [ ] Functions per contract; positions stay contiguous 0..n-1
-- [ ] reorderList validates the id set equals current items
-- [ ] updateListItem: resourceId must belong to the song and be audio/video
+- [x] Functions per contract; positions stay contiguous 0..n-1
+- [x] reorderList validates the id set equals current items
+- [x] updateListItem: resourceId must belong to the song and be audio/video
 
 ## Acceptance criteria
-- [ ] Concurrency test: two reorders → last write wins, positions still contiguous
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Concurrency test: two reorders → last write wins, positions still contiguous
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/lists/server/items.ts`

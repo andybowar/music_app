@@ -39,30 +39,6 @@ const ROLE_DENIED_MSG = 'You do not have the role required for that action.';
 /** Mirrors the Postgres `role` enum order: member < contributor < music_leader < admin. */
 const ROLE_RANK: Record<Role, number> = { member: 0, contributor: 1, music_leader: 2, admin: 3 };
 
-// ----- Pure routing helper (also used by middleware; unit-tested) -----------------------
-
-/**
- * The signed-in `(app)` route families. `middleware` uses this (with its `matcher`) to send
- * unauthenticated requests to `/login`; the layout uses it implicitly by calling `requireUser`.
- * Everything else — the `(auth)` routes, `/account-status`, public `/share/[token]`, `/api/*`,
- * and static assets — is not protected here.
- */
-const PROTECTED_APP_PREFIXES = [
-  '/library',
-  '/songs',
-  '/lists',
-  '/branches',
-  '/quick',
-  '/admin',
-] as const;
-
-/** True when `pathname` is under a protected `(app)` route family. */
-export function isProtectedAppRoute(pathname: string): boolean {
-  return PROTECTED_APP_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
-}
-
 // ----- AppUser hydration & access decisions ----------------------------------------------
 
 type UserRow = typeof users.$inferSelect;
@@ -143,6 +119,6 @@ export async function requireRole(role: Role): Promise<AppUser> {
   return user;
 }
 
-// Keep the public surface minimal: the three guards above are the contract. `isProtectedAppRoute`
-// and `accessForRow` are exported purely so `middleware` and the tests can share them without
-// duplicating the access decision.
+// Keep the public surface minimal: the three guards above are the contract. `accessForRow` is
+// exported only for tests. `middleware.ts` must not import this module: it pulls `lib/db` (and the
+// postgres driver) into the edge bundle.

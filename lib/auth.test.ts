@@ -26,9 +26,7 @@ vi.mock('@/lib/db', () => ({ getDb: () => db, withTx: vi.fn() }));
 // No app-profile / env access is needed; lib/env is not imported here, but stub it to be safe.
 vi.mock('@/lib/env', () => ({ env: {} }));
 
-const { ActionError } = await import('@/lib/action');
-const { accessForRow, getUser, isProtectedAppRoute, requireRole, requireUser } =
-  await import('./auth');
+const { accessForRow, getUser, requireRole, requireUser } = await import('./auth');
 
 const USER_ID = '00000000-0000-4000-8000-000000000001';
 
@@ -60,36 +58,6 @@ beforeEach(() => {
   dbState.row = rowOver();
   signedIn({ id: USER_ID });
   auth.signOut.mockResolvedValue({ error: null });
-});
-
-// ----- isProtectedAppRoute ---------------------------------------------------------
-
-describe('isProtectedAppRoute', () => {
-  it.each([
-    ['/library', true],
-    ['/library/sv', true],
-    ['/songs/1', true],
-    ['/lists/2', true],
-    ['/branches', true],
-    ['/quick', true],
-    ['/admin/users', true],
-  ])('classifies %s as %s', (pathname, expected) => {
-    expect(isProtectedAppRoute(pathname)).toBe(expected);
-  });
-
-  it.each([
-    '/login',
-    '/signup',
-    '/reset/confirm',
-    '/auth/callback',
-    '/account-status',
-    '/share/abc-token',
-    '/api/cron/usage',
-    '/',
-    '/library-assets/x.js',
-  ])('does not protect %s', (pathname) => {
-    expect(isProtectedAppRoute(pathname)).toBe(false);
-  });
 });
 
 // ----- accessForRow ----------------------------------------------------------------
@@ -218,6 +186,3 @@ describe('requireRole', () => {
     await expect(requireRole('admin')).rejects.toMatchObject({ code: 'FORBIDDEN' });
   });
 });
-
-// Ensure ActionError import is referenced by type in the above toMatchObject checks.
-void ActionError;

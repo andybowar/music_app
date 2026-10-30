@@ -8,10 +8,12 @@ that owns auth"). AUTH-04 is now complete; this is the one-line follow-up that t
 
 `agent-spec/tasks/UI-02.md` requires "`app/(app)/layout.tsx` calls `requireUser()` until AUTH-04
 has merged." AUTH-04 now provides the contracted guard, but the layout's private stand-in
-`requireUser` (in `app/(app)/layout.tsx`, owned by UI-02) still stands in. Without the swap,
-pending/rejected users are not redirected to `/account-status` at the page level — AUTH-04's
-acceptance criterion "Hitting /library as a pending or rejected user → /account-status" cannot be
-demonstrated end-to-end.
+`requireUser` (in `app/(app)/layout.tsx`, owned by UI-02) still stands in.
+
+`middleware.ts` already redirects signed-out, disabled, and pending/rejected users on `(app)`
+routes, so this is defence in depth rather than a gap: the stand-in ignores `accessStatus`, and
+it would be the only check left if the middleware's `users` lookup fails (the middleware then
+defers to the page guard).
 
 ## Proposed change
 
@@ -26,9 +28,9 @@ Add to AUTH-04's `touches`:
 ## Affects
 
 - **AUTH-04**: one integration edit to `app/(app)/layout.tsx` (no change to `lib/auth.ts` or
-  `middleware.ts`, both already correct and unit-tested).
+  `middleware.ts`).
 - **UI-02**: its stand-in becomes obsolete; the CR should note that.
 - **AUTH-07**: supplies `/account-status`, which the `FORBIDDEN` branch redirects to.
 
-AUTH-04's `lib/auth.ts` + `middleware.ts` + unit tests are merged-ready independent of this CR; the
-only thing gated is the layout swap, which belongs in another task's file.
+AUTH-04's deliverables and acceptance criteria are met without this CR; the layout swap belongs
+in another task's file.

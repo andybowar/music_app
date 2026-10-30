@@ -5,7 +5,7 @@ phase: 0
 wave: 6
 stream: auth
 size: M
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-07", "AUTH-01", "AUTH-02"]
 blocks: ["AUTH-03", "AUTH-06", "ADM-04"]
@@ -35,17 +35,17 @@ requirements: ["REQ-AUTH-03", "REQ-AUTH-04", "REQ-AUTH-08"]
 - `REQ-AUTH-08` — Pending and rejected users who sign in see only an account-status page.
 
 ## Deliverables
-- [ ] `/signup`: name, email, password (same rules as reset), with loading, error and success states. Success says the request is waiting for an admin
-- [ ] `signUpWithPassword` in `features/auth/actions.ts` (touch): creates the auth user and a `pending` `users` row. The response is the same whether or not the email already exists
-- [ ] `provisionUser` (touch): a brand-new SSO user is created `pending` with the group-mapped branch filled in as a suggestion, instead of being refused for an unmapped group. Existing users keep their status. Disabled users are still refused
-- [ ] `/account-status`: shows "awaiting approval" or "request declined" for the signed-in user, plus sign out. It reads only the user's own row
-- [ ] `/login` (touch): a "Request access" link to `/signup`
-- [ ] A `/dev/<name>` gallery page for `SignupForm` and `AccountStatus`, or a change request if no `app/dev/` path is owned
+- [x] `/signup`: name, email, password (same rules as reset), with loading, error and success states. Success says the request is waiting for an admin
+- [x] `signUpWithPassword` in `features/auth/actions.ts` (touch): creates the auth user and a `pending` `users` row. The response is the same whether or not the email already exists
+- [x] `provisionUser` (touch): a brand-new SSO user is created `pending` with the group-mapped branch filled in as a suggestion, instead of being refused for an unmapped group. Existing users keep their status. Disabled users are still refused
+- [x] `/account-status`: shows "awaiting approval" or "request declined" for the signed-in user, plus sign out. It reads only the user's own row
+- [x] `/login` (touch): a "Request access" link to `/signup`
+- [x] A `/dev/<name>` gallery page for `SignupForm` and `AccountStatus`, or a change request if no `app/dev/` path is owned
 
 ## Acceptance criteria
-- [ ] Integration tests against local Supabase: password sign-up creates a `pending` row; SSO provisioning creates `pending` (mapped and unmapped groups); repeat sign-in leaves status unchanged; signing up with an existing email gives the generic response
-- [ ] Unit tests for the form and status page (validation, states, keyboard, 360px)
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Integration tests against local Supabase: password sign-up creates a `pending` row; SSO provisioning creates `pending` (mapped and unmapped groups); repeat sign-in leaves status unchanged; signing up with an existing email gives the generic response
+- [x] Unit tests for the form and status page (validation, states, keyboard, 360px)
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Notes
 - Blocking pending users from `(app)` routes is AUTH-04's job (`requireUser` and middleware redirect to `/account-status`). The approval queue is ADM-01's, and emails are ADM-04's.

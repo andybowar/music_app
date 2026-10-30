@@ -5,7 +5,7 @@ phase: 2
 wave: 5
 stream: backend
 size: L
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["DB-02", "DB-04", "DB-06"]
 blocks: ["SRCH-02"]

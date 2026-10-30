@@ -8,6 +8,7 @@ const auth = { getUser: vi.fn(), signOut: vi.fn() };
 vi.mock('@/lib/supabase/server', () => ({ createServerSupabase: vi.fn(async () => ({ auth })) }));
 
 import type { users } from '@/db/schema';
+import type * as Navigation from 'next/navigation';
 type UserRow = (typeof users)['$inferSelect'];
 
 // Minimal Drizzle stand-in: select().from().where().limit() → one row.
@@ -23,10 +24,28 @@ const db = {
 };
 vi.mock('@/lib/db', () => ({ getDb: () => db, withTx: vi.fn() }));
 
+// redirect()/notFound() throw Next control-flow errors; replace them with inspectable throws.
+class Redirected extends Error {
+  constructor(readonly to: string) {
+    super(`redirect ${to}`);
+  }
+}
+class NotFound extends Error {}
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof Navigation>()),
+  redirect: vi.fn((to: string) => {
+    throw new Redirected(to);
+  }),
+  notFound: vi.fn(() => {
+    throw new NotFound('not found');
+  }),
+}));
+
 // No app-profile / env access is needed; lib/env is not imported here, but stub it to be safe.
 vi.mock('@/lib/env', () => ({ env: {} }));
 
-const { accessForRow, getUser, requireRole, requireUser } = await import('./auth');
+const { accessForRow, getUser, requirePageRole, requirePageUser, requireRole, requireUser } =
+  await import('./auth');
 
 const USER_ID = '00000000-0000-4000-8000-000000000001';
 
@@ -184,5 +203,85 @@ describe('requireRole', () => {
   it('requires approval first (a pending user never satisfies any role)', async () => {
     dbState.row = rowOver({ role: 'admin', accessStatus: 'pending' });
     await expect(requireRole('admin')).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+});
+
+// ----- requirePageUser / requirePageRole --------------------------------------------
+
+async function redirectTarget(promise: Promise<unknown>): Promise<string> {
+  const error = await promise.then(
+    () => null,
+    (e: unknown) => e,
+  );
+  expect(error).toBeInstanceOf(Redirected);
+  return (error as Redirected).to;
+}
+
+describe('requirePageUser', () => {
+  it('returns an approved user', async () => {
+    expect(await requirePageUser()).toMatchObject({ id: USER_ID, accessStatus: 'approved' });
+  });
+
+  it('redirects a signed-out request to /login', async () => {
+    signedIn(null);
+    expect(await redirectTarget(requirePageUser())).toBe('/login');
+  });
+
+  it('includes ?next= for a same-origin path', async () => {
+    signedIn(null);
+    expect(await redirectTarget(requirePageUser('/library?q=hymn'))).toBe(
+      '/login?next=%2Flibrary%3Fq%3Dhymn',
+    );
+  });
+
+  it.each(['https://evil.example', '//evil.example', '/\\evil.example', 'library'])(
+    'drops an unsafe next (%s)',
+    async (next) => {
+      signedIn(null);
+      expect(await redirectTarget(requirePageUser(next))).toBe('/login');
+    },
+  );
+
+  it('redirects a disabled user to /login and signs them out', async () => {
+    dbState.row = rowOver({ disabledAt: new Date() });
+    expect(await redirectTarget(requirePageUser())).toBe('/login');
+    expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  it('redirects a user with no app row to /login', async () => {
+    dbState.row = undefined;
+    expect(await redirectTarget(requirePageUser())).toBe('/login');
+  });
+
+  it.each(['pending', 'rejected'] as const)(
+    'redirects a %s user to /account-status (REQ-AUTH-08)',
+    async (accessStatus) => {
+      dbState.row = rowOver({ accessStatus });
+      expect(await redirectTarget(requirePageUser('/library'))).toBe('/account-status');
+    },
+  );
+});
+
+describe('requirePageRole', () => {
+  it('returns a user with a sufficient role', async () => {
+    dbState.row = rowOver({ role: 'admin' });
+    expect(await requirePageRole('music_leader')).toMatchObject({ role: 'admin' });
+  });
+
+  it('404s an approved user below the role', async () => {
+    dbState.row = rowOver({ role: 'contributor' });
+    await expect(requirePageRole('admin')).rejects.toBeInstanceOf(NotFound);
+  });
+
+  it('redirects a signed-out request to /login first', async () => {
+    signedIn(null);
+    expect(await redirectTarget(requirePageRole('admin', '/admin/users'))).toBe(
+      '/login?next=%2Fadmin%2Fusers',
+    );
+  });
+
+  it('redirects a pending admin to /account-status, not a 404', async () => {
+    dbState.row = rowOver({ role: 'admin', accessStatus: 'pending' });
+    expect(await redirectTarget(requirePageRole('admin'))).toBe('/account-status');
   });
 });

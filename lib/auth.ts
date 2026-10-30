@@ -15,6 +15,14 @@
  *   redirect (UNAUTHENTICATED → `/login?next=…`, FORBIDDEN → `/account-status`).
  * - `requireRole(role)` — `requireUser` plus a minimum-role check (`member < contributor <
  *   music_leader < admin`; admin satisfies every request).
+ * - `requirePageUser(next?)` / `requirePageRole(role, next?)` — the same checks for server
+ *   components and layouts, which can't return an `ActionResult`: instead of throwing they
+ *   `redirect()` — signed out / disabled / no profile → `/login` (with `?next=` when given),
+ *   pending / rejected → `/account-status` — and an approved user below the role gets
+ *   `notFound()`, so admin pages aren't revealed.
+ *
+ * The session + row lookup is wrapped in React `cache()`, so the layout, the page and any role
+ * checks in one server render share a single Auth call and a single DB select.
  *
  * DB access is through `lib/db.ts` (the `DATABASE_URL` role, so RLS does not apply here — the
  * guard *is* the authorization for "am I allowed in at all").
@@ -23,6 +31,8 @@
 import 'server-only';
 
 import { eq } from 'drizzle-orm';
+import { notFound, redirect } from 'next/navigation';
+import { cache } from 'react';
 
 import { users } from '@/db/schema';
 import { ActionError } from '@/lib/action';
@@ -36,7 +46,11 @@ const ACCESS_PENDING_MSG =
 const ACCESS_REJECTED_MSG = 'Your account request was not approved. Contact an administrator.';
 const ROLE_DENIED_MSG = 'You do not have the role required for that action.';
 
+const LOGIN_PATH = '/login';
+const ACCOUNT_STATUS_PATH = '/account-status';
+
 /** Mirrors the Postgres `role` enum order: member < contributor < music_leader < admin. */
+// TODO(CR): share rank with lib/permissions.ts (agent-spec/change-requests/AUTH-04-role-at-least.md)
 const ROLE_RANK: Record<Role, number> = { member: 0, contributor: 1, music_leader: 2, admin: 3 };
 
 // ----- AppUser hydration & access decisions ----------------------------------------------
@@ -71,12 +85,12 @@ export function accessForRow(row: UserRow | null | undefined): AppUser | null {
 // ----- Guards ----------------------------------------------------------------------------
 
 /**
- * The signed-in `AppUser` whatever their access status, or `null`. Returns `null` when the
- * request is signed out or has no app profile. A disabled user is signed out on this request
- * (REQ-AUTH-06); the access decision itself — disabled → null and row → AppUser — is delegated to
- * `accessForRow`, so there is a single source of truth for it.
+ * The per-request lookup behind every guard, memoised with React `cache()` for the duration of a
+ * server render (outside a render, e.g. in a server action, it simply runs). A disabled user is
+ * signed out here (REQ-AUTH-06); the access decision itself — disabled → null and row → AppUser —
+ * is delegated to `accessForRow`, so there is a single source of truth for it.
  */
-export async function getUser(): Promise<AppUser | null> {
+const loadUser = cache(async (): Promise<AppUser | null> => {
   const supabase = await createServerSupabase();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
@@ -84,11 +98,19 @@ export async function getUser(): Promise<AppUser | null> {
   const [row] = await getDb().select().from(users).where(eq(users.id, data.user.id)).limit(1);
 
   if (row?.disabledAt) {
-    // REQ-AUTH-06: a disabled user must not keep using an existing session. Delegating the
-    // decision to accessForRow keeps the "disabled → null" rule in one place.
+    // REQ-AUTH-06: a disabled user must not keep using an existing session.
     await supabase.auth.signOut({ scope: 'local' });
   }
   return accessForRow(row);
+});
+
+/**
+ * The signed-in `AppUser` whatever their access status, or `null`. Returns `null` when the
+ * request is signed out, has no app profile, or the user is disabled (and signed out on this
+ * request, REQ-AUTH-06).
+ */
+export async function getUser(): Promise<AppUser | null> {
+  return loadUser();
 }
 
 /**
@@ -115,10 +137,46 @@ export async function requireUser(): Promise<AppUser> {
  */
 export async function requireRole(role: Role): Promise<AppUser> {
   const user = await requireUser();
-  if (ROLE_RANK[user.role] < ROLE_RANK[role]) throw new ActionError('FORBIDDEN', ROLE_DENIED_MSG);
+  if (!hasRole(user, role)) throw new ActionError('FORBIDDEN', ROLE_DENIED_MSG);
   return user;
 }
 
-// Keep the public surface minimal: the three guards above are the contract. `accessForRow` is
+function hasRole(user: AppUser, role: Role): boolean {
+  return ROLE_RANK[user.role] >= ROLE_RANK[role];
+}
+
+// ----- Page guards -----------------------------------------------------------------------
+
+/** `/login`, with `?next=` only for a same-origin path (never `//host` or a full URL). */
+function loginPath(next?: string): string {
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) {
+    return LOGIN_PATH;
+  }
+  return `${LOGIN_PATH}?${new URLSearchParams({ next }).toString()}`;
+}
+
+/**
+ * `requireUser` for server components and layouts. Returns an approved `AppUser`; otherwise
+ * redirects: no usable session (signed out / no profile / disabled) → `/login` (with `?next=`
+ * when `next` is a same-origin path), pending / rejected → `/account-status` (REQ-AUTH-08).
+ */
+export async function requirePageUser(next?: string): Promise<AppUser> {
+  const user = await getUser();
+  if (!user) redirect(loginPath(next));
+  if (user.accessStatus !== 'approved') redirect(ACCOUNT_STATUS_PATH);
+  return user;
+}
+
+/**
+ * `requireRole` for server components and layouts: `requirePageUser`, then `notFound()` when an
+ * approved user's role is below `role` (the page isn't revealed to roles that can't use it).
+ */
+export async function requirePageRole(role: Role, next?: string): Promise<AppUser> {
+  const user = await requirePageUser(next);
+  if (!hasRole(user, role)) notFound();
+  return user;
+}
+
+// Keep the public surface minimal: the guards above are the contract. `accessForRow` is
 // exported only for tests. `middleware.ts` must not import this module: it pulls `lib/db` (and the
 // postgres driver) into the edge bundle.

@@ -1,6 +1,6 @@
 # CR LIST-06 · `AddToListMenu` needs an undo callback (and a song title for its label)
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-30. `contracts/ui.md` and the LIST-09 task updated in the same commit.
 
 ## Problem
 

@@ -41,6 +41,7 @@ requirements: ["REQ-LIST-01", "REQ-LIST-02", "REQ-NAV-01"]
 - [ ] Layout wraps app in CurrentListProvider and passes real handlers to NavBar
 - [ ] Create → dialog → set current → `/library`
 - [ ] LibraryView rowAddSlot renders AddToListAction; after add, stays on results with params
+- [ ] AddToListAction passes `songTitle` and an `onUndo` that calls `removeListItem` on the added item (CR LIST-06-undo-and-label)
 
 ## Acceptance criteria
 - [ ] Playwright: Create Event Setlist → search → add 3 songs → open setlist shows 3 in order

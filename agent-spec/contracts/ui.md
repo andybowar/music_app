@@ -78,7 +78,7 @@ All components are client components unless noted, props-only (no data fetching 
 | `useSearchState` | `features/search/ui/useSearchState.ts` | hook → `{ params, setParams(p), newSearch(), clear() }` backed by URL | SRCH-04 |
 | `CurrentListProvider` / `useCurrentList` | `features/lists/ui/CurrentList.tsx` | `{ initial: List \| null }` → `{ current, setCurrent(l) }`; persisted in cookie `current_list` | LIST-04 |
 | `CreateListDialog` | `features/lists/ui/CreateListDialog.tsx` | `{ type: ListType; open; onOpenChange; onSubmit(input): Promise<ActionResult<List>> }` | LIST-05 |
-| `AddToListMenu` | `features/lists/ui/AddToListMenu.tsx` | `{ songId; current: List \| null; lists: List[]; onAdd(listId): Promise<ActionResult<unknown>>; onCreate(input): Promise<ActionResult<List>> }` | LIST-06 |
+| `AddToListMenu` | `features/lists/ui/AddToListMenu.tsx` | `{ songId; current: List \| null; lists: List[]; onAdd(listId): Promise<ActionResult<unknown>>; onCreate(input): Promise<ActionResult<List>>; onUndo?(listId, added: unknown): Promise<ActionResult<unknown>>; songTitle?: string }` | LIST-06 |
 | `ItemOverrideEditor` | `features/lists/ui/ItemOverrideEditor.tsx` | `{ resolved: ResolvedItem; keys: SongKey[]; onChange(patch): void }` | LIST-07 |
 | `SetlistView` | `features/lists/ui/SetlistView.tsx` | `{ list: ListDetail; canEdit: boolean }` | LIST-07 |
 | `PlayerBar` | `features/player/ui/PlayerBar.tsx` | `{ state: PlayerState; dispatch(e: PlayerEvent): void }` | PLAY-04 |

@@ -5,7 +5,7 @@ phase: 5
 wave: 5
 stream: ops
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["F-01", "DB-06"]
 blocks: []
@@ -29,13 +29,18 @@ requirements: ["REQ-NF-04"]
 - `REQ-NF-04` — Errors tracked (Sentry); daily DB backups; storage usage alerts.
 
 ## Deliverables
-- [ ] Sentry for server/client/edge; withAction INTERNAL errors captured; PII scrubbing (no lyrics/emails in events)
+- [x] Sentry for server/client/edge; withAction INTERNAL errors captured; PII scrubbing (no lyrics/emails in events)
 
 ## Acceptance criteria
 - [ ] Test error appears in Sentry staging
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `sentry.*.config.ts`, `instrumentation.ts`, `lib/log.ts`
 - **May touch** (minimal integration edits only, described in PR): `lib/action.ts`, `next.config.ts`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
+
+## Notes
+
+- "Test error appears in Sentry staging" is left unchecked: it needs a real staging DSN. See the
+  PR and `agent-spec/change-requests/OPS-02-instrumentation-client.md` for how the owner verifies it.

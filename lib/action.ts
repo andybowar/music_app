@@ -7,14 +7,15 @@
  *   - `ZodError`           → VALIDATION, with per-field messages
  *   - Next.js control flow → rethrown (`redirect()`, `notFound()` must reach Next)
  *   - anything else        → INTERNAL, swallowed + reported via the capture hook
- *
- * `lib/action.ts` has no I/O of its own, so it is pure and fully unit-testable.
+ *     (default: `reportError` from lib/log → structured log + Sentry)
  */
 
 import type { ActionResult, ErrorCode } from '@/types/domain';
 
 import { unstable_rethrow } from 'next/navigation';
 import { z } from 'zod';
+
+import { reportError } from '@/lib/log';
 
 /** An error an action may throw deliberately; its code is preserved on the result. */
 export class ActionError extends Error {
@@ -30,21 +31,18 @@ export class ActionError extends Error {
 }
 
 // ----- Sentry capture hook ------------------------------------------------------
-// This task owns the plumbing, not the SDK: a capture callback is installed by
-// server bootstrap (or a test) so unknown errors are reported without lib/action
-// depending on `@sentry/*`. Until one is installed, unknown errors are logged to
-// the console so they are never lost.
+// By default unknown errors go to `reportError` (lib/log, OPS-02): a structured
+// console.error line plus Sentry.captureException (a no-op without a DSN). Tests
+// can install their own sink; `null` restores the default.
 export type ErrorCapture = (error: unknown, context?: Record<string, unknown>) => void;
 
-const logToConsole: ErrorCapture = (error, context) => {
-  console.error('[withAction] unhandled error', context, error);
-};
+const defaultCapture: ErrorCapture = reportError;
 
-let capture: ErrorCapture = logToConsole;
+let capture: ErrorCapture = defaultCapture;
 
-/** Install the sink that receives unhandled errors; `null` restores console logging. */
+/** Install the sink that receives unhandled errors; `null` restores the default. */
 export function setSentryCapture(fn: ErrorCapture | null): void {
-  capture = fn ?? logToConsole;
+  capture = fn ?? defaultCapture;
 }
 
 // ----- Zod mapping --------------------------------------------------------------

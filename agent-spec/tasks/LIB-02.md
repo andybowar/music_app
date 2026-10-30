@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: backend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["IMP-03", "LIB-17"]
@@ -34,12 +34,12 @@ requirements: ["REQ-LIB-08"]
 - `REQ-LIB-08` — Musical tags: one primary key + 0..n alternate keys; each key has first chords for intro, verse, chorus, bridge; tempo (BPM), time signature, energy level (5 levels, see §4), free-text energy notes (e.g. "starts light, slow build, big bridge build").
 
 ## Deliverables
-- [ ] `setSongKeys` in a transaction; preserves ids of unchanged keys so resources stay attached
-- [ ] Refuses to delete a key that still has resources (CONFLICT, lists them)
+- [x] `setSongKeys` in a transaction; preserves ids of unchanged keys so resources stay attached
+- [x] Refuses to delete a key that still has resources (CONFLICT, lists them)
 
 ## Acceptance criteria
-- [ ] Tests: exactly-one-primary enforced; rename key keeps resources; delete key with files → CONFLICT
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Tests: exactly-one-primary enforced; rename key keeps resources; delete key with files → CONFLICT
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/songs/server/keys.ts`

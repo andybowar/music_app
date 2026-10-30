@@ -1,6 +1,6 @@
 # CR AUTH-01 · Allow the reset redirect URL; let AUTH-01 own a login e2e spec and gallery page
 
-**Status:** §1 approved by project owner 2026-10-29 and applied to `supabase/config.toml` (hosted redirect URLs still to add with OPS-01). §2 and §3 still proposed.
+**Status:** §1 approved 2026-10-29 and applied. §2 and §3 approved by project owner 2026-10-30: §3 applied to `tasks/AUTH-01.md` (owns `tests/e2e/auth-login.spec.ts`; the spec itself is still to be written). §2 (token-hash recovery template) is a follow-up for the lead dev.
 
 ## 1. `/reset/confirm` is not an allowed Supabase redirect for `localhost`
 

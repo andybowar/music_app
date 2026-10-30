@@ -73,7 +73,7 @@ All components are client components unless noted, props-only (no data fetching 
 | `InlineAudio` | `components/media/InlineAudio.tsx` | `{ url: string; title: string }` | UI-08 |
 | `SearchBar` | `features/search/ui/SearchBar.tsx` | `{ value: string; fields: SearchField[]; onChange(q, fields): void; onSubmit(): void }` | SRCH-05 |
 | `FilterBar` | `features/search/ui/FilterBar.tsx` | `{ params: SearchParams; facets: FacetOptions; onChange(p: SearchParams): void }` | SRCH-06 |
-| `SortControl` | `features/search/ui/SortControl.tsx` | `{ sort?: Sort; dir?: 'asc'\|'desc'; onChange(sort, dir): void }` | SRCH-07 |
+| `SortControl` | `features/search/ui/SortControl.tsx` | `{ sort?: Sort; dir?: 'asc'\|'desc'; hasQuery?: boolean; className?: string; onChange(sort: Sort \| undefined, dir: 'asc'\|'desc' \| undefined): void }` (`undefined` = Relevance; SRCH-09 passes `hasQuery={Boolean(params.q)}`) | SRCH-07 |
 | `ResultsList` | `features/search/ui/ResultsList.tsx` | `{ result: SearchResult; renderRow(s: SongSummary): ReactNode; onLoadMore(): void; loading: boolean }` | SRCH-08 |
 | `useSearchState` | `features/search/ui/useSearchState.ts` | hook → `{ params, setParams(p), newSearch(), clear() }` backed by URL | SRCH-04 |
 | `CurrentListProvider` / `useCurrentList` | `features/lists/ui/CurrentList.tsx` | `{ initial: List \| null }` → `{ current, setCurrent(l) }`; persisted in cookie `current_list` | LIST-04 |
@@ -82,10 +82,12 @@ All components are client components unless noted, props-only (no data fetching 
 | `ItemOverrideEditor` | `features/lists/ui/ItemOverrideEditor.tsx` | `{ resolved: ResolvedItem; keys: SongKey[]; onChange(patch): void }` | LIST-07 |
 | `SetlistView` | `features/lists/ui/SetlistView.tsx` | `{ list: ListDetail; canEdit: boolean }` | LIST-07 |
 | `PlayerBar` | `features/player/ui/PlayerBar.tsx` | `{ state: PlayerState; dispatch(e: PlayerEvent): void }` | PLAY-04 |
-| `AudioPicker` | `features/player/ui/AudioPicker.tsx` | `{ resources: Resource[]; value: UUID \| null; onChange(id): void }` | PLAY-06 |
+| `AudioPicker` | `features/player/ui/AudioPicker.tsx` | `{ resources: Resource[]; value: UUID \| null; onChange(id: UUID \| null): void; label?: string; className?: string }` (`null` = recording cleared) | PLAY-06 |
 | `PlaylistView` | `features/player/ui/PlaylistView.tsx` | `{ list: ListDetail; canEdit: boolean }` | PLAY-05 |
 | `ShareDialog` | `features/sharing/ui/ShareDialog.tsx` | `{ list: List; open; onOpenChange }` | SHR-04 |
 | Song form sections | `features/songs/ui/form/*.tsx` | each `{ value: Partial<SongFormValue>; onChange(v): void; errors?: Record<string,string[]> }` | LIB-10…15 |
+| `ResourcesSection` (extra props) | `features/songs/ui/form/ResourcesSection.tsx` | form-section props plus `{ songId: UUID \| null; initialResources: Resource[]; onResourcesChange?(r: Resource[]): void; requestUpload, finalizeUpload, deleteResource, getSignedResourceUrl, addLink, updateLink` (api.md signatures)`; putFile?(uploadUrl, file, onProgress): Promise<void> }`. Resources save immediately via their own actions and are not part of `SongFormValue`; the section never calls `onChange`. | LIB-14 |
+| `UsageSection` (extra props) | `features/songs/ui/form/UsageSection.tsx` | form-section props plus `{ saved: BranchUsage[] }` (stored `SongDetail.usage`, shows derived values). `value.usage` holds **manual entries only**; build it with `usageFromSong(song)`. | LIB-15 |
 
 `SongFormValue` (defined in `features/songs/ui/form/types.ts` by LIB-10):
 ```ts

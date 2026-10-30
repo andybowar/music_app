@@ -1,6 +1,6 @@
 # CR LIB-15 · `setBranchUsage` semantics for manual vs derived rows
 
-**Status:** proposed (awaiting approval).
+**Status:** approved by project owner 2026-10-30. `contracts/api.md` and `contracts/ui.md` updated. LIB-05 implements the semantics.
 
 ## Problem
 

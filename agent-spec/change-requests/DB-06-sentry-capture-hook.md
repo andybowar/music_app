@@ -1,6 +1,6 @@
 # CR DB-06 · Document the `withAction` error-capture hook for OPS-02
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-30. `contracts/api.md` updated. OPS-02 merged without installing the hook; installing it in `instrumentation.ts` is a follow-up for the lead dev.
 
 ## Problem
 

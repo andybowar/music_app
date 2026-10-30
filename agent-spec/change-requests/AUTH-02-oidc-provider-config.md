@@ -1,6 +1,6 @@
 # CR AUTH-02 · Enable Google + Microsoft in Supabase config; small contract notes
 
-**Status:** proposed (AUTH-02). Needs approval.
+**Status:** approved by project owner 2026-10-30. §1 applied to `supabase/config.toml` and `.env.example`; §3 `signInWithOidc(provider, next?)` is additive. §2 decision: keep AUTH-02's behavior (a new SSO identity with no mapped group is rejected). The `/dev/sso-buttons` gallery is left to the gallery owner.
 
 ## 1. `supabase/config.toml` needs the Google and Azure providers (F-01 owns it)
 

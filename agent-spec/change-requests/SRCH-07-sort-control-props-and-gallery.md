@@ -1,6 +1,6 @@
 # CR SRCH-07 · SortControl: `hasQuery` prop, `onChange` types, `/dev/sort-control` gallery
 
-**Status:** proposed. SRCH-07 is implemented to the proposed contract below, so no code change is needed if this is approved.
+**Status:** approved by project owner 2026-10-30. `contracts/ui.md` and `tasks/SRCH-07.md` updated; the gallery page is still to be written. SRCH-07 is implemented to the proposed contract below, so no code change is needed if this is approved.
 
 ## Problem
 

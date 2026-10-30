@@ -467,7 +467,8 @@
         "app/(auth)/reset/",
         "features/auth/actions.ts",
         "features/auth/ui/LoginForm.tsx",
-        "features/auth/ui/ResetForms.tsx"
+        "features/auth/ui/ResetForms.tsx",
+        "tests/e2e/auth-login.spec.ts"
       ],
       "touches": [],
       "reqs": [
@@ -814,7 +815,9 @@
         "PLAY-05"
       ],
       "owns": [
-        "features/player/ui/AudioPicker.tsx"
+        "features/player/ui/AudioPicker.tsx",
+        "features/player/ui/AudioPicker.test.tsx",
+        "app/dev/audio-picker/"
       ],
       "touches": [],
       "reqs": [
@@ -865,7 +868,8 @@
         "SRCH-09"
       ],
       "owns": [
-        "features/search/ui/SortControl.tsx"
+        "features/search/ui/SortControl.tsx",
+        "app/dev/sort-control/"
       ],
       "touches": [],
       "reqs": [
@@ -964,7 +968,9 @@
         "SRCH-09"
       ],
       "owns": [
-        "components/media/"
+        "components/media/",
+        "app/dev/media/",
+        "public/dev/sample.pdf"
       ],
       "touches": [],
       "reqs": [
@@ -1027,7 +1033,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/CNT-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DB-07",
@@ -1067,7 +1073,7 @@
         "REQ-AUTH-08"
       ],
       "file": "tasks/DB-07.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-11",
@@ -1223,7 +1229,7 @@
         "REQ-LIST-02"
       ],
       "file": "tasks/LIST-06.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "OPS-02",
@@ -1251,7 +1257,7 @@
         "REQ-NF-04"
       ],
       "file": "tasks/OPS-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-01",
@@ -1280,7 +1286,7 @@
         "REQ-SRCH-04"
       ],
       "file": "tasks/SRCH-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-06",
@@ -1306,7 +1312,7 @@
         "REQ-SRCH-03"
       ],
       "file": "tasks/SRCH-06.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "UI-05",
@@ -1336,7 +1342,7 @@
         "REQ-ROW-02"
       ],
       "file": "tasks/UI-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "UI-06",
@@ -1366,7 +1372,7 @@
         "REQ-ROW-02"
       ],
       "file": "tasks/UI-06.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "UI-07",
@@ -1394,7 +1400,7 @@
         "REQ-ROW-03"
       ],
       "file": "tasks/UI-07.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "AUTH-04",
@@ -1432,7 +1438,7 @@
         "REQ-AUTH-08"
       ],
       "file": "tasks/AUTH-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "AUTH-07",

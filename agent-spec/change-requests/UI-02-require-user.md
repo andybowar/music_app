@@ -1,6 +1,6 @@
 # CR UI-02 · Layout needs `requireUser()` before AUTH-04 has merged
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-30 (option 1). The swap itself is covered by `AUTH-04-layout-require-user.md`.
 
 ## Problem
 

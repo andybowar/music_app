@@ -1,6 +1,6 @@
 # CR IMP-02 · `FileMatch` is used by the contract but never defined
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-10-30. `contracts/api.md` updated.
 
 ## Problem
 

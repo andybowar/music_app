@@ -1,6 +1,6 @@
 # CR DB-04 · `pnpm db:seed` script
 
-**Status:** proposed (needs approval).
+**Status:** approved by project owner 2026-10-30. `db:seed` added to `package.json` (the optional `db:fresh` was not added).
 
 ## Problem
 

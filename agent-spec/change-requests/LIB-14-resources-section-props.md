@@ -1,6 +1,6 @@
 # CR LIB-14: Resources section props and `parseYouTubeId` stand-in
 
-**Status:** proposed (no frozen file was edited)
+**Status:** approved by project owner 2026-10-30. `contracts/ui.md` updated. LIB-07 (local `parseYouTubeId` swap) and LIB-17 (wiring) follow the notes below.
 
 ## Problem
 

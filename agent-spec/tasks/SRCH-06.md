@@ -5,7 +5,7 @@ phase: 2
 wave: 5
 stream: frontend
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["UI-04", "SRCH-04"]
 blocks: ["SRCH-09"]
@@ -31,13 +31,13 @@ requirements: ["REQ-SRCH-03"]
 - `REQ-SRCH-03` — Optional concurrent multi-select filters: energy level(s), key(s), decade(s) written, branch use (branch + level), first chord of chorus/refrain, first chord of verse, first chord of bridge.
 
 ## Deliverables
-- [ ] Multi-select dropdowns: Energy (colored), Key, Decade, Branch use (branch then levels), First chord refrain/verse/bridge
-- [ ] Active filter chips with remove; "Clear filters"
-- [ ] Options from `FacetOptions` prop
+- [x] Multi-select dropdowns: Energy (colored), Key, Decade, Branch use (branch then levels), First chord refrain/verse/bridge
+- [x] Active filter chips with remove; "Clear filters"
+- [x] Options from `FacetOptions` prop
 
 ## Acceptance criteria
-- [ ] Mobile: filters collapse into a sheet
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Mobile: filters collapse into a sheet
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/search/ui/FilterBar.tsx`, `app/dev/filter-bar/`

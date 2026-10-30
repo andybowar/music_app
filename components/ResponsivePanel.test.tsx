@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { mockViewport } from '@/components/ui/test-media';
@@ -108,6 +109,83 @@ describe('ResponsivePanel', () => {
     expect(await screen.findByRole('dialog', { name: 'Usage by branch' })).toHaveTextContent(
       'Body',
     );
+  });
+
+  it.each([
+    ['popover', 1024],
+    ['sheet', 360],
+  ])(
+    '%s: controlled without a trigger, opens from a callback and returns focus to the opener',
+    async (mode, width) => {
+      mockViewport(width);
+      const user = userEvent.setup();
+      const changes: boolean[] = [];
+      function Controlled() {
+        const [open, setOpen] = useState(false);
+        return (
+          <>
+            <button type="button" onClick={() => setOpen(true)}>
+              Key D
+            </button>
+            <ResponsivePanel
+              open={open}
+              onOpenChange={(next) => {
+                changes.push(next);
+                setOpen(next);
+              }}
+              anchor={<div>Row</div>}
+              title="Keys"
+            >
+              <button type="button">Inside</button>
+            </ResponsivePanel>
+          </>
+        );
+      }
+      render(<Controlled />);
+      expect(screen.getByText('Row')).toBeInTheDocument();
+      const opener = screen.getByRole('button', { name: 'Key D' });
+
+      await user.click(opener);
+      const panel = await screen.findByRole('dialog', { name: 'Keys' });
+      expect(panel).toHaveAttribute('data-mode', mode);
+      await waitFor(() => expect(panel.contains(document.activeElement)).toBe(true));
+
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(changes).toEqual([false]);
+      expect(opener).toHaveFocus();
+    },
+  );
+
+  it('controlled with a trigger reports changes and follows the open prop', async () => {
+    mockViewport(1024);
+    const user = userEvent.setup();
+    const changes: boolean[] = [];
+    const { rerender } = render(
+      <ResponsivePanel
+        open={false}
+        onOpenChange={(next) => changes.push(next)}
+        trigger={<button type="button">Key D</button>}
+        title="Keys"
+      >
+        <p>Body</p>
+      </ResponsivePanel>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Key D' }));
+    expect(changes).toEqual([true]);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    rerender(
+      <ResponsivePanel
+        open
+        onOpenChange={(next) => changes.push(next)}
+        trigger={<button type="button">Key D</button>}
+        title="Keys"
+      >
+        <p>Body</p>
+      </ResponsivePanel>,
+    );
+    expect(await screen.findByRole('dialog', { name: 'Keys' })).toHaveTextContent('Body');
   });
 
   it('server-renders only the trigger, without matchMedia', () => {

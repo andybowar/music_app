@@ -1,6 +1,6 @@
 # CR UI-05 · `ResponsivePanel` can be opened from a callback
 
-**Status:** approved by project owner 2026-10-30. `contracts/ui.md` updated in the same commit. The component change in `components/ResponsivePanel.tsx` (UI-01) is not yet made; see "Implementation".
+**Status:** approved by project owner 2026-10-30. `contracts/ui.md` updated; the owner OK'd the lead editing `components/ResponsivePanel.tsx` (UI-01) directly, done in the same PR.
 
 ## Problem
 
@@ -35,7 +35,7 @@ Small, contained change to `components/ResponsivePanel.tsx` plus tests in `Respo
 - focus-return handling as above;
 - tests: controlled open from outside state, anchor positioning target, focus returns to the opener at both widths.
 
-UI-01 is done, so this needs either the owner's OK for the lead to edit the file directly, or adding `components/ResponsivePanel.tsx` to the **touches** of the first consumer (SRCH-08) and doing it there.
+UI-01 is done; the owner chose to have the lead edit the file directly rather than route it through SRCH-08's touches.
 
 ## Affects
 

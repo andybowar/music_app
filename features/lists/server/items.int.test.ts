@@ -185,7 +185,7 @@ describe('addListItem', () => {
     const hidden = await addListItem(playlist, songA);
     expect(hidden.ok === false && hidden.error.code).toBe('NOT_FOUND');
     const denied = await addListItem(setlist, songA);
-    expect(denied.ok).toBe(false);
+    expect(denied.ok === false && denied.error.code).toBe('FORBIDDEN');
     expect(await positions(setlist)).toHaveLength(0);
   });
 
@@ -225,7 +225,8 @@ describe('removeListItem', () => {
     const listId = await makeList('setlist');
     const item = await add(listId, songA);
     actor = stranger;
-    expect((await removeListItem(item.id)).ok).toBe(false);
+    const removed = await removeListItem(item.id);
+    expect(removed.ok === false && removed.error.code).toBe('FORBIDDEN');
     expect(await positions(listId)).toHaveLength(1);
   });
 });
@@ -358,7 +359,8 @@ describe('updateListItem', () => {
     const listId = await makeList('setlist');
     const item = await add(listId, songA);
     actor = stranger;
-    expect((await updateListItem(item.id, { overrideBpm: 100 })).ok).toBe(false);
+    const denied = await updateListItem(item.id, { overrideBpm: 100 });
+    expect(denied.ok === false && denied.error.code).toBe('FORBIDDEN');
     const [row] = await getDb().select().from(listItems).where(eq(listItems.id, item.id));
     expect(row?.overrideBpm).toBeNull();
   });

@@ -75,10 +75,11 @@ describe('requestUpload', () => {
     expect(withTx).not.toHaveBeenCalled();
   });
 
-  it('denies a member', async () => {
+  it('returns FORBIDDEN for a member', async () => {
     requireUser.mockResolvedValue(userWith('member'));
     const result = await requestUpload(valid);
     expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('FORBIDDEN');
     expect(withTx).not.toHaveBeenCalled();
   });
 
@@ -136,10 +137,11 @@ describe.each([
   });
 
   if (permission === 'resource:write') {
-    it('denies a member', async () => {
+    it('returns FORBIDDEN for a member', async () => {
       requireUser.mockResolvedValue(userWith('member'));
       const result = await action(RES);
       expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.code).toBe('FORBIDDEN');
       expect(withTx).not.toHaveBeenCalled();
     });
   }

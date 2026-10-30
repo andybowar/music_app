@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: backend
 size: M
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["IMP-03", "LIB-17", "LIB-18", "SRCH-09"]
@@ -36,14 +36,14 @@ requirements: ["REQ-LIB-09", "REQ-LIB-10", "REQ-LIB-11"]
 - `REQ-LIB-11` — All files are private; served only to signed-in users via short-lived signed URLs.
 
 ## Deliverables
-- [ ] Storage helpers + actions per contract
-- [ ] Validation via KIND_FORMATS, MAX_UPLOAD_BYTES, mime sniff on finalize
-- [ ] deleteResource removes object then row
+- [x] Storage helpers + actions per contract
+- [x] Validation via KIND_FORMATS, MAX_UPLOAD_BYTES, mime sniff on finalize
+- [x] deleteResource removes object then row
 
 ## Acceptance criteria
-- [ ] Integration test against local storage: request → PUT → finalize → signed URL fetch returns bytes
-- [ ] Projection with songKeyId → VALIDATION; PDF as audio → VALIDATION
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Integration test against local storage: request → PUT → finalize → signed URL fetch returns bytes
+- [x] Projection with songKeyId → VALIDATION; PDF as audio → VALIDATION
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `lib/storage.ts`, `features/resources/server/files.ts`

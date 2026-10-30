@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: frontend
 size: L
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["AUTH-04", "AUTH-05", "UI-02", "DB-07"]
 blocks: ["ADM-02", "AUTH-06", "ADM-04"]

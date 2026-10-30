@@ -5,7 +5,7 @@ phase: 0
 wave: 6
 stream: auth
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["F-05", "DB-06", "DB-07"]
 blocks: ["ADM-01", "LIB-01", "LIB-02", "LIB-03", "LIB-04", "LIB-05", "LIB-06", "LIB-07", "LIST-02", "SRCH-10", "SRCH-02"]
@@ -35,18 +35,18 @@ requirements: ["REQ-AUTH-06", "REQ-AUTH-08"]
 - `REQ-AUTH-08` — Pending and rejected users who sign in see only an account-status page.
 
 ## Deliverables
-- [ ] `getUser`, `requireUser`, `requireRole`
-- [ ] middleware refreshes Supabase session; redirects unauthenticated requests for `(app)` routes
-- [ ] Disabled users are signed out on next request
-- [ ] `getUser` returns the user whatever their access status; `requireUser` returns only approved users and throws FORBIDDEN for pending/rejected (contract: `api.md` core libs)
-- [ ] Middleware sends signed-in pending/rejected users who request any `(app)` route to `/account-status`; `(auth)` routes (`/login`, `/signup`, `/reset`, `/account-status`, `/auth/callback`) stay reachable
+- [x] `getUser`, `requireUser`, `requireRole` (plus `requirePageUser` / `requirePageRole` for server components)
+- [x] middleware refreshes Supabase session; redirects unauthenticated requests for `(app)` routes
+- [x] Disabled users are signed out on next request
+- [x] `getUser` returns the user whatever their access status; `requireUser` returns only approved users and throws FORBIDDEN for pending/rejected (contract: `api.md` core libs)
+- [x] Middleware sends signed-in pending/rejected users who request any `(app)` route to `/account-status`; `(auth)` routes (`/login`, `/signup`, `/reset`, `/account-status`, `/auth/callback`) stay reachable. The `/account-status` page itself is delivered by AUTH-07; until it merges the redirect lands on a 404.
 
 ## Acceptance criteria
-- [ ] Unit tests with mocked Supabase
-- [ ] Hitting /library logged out → /login?next=/library
-- [ ] Hitting /library as a pending or rejected user → /account-status; as an approved user → /library
-- [ ] A server action called by a pending user returns FORBIDDEN
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Unit tests with mocked Supabase
+- [x] Hitting /library logged out → /login?next=/library
+- [x] Hitting /library as a pending or rejected user → /account-status (route from AUTH-07); as an approved user → /library
+- [x] A server action called by a pending user returns FORBIDDEN
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `lib/auth.ts`, `middleware.ts`

@@ -3,7 +3,9 @@
  *
  * Every server action is wrapped in `withAction`, which runs the action and maps
  * any thrown error onto an `ActionResult` so callers/UI never see a raw throw:
- *   - `ActionError`        → its own code + optional fieldErrors (passed through)
+ *   - `ActionError`        → its own code + optional fieldErrors (passed through).
+ *     Also any Error *named* 'ActionError' with a string `code` (e.g. `assertCan`
+ *     in lib/permissions, which stays free of this module's imports).
  *   - `ZodError`           → VALIDATION, with per-field messages
  *   - Next.js control flow → rethrown (`redirect()`, `notFound()` must reach Next)
  *   - anything else        → INTERNAL, swallowed + reported via the capture hook
@@ -45,6 +47,28 @@ export function setSentryCapture(fn: ErrorCapture | null): void {
   capture = fn ?? defaultCapture;
 }
 
+/**
+ * Structural match for errors that mirror `ActionError` without being instances of it
+ * (lib/permissions `assertCan` throws one so it can stay pure). CR LIB-07-assertcan-actionerror.
+ */
+function asActionErrorLike(
+  error: unknown,
+): { code: ErrorCode; message: string; fieldErrors?: Record<string, string[]> } | null {
+  if (error instanceof ActionError) return error;
+  if (
+    error instanceof Error &&
+    error.name === 'ActionError' &&
+    typeof (error as { code?: unknown }).code === 'string'
+  ) {
+    const { code, fieldErrors } = error as Error & {
+      code: ErrorCode;
+      fieldErrors?: Record<string, string[]>;
+    };
+    return { code, message: error.message, ...(fieldErrors ? { fieldErrors } : {}) };
+  }
+  return null;
+}
+
 // ----- Zod mapping --------------------------------------------------------------
 
 function zodFieldErrors(error: z.ZodError): Record<string, string[]> {
@@ -71,13 +95,14 @@ export function withAction<A extends unknown[], T>(
       // redirect()/notFound() throw sentinel errors that Next must handle itself.
       unstable_rethrow(error);
 
-      if (error instanceof ActionError) {
+      const actionError = asActionErrorLike(error);
+      if (actionError) {
         return {
           ok: false,
           error: {
-            code: error.code,
-            message: error.message,
-            ...(error.fieldErrors ? { fieldErrors: error.fieldErrors } : {}),
+            code: actionError.code,
+            message: actionError.message,
+            ...(actionError.fieldErrors ? { fieldErrors: actionError.fieldErrors } : {}),
           },
         };
       }

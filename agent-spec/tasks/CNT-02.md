@@ -5,7 +5,7 @@ phase: 1
 wave: 5
 stream: content
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["CNT-01"]
 blocks: ["CNT-03"]
@@ -25,11 +25,11 @@ requirements: []
 - Output of `CNT-01` (merged on main)
 
 ## Deliverables
-- [ ] Energy level definitions with example songs, how to pick first chords, theme rules, file naming
+- [x] Energy level definitions with example songs, how to pick first chords, theme rules, file naming
 
 ## Acceptance criteria
-- [ ] Fits on 2 printed pages
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Fits on 2 printed pages
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `docs/tagging-guide.md`

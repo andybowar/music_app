@@ -33,7 +33,7 @@ import { ActionError, withAction } from '@/lib/action';
 import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
 import { getDb, withTx, type Tx } from '@/lib/db';
-import { assertCan, type Action } from '@/lib/permissions';
+import { assertCan } from '@/lib/permissions';
 import type { AppUser, SongDetail, UUID } from '@/types/domain';
 import { SECTIONS } from '@/types/domain';
 import { songInputSchema, type SongInput } from '@/types/validation';
@@ -44,21 +44,6 @@ const ENTITY = 'song';
 const NOT_FOUND = 'Song not found.';
 
 const idSchema = z.guid();
-
-/**
- * `assertCan`, with its FORBIDDEN error re-thrown as an `ActionError` so `withAction` reports
- * FORBIDDEN rather than INTERNAL (lib/permissions can't import lib/action's class).
- */
-function authorize(user: AppUser, action: Action): void {
-  try {
-    assertCan(user, action);
-  } catch (error) {
-    if ((error as { code?: unknown }).code === 'FORBIDDEN') {
-      throw new ActionError('FORBIDDEN', (error as Error).message);
-    }
-    throw error;
-  }
-}
 
 function parseId(id: unknown): UUID {
   const parsed = idSchema.safeParse(id);
@@ -105,7 +90,7 @@ function resolveAddedBy(
 ) {
   if (requested === undefined) return fallback;
   if (requested === fallback) return fallback;
-  authorize(user, 'song:set_added_by');
+  assertCan(user, 'song:set_added_by');
   return requested;
 }
 
@@ -176,7 +161,7 @@ async function lockLiveSong(tx: Tx, id: string): Promise<SongRow> {
 
 export const createSong = withAction(async (input: unknown): Promise<{ id: UUID }> => {
   const user = await requireUser();
-  authorize(user, 'song:write');
+  assertCan(user, 'song:write');
   const data = songInputSchema.parse(input);
   const addedByBranchId = resolveAddedBy(user, data.addedByBranchId, user.branchId);
 
@@ -208,7 +193,7 @@ export const createSong = withAction(async (input: unknown): Promise<{ id: UUID 
 
 export const updateSong = withAction(async (id: UUID, input: unknown): Promise<void> => {
   const user = await requireUser();
-  authorize(user, 'song:write');
+  assertCan(user, 'song:write');
   const songId = parseId(id);
   const data = songInputSchema.parse(input);
 
@@ -243,7 +228,7 @@ export const updateSong = withAction(async (id: UUID, input: unknown): Promise<v
 /** Soft delete (sets `deleted_at`); the song disappears from reads but lists keep their rows. */
 export const deleteSong = withAction(async (id: UUID): Promise<void> => {
   const user = await requireUser();
-  authorize(user, 'song:delete');
+  assertCan(user, 'song:delete');
   const songId = parseId(id);
 
   await withTx(async (tx) => {
@@ -338,7 +323,7 @@ async function loadSongDetails(ids: readonly string[]): Promise<SongDetail[]> {
 /** A live song's full detail, or `null` when it doesn't exist or was deleted. */
 export async function getSong(id: UUID): Promise<SongDetail | null> {
   const user = await requireUser();
-  authorize(user, 'song:read');
+  assertCan(user, 'song:read');
   const [song] = await loadSongDetails([id]);
   return song ?? null;
 }
@@ -346,6 +331,6 @@ export async function getSong(id: UUID): Promise<SongDetail | null> {
 /** Live songs among `ids`, in the order given (unknown/deleted ids are skipped). */
 export async function getSongs(ids: UUID[]): Promise<SongDetail[]> {
   const user = await requireUser();
-  authorize(user, 'song:read');
+  assertCan(user, 'song:read');
   return loadSongDetails(ids);
 }

@@ -5,7 +5,7 @@ phase: 1
 wave: 7
 stream: backend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
 blocks: ["IMP-03", "LIB-17", "H-02"]
@@ -34,12 +34,12 @@ requirements: ["REQ-LIB-07"]
 - `REQ-LIB-07` — Lyric themes are tagged per section from a shared, normalized theme vocabulary; new themes can be created inline.
 
 ## Deliverables
-- [ ] searchThemes (prefix + trigram), createTheme (normalized, idempotent), setSongThemes, mergeThemes
+- [x] searchThemes (prefix + trigram), createTheme (normalized, idempotent), setSongThemes, mergeThemes
 
 ## Acceptance criteria
-- [ ] "  Glory  Honor " and "glory honor" resolve to the same theme
-- [ ] merge moves all song_themes without duplicates
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] "  Glory  Honor " and "glory honor" resolve to the same theme
+- [x] merge moves all song_themes without duplicates
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/themes/server.ts`

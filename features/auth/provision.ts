@@ -144,6 +144,7 @@ function toAppUser(row: UserRow): AppUser {
     role: row.role,
     authProvider: row.authProvider as AuthProvider,
     disabledAt: row.disabledAt ? row.disabledAt.toISOString() : null,
+    accessStatus: row.accessStatus,
   };
 }
 

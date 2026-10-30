@@ -109,6 +109,7 @@ describe('provisionUser (database)', () => {
       role: 'member',
       authProvider: 'microsoft',
       disabledAt: null,
+      accessStatus: 'pending', // DB-07 column default; AUTH-07 owns approval on first login
     });
     const row = await rowFor(authUser.id);
     expect(row).toMatchObject({ ssoSubject: 'sub-1', branchId, role: 'member' });

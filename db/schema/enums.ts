@@ -1,5 +1,6 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 import {
+  ACCESS_STATUSES,
   AUTH_PROVIDERS,
   ENERGY_LEVELS,
   LIST_TYPES,
@@ -25,6 +26,7 @@ export const popMemberEnum = pgEnum('pop_member', POP_MEMBER);
 export const resourceKindEnum = pgEnum('resource_kind', RESOURCE_KINDS);
 export const resourceFormatEnum = pgEnum('resource_format', RESOURCE_FORMATS);
 export const listTypeEnum = pgEnum('list_type', LIST_TYPES);
+export const accessStatusEnum = pgEnum('access_status', ACCESS_STATUSES);
 
 /**
  * types/domain.ts has no array constant for audit actions, only the

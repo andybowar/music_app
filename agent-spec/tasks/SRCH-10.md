@@ -5,7 +5,7 @@ phase: 2
 wave: 7
 stream: backend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04"]
 blocks: ["SRCH-09"]
@@ -33,11 +33,11 @@ requirements: ["REQ-SRCH-03"]
 - `REQ-SRCH-03` — Optional concurrent multi-select filters: energy level(s), key(s), decade(s) written, branch use (branch + level), first chord of chorus/refrain, first chord of verse, first chord of bridge.
 
 ## Deliverables
-- [ ] `getFacetOptions` (distinct keys, decades, primary-key first chords, branches); cached 5 min
+- [x] `getFacetOptions` (distinct keys, decades, primary-key first chords, branches); cached 5 min
 
 ## Acceptance criteria
-- [ ] Test against seed
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Test against seed
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/search/server/facets.ts`

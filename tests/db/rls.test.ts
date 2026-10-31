@@ -31,9 +31,6 @@ const sql = postgres(process.env.DATABASE_URL!, { max: 1, onnotice: () => {} });
 
 const tag = randomUUID().slice(0, 8);
 
-/** CR documenting that `can()` ignores `accessStatus` (contract: non-approved users can do nothing). */
-const CR_ACCESS_STATUS = 'agent-spec/change-requests/DB-05-can-access-status.md';
-
 /** CR documenting that RLS blocks a music leader's soft delete of a same-branch setlist they don't own. */
 const CR_LEADER_SOFT_DELETE = 'agent-spec/change-requests/DB-05-leader-soft-delete-setlist.md';
 
@@ -533,18 +530,6 @@ afterAll(async () => {
 // ---------------------------------------------------------------------------------------
 
 /**
- * Known mismatch (see CR_ACCESS_STATUS): `can()` doesn't look at `accessStatus`, so for a
- * pending or rejected user it allows whatever the same role would get when approved,
- * while RLS denies. Those cases are `test.fails` until AUTH-05 adds the check; once it
- * lands they start passing, `test.fails` turns them red, and this guard should go.
- */
-function knownAccessStatusMismatch(s: Subject, action: Action, ctx?: PermCtx): boolean {
-  return (
-    s.user.accessStatus !== 'approved' && can({ ...s.user, accessStatus: 'approved' }, action, ctx)
-  );
-}
-
-/**
  * Known mismatch (see CR_LEADER_SOFT_DELETE): `lists_select` hides soft-deleted setlists from
  * non-owners, so the leader's `set deleted_at = now()` fails the SELECT check on the new row.
  * `can()` matches the contract. Remove once the migration in that CR lands.
@@ -579,9 +564,7 @@ async function checkParity(
 for (const s of SUBJECTS) {
   describe(s.key, () => {
     for (const [action, probes] of Object.entries(ROLE_PROBES) as [RoleAction, Probe[]][]) {
-      const t = knownAccessStatusMismatch(s, action) ? test.fails : test;
-      const suffix = t === test ? '' : ` [known mismatch: ${CR_ACCESS_STATUS}]`;
-      t(`${action}${suffix}`, () =>
+      test(action, () =>
         checkParity(
           s,
           action,
@@ -597,13 +580,9 @@ for (const s of SUBJECTS) {
     ][]) {
       for (const scenario of SCENARIOS) {
         const ctx: PermCtx = { list: scenario.ctx(s) };
-        const cr = knownAccessStatusMismatch(s, action, ctx)
-          ? CR_ACCESS_STATUS
-          : knownLeaderSoftDeleteMismatch(s, action, ctx)
-            ? CR_LEADER_SOFT_DELETE
-            : null;
-        const t = cr === null ? test : test.fails;
-        const suffix = cr === null ? '' : ` [known mismatch: ${cr}]`;
+        const known = knownLeaderSoftDeleteMismatch(s, action, ctx);
+        const t = known ? test.fails : test;
+        const suffix = known ? ` [known mismatch: ${CR_LEADER_SOFT_DELETE}]` : '';
         t(`${action} on ${scenario.name}${suffix}`, () => {
           const id = scenario.id(s); // fixture ids exist only once beforeAll has run
           return checkParity(

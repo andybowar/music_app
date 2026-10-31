@@ -1,6 +1,6 @@
 # CR DB-05 · `can()` ignores `accessStatus`
 
-**Status:** proposed (not approved).
+**Status:** approved by the PM 2026-10-30 and applied in the `[CR] can(): deny non-approved users` PR (`lib/permissions.ts` + `lib/permissions.test.ts`). The same PR removes DB-05's `knownAccessStatusMismatch` / `CR_ACCESS_STATUS` `test.fails` markers from `tests/db/rls.test.ts`.
 
 ## Problem
 

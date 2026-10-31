@@ -66,12 +66,12 @@ function canWriteList(user: AppUser, list: NonNullable<PermCtx['list']>): boolea
 }
 
 /**
- * Whether `user` may perform `action`. Null (unauthenticated) and disabled users can do
- * nothing. List-scoped actions (`list:read`, `list:write`, `share:*`) need `ctx.list` for
+ * Whether `user` may perform `action`. Null (unauthenticated), disabled and not-yet-approved
+ * (`accessStatus` pending/rejected, DB-07) users can do nothing. List-scoped actions (`list:read`, `list:write`, `share:*`) need `ctx.list` for
  * every role except admin; without it they are denied.
  */
 export function can(user: AppUser | null, action: Action, ctx?: PermCtx): boolean {
-  if (user === null || user.disabledAt !== null) return false;
+  if (user === null || user.disabledAt !== null || user.accessStatus !== 'approved') return false;
   if (user.role === 'admin') return true;
 
   switch (action) {

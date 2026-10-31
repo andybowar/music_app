@@ -112,6 +112,15 @@ describe('songKeyInputSchema', () => {
     expect(songKeyInputSchema.safeParse({ key, isPrimary: true }).success).toBe(true);
   });
 
+  it('accepts an optional id and rejects a non-uuid one', () => {
+    const id = '30000000-0000-4000-8000-000000000001';
+    expect(songKeyInputSchema.parse({ id, key: 'D', isPrimary: true }).id).toBe(id);
+    expect(songKeyInputSchema.parse({ key: 'D', isPrimary: true }).id).toBeUndefined();
+    expect(
+      issuePaths(songKeyInputSchema.safeParse({ id: 'x', key: 'D', isPrimary: true })),
+    ).toContain('id');
+  });
+
   it('accepts first chords, partial and null', () => {
     const r = songKeyInputSchema.parse({
       key: 'D',
@@ -156,6 +165,13 @@ describe('songKeysInputSchema', () => {
       [
         { key: 'D', isPrimary: true },
         { key: 'E', isPrimary: true },
+      ],
+    ],
+    [
+      'duplicate ids',
+      [
+        { id: '30000000-0000-4000-8000-000000000001', key: 'D', isPrimary: true },
+        { id: '30000000-0000-4000-8000-000000000001', key: 'E', isPrimary: false },
       ],
     ],
     [

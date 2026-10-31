@@ -1,6 +1,6 @@
 # CR SRCH-08 · ResultsList: optional `error`, `onRetry`, `onClearFilters`, `className`
 
-**Status:** proposed.
+**Status:** approved (PM, 2026-10-30). The ResultsList row in `contracts/ui.md` has been updated. `app/dev/results/` was already in SRCH-08's `owns`.
 
 ## Problem
 

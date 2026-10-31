@@ -1,6 +1,6 @@
 # CR ADM-01 · `/dev/admin-users` gallery page
 
-**Status:** proposed.
+**Status:** approved (PM, 2026-10-30).
 
 ## Problem
 

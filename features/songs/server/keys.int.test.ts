@@ -227,3 +227,84 @@ describe('setSongKeys', () => {
     expect(unknown).toMatchObject({ ok: false, error: { code: 'NOT_FOUND' } });
   });
 });
+
+describe('setSongKeys with ids (CR LIB-02-song-key-input-id)', () => {
+  const withId = (id: string, key: string, isPrimary = false) => ({ ...k(key, isPrimary), id });
+  const idOf = (list: Array<{ id: string; key: string }>, key: string) =>
+    list.find((s) => s.key === key)!.id;
+
+  test('renames by id even when several keys change, keeping resources', async () => {
+    const before = await save([k('G', true), k('D'), k('E')]);
+    const fileId = await addFile(idOf(before, 'D'), 'Lead sheet');
+
+    const after = await save([
+      withId(idOf(before, 'G'), 'A', true),
+      withId(idOf(before, 'D'), 'C'),
+      withId(idOf(before, 'E'), 'F'),
+    ]);
+    expect(idOf(after, 'A')).toBe(idOf(before, 'G'));
+    expect(idOf(after, 'C')).toBe(idOf(before, 'D'));
+    expect(idOf(after, 'F')).toBe(idOf(before, 'E'));
+    const [file] = await getDb().select().from(resources).where(eq(resources.id, fileId));
+    expect(file?.songKeyId).toBe(idOf(before, 'D'));
+  });
+
+  test('swapping names and primary by id keeps each row and its resources', async () => {
+    const before = await save([k('G', true), k('A')]);
+    const gFile = await addFile(idOf(before, 'G'), 'G chart');
+
+    const after = await save([
+      withId(idOf(before, 'G'), 'A'),
+      withId(idOf(before, 'A'), 'G', true),
+    ]);
+    expect(after.map((s) => [s.key, s.isPrimary])).toEqual([
+      ['G', true],
+      ['A', false],
+    ]);
+    expect(idOf(after, 'A')).toBe(idOf(before, 'G'));
+    expect(idOf(after, 'G')).toBe(idOf(before, 'A'));
+    const [file] = await getDb().select().from(resources).where(eq(resources.id, gFile));
+    expect(file?.songKeyId).toBe(idOf(before, 'G'));
+  });
+
+  test('a key with an id can take a name freed by a new id-less key', async () => {
+    const before = await save([k('G', true)]);
+    const after = await save([withId(idOf(before, 'G'), 'A', true), k('G')]);
+    expect(idOf(after, 'A')).toBe(idOf(before, 'G'));
+    expect(idOf(after, 'G')).not.toBe(idOf(before, 'G'));
+  });
+
+  test('with ids, a dropped key with files plus a new key is CONFLICT, not a rename', async () => {
+    const before = await save([k('G', true), k('D')]);
+    await addFile(idOf(before, 'D'), 'Lead sheet');
+
+    const res = await setSongKeys(songId, [withId(idOf(before, 'G'), 'G', true), k('E')]);
+    expect(res).toMatchObject({
+      ok: false,
+      error: { code: 'CONFLICT', fieldErrors: { D: ['Lead sheet'] } },
+    });
+    expect((await keyRows()).map((r) => r.key).sort()).toEqual(['D', 'G']);
+  });
+
+  test("an id that isn't one of the song's keys is VALIDATION", async () => {
+    await save([k('G', true)]);
+    const [other] = await getDb()
+      .insert(songs)
+      .values({ title: `LIB-02 other ${randomUUID().slice(0, 8)}` })
+      .returning({ id: songs.id });
+    songIds.push(other!.id);
+    const [foreign] = await getDb()
+      .insert(songKeys)
+      .values({ songId: other!.id, key: 'C', isPrimary: true })
+      .returning({ id: songKeys.id });
+
+    for (const id of [foreign!.id, randomUUID()]) {
+      const res = await setSongKeys(songId, [withId(id, 'G', true)]);
+      expect(res).toMatchObject({
+        ok: false,
+        error: { code: 'VALIDATION', fieldErrors: { '0.id': [expect.any(String)] } },
+      });
+    }
+    expect((await keyRows()).map((r) => r.key)).toEqual(['G']);
+  });
+});

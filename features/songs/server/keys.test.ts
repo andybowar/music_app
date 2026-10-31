@@ -34,10 +34,12 @@ describe('setSongKeys guards', () => {
     expect(withTx).not.toHaveBeenCalled();
   });
 
-  it('refuses members', async () => {
+  it('returns FORBIDDEN for members', async () => {
     requireUser.mockResolvedValue(byRole('member'));
     const res = await setSongKeys(SONG_ID, [{ key: 'G', isPrimary: true, firstChords: {} }]);
     expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error.code).toBe('FORBIDDEN');
+    expect(capture).not.toHaveBeenCalled();
     expect(withTx).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,6 @@
 # CR LIB-02: optional `id` on `SongKeyInput`
 
-**Status:** proposed
+**Status:** approved (PM, 2026-10-30). Applied in PR "[CR] SongKeyInput.id: explicit key renames".
 
 ## Problem
 `setSongKeys(songId, keys)` is replace-all, but `songKeyInputSchema` (types/validation.ts,
@@ -27,3 +27,11 @@ single-rename heuristic is then removed.
 
 ## Affects
 F-03 (types/validation.ts), LIB-02 (keys.ts), LIB-17 and IMP-03 (callers).
+
+## Resolution
+Applied as proposed, with these changes from the lead dev:
+- The name match and single-rename fallback are kept for callers that send no ids. When any
+  entry in a request has an `id`, there is no rename guessing: unmatched rows are deleted
+  (CONFLICT while they have resources) and unmatched entries are inserted.
+- `songKeysInputSchema` also rejects duplicate ids.
+- `contracts/types.md` rows for `songKeyInputSchema` / `songKeysInputSchema` updated.

@@ -11,25 +11,36 @@ const auth = {
   getUser: vi.fn(),
   updateUser: vi.fn(),
   signInWithOAuth: vi.fn(),
+  signUp: vi.fn(),
 };
 vi.mock('@/lib/supabase/server', () => ({ createServerSupabase: vi.fn(async () => ({ auth })) }));
 
 // Minimal Drizzle stand-in: select(...).from().where().limit() → rows; update().set().where().
 const dbState = { rows: [] as Array<{ disabledAt: Date | null }> };
 const updateSet = vi.fn();
+const insertValues = vi.fn();
 const db = {
   select: vi.fn(() => ({
     from: () => ({ where: () => ({ limit: async () => dbState.rows }) }),
   })),
   update: vi.fn(() => ({ set: (v: unknown) => (updateSet(v), { where: async () => undefined }) })),
+  insert: vi.fn(() => ({
+    values: (v: unknown) => (insertValues(v), { onConflictDoNothing: async () => undefined }),
+  })),
 };
 vi.mock('@/lib/db', () => ({ getDb: () => db, withTx: vi.fn() }));
 const envMock = { APP_URL: 'https://app.example.test', SSO_PROVIDERS: ['google', 'microsoft'] };
 vi.mock('@/lib/env', () => ({ env: envMock }));
 
 const { setSentryCapture } = await import('@/lib/action');
-const { confirmPasswordReset, requestPasswordReset, signInWithOidc, signInWithPassword, signOut } =
-  await import('./actions');
+const {
+  confirmPasswordReset,
+  requestPasswordReset,
+  signInWithOidc,
+  signInWithPassword,
+  signOut,
+  signUpWithPassword,
+} = await import('./actions');
 
 const USER_ID = '00000000-0000-4000-8000-000000000001';
 const authError = (status: number, code?: string) =>
@@ -325,5 +336,93 @@ describe('signInWithOidc', () => {
     auth.signInWithOAuth.mockResolvedValueOnce({ data: { url: null }, error: null });
     expect(await signInWithOidc('google')).toMatchObject({ error: { code: 'INTERNAL' } });
     expect(capture).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('signUpWithPassword', () => {
+  const INPUT = { name: '  Ana Example ', email: ' Ana@Example.TEST ', password: 'pw-123456' };
+  const OK = { ok: true, data: undefined };
+  const newUser = { id: USER_ID, identities: [{ id: 'i1' }] };
+  const none = { user: null, session: null };
+
+  it('creates the auth user and a pending row, then drops the session', async () => {
+    auth.signUp.mockResolvedValue({ data: { user: newUser, session: {} }, error: null });
+    expect(await signUpWithPassword(INPUT)).toEqual(OK);
+    expect(auth.signUp).toHaveBeenCalledWith({
+      email: 'ana@example.test',
+      password: 'pw-123456',
+      options: {
+        emailRedirectTo: 'https://app.example.test/login',
+        data: { full_name: 'Ana Example' },
+      },
+    });
+    expect(insertValues).toHaveBeenCalledWith({
+      id: USER_ID,
+      email: 'ana@example.test',
+      name: 'Ana Example',
+      authProvider: 'password',
+      accessStatus: 'pending',
+    });
+    expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  it('does not sign out when email confirmation leaves no session', async () => {
+    auth.signUp.mockResolvedValue({ data: { user: newUser, session: null }, error: null });
+    expect(await signUpWithPassword(INPUT)).toEqual(OK);
+    expect(insertValues).toHaveBeenCalled();
+    expect(auth.signOut).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['user_already_exists', { data: none, error: authError(422, 'user_already_exists') }],
+    ['email_exists', { data: none, error: authError(422, 'email_exists') }],
+    ['email rate limit', { data: none, error: authError(429, 'over_email_send_rate_limit') }],
+    [
+      'obfuscated user',
+      { data: { user: { id: 'x', identities: [] }, session: null }, error: null },
+    ],
+    ['no user', { data: none, error: null }],
+  ])('gives the generic success for an existing email (%s)', async (_label, response) => {
+    auth.signUp.mockResolvedValue(response);
+    expect(await signUpWithPassword(INPUT)).toEqual(OK);
+    expect(insertValues).not.toHaveBeenCalled();
+  });
+
+  it('validates name, email and password before calling Supabase', async () => {
+    const result = await signUpWithPassword({ name: ' ', email: 'nope', password: 'short' });
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        code: 'VALIDATION',
+        fieldErrors: {
+          name: ['Enter your name.'],
+          email: ['Enter a valid email address.'],
+          password: ['Use at least 8 characters.'],
+        },
+      },
+    });
+    expect(auth.signUp).not.toHaveBeenCalled();
+  });
+
+  it('maps weak passwords and request rate limits', async () => {
+    auth.signUp.mockResolvedValue({ data: none, error: authError(422, 'weak_password') });
+    expect(await signUpWithPassword(INPUT)).toMatchObject({
+      ok: false,
+      error: { code: 'VALIDATION', fieldErrors: { password: ['Choose a stronger password.'] } },
+    });
+    auth.signUp.mockResolvedValue({ data: none, error: authError(429, 'over_request_rate_limit') });
+    expect(await signUpWithPassword(INPUT)).toMatchObject({
+      ok: false,
+      error: { code: 'RATE_LIMITED' },
+    });
+  });
+
+  it('reports unexpected Supabase errors as INTERNAL', async () => {
+    auth.signUp.mockResolvedValue({ data: none, error: authError(500) });
+    expect(await signUpWithPassword(INPUT)).toMatchObject({
+      ok: false,
+      error: { code: 'INTERNAL' },
+    });
+    expect(capture).toHaveBeenCalled();
   });
 });

@@ -28,7 +28,6 @@ vi.mock('@/lib/db', () => ({ withTx: (fn: (t: typeof tx) => unknown) => fn(tx) }
 const {
   DISABLED_MESSAGE,
   EMAIL_CONFLICT_MESSAGE,
-  NO_ACCOUNT_MESSAGE,
   branchForGroups,
   currentOidcIdentity,
   displayNameFor,
@@ -79,6 +78,7 @@ function row(overrides: Record<string, unknown> = {}) {
     ssoSubject: 'azure-sub-1',
     lastLoginAt: null,
     disabledAt: null,
+    accessStatus: 'pending',
     createdAt: new Date(),
     ...overrides,
   };
@@ -217,24 +217,42 @@ describe('provisionUser', () => {
           authProvider: 'microsoft',
           ssoSubject: 'azure-sub-1',
           lastLoginAt: expect.any(Date),
+          accessStatus: 'pending',
         },
       },
     ]);
-    expect(user).toMatchObject({ id: USER_ID, branchId: SV, role: 'member', disabledAt: null });
-  });
-
-  it('rejects a new user whose groups map to no branch (unknown group)', async () => {
-    results.push([], [], BRANCHES);
-    await expect(provisionUser(authUser(), ['unknown'])).rejects.toMatchObject({
-      code: 'FORBIDDEN',
-      message: NO_ACCOUNT_MESSAGE,
+    expect(user).toMatchObject({
+      id: USER_ID,
+      branchId: SV,
+      role: 'member',
+      disabledAt: null,
+      accessStatus: 'pending',
     });
-    expect(writes).toEqual([]);
   });
 
-  it('rejects a new user with no groups without reading branches', async () => {
-    results.push([], []);
-    await expect(provisionUser(authUser(), [])).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  it('creates a pending user with no branch when no group is mapped (unknown group)', async () => {
+    results.push([], [], BRANCHES, [row()]);
+    const user = await provisionUser(authUser(), ['unknown']);
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toMatchObject({
+      op: 'insert',
+      values: { branchId: null, role: 'member', accessStatus: 'pending' },
+    });
+    expect(user).toMatchObject({ branchId: null, accessStatus: 'pending' });
+  });
+
+  it('creates a pending user with no groups without reading branches', async () => {
+    results.push([], [], [row()]);
+    await provisionUser(authUser(), []);
+    expect(writes[0]).toMatchObject({ op: 'insert', values: { branchId: null } });
+    expect(results).toEqual([]);
+  });
+
+  it('never changes the access status of an existing user', async () => {
+    results.push([row({ accessStatus: 'rejected' })], [row({ accessStatus: 'rejected' })]);
+    const user = await provisionUser(authUser(), []);
+    expect(writes[0]!.values).not.toHaveProperty('accessStatus');
+    expect(user.accessStatus).toBe('rejected');
   });
 
   it('updates an existing user; unknown group leaves branch null', async () => {

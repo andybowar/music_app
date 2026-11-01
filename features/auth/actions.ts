@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * Email + password auth actions (contracts/api.md, REQ-AUTH-02).
+ * Email + password auth actions (contracts/api.md, REQ-AUTH-02, REQ-AUTH-03).
  *
  * These run before a user is signed in, so unlike other actions they don't
  * start with `requireUser`/`assertCan`. They still Zod-validate, never throw to
@@ -55,14 +55,29 @@ const oidcSchema = z.object({
 
 const resetRequestSchema = z.object({ email: emailField });
 
+// 72 bytes is bcrypt's limit; Supabase rejects longer passwords.
+const newPasswordField = z
+  .string({ error: 'Enter a new password.' })
+  .min(8, 'Use at least 8 characters.')
+  .max(72, 'Use at most 72 characters.');
+
 const resetConfirmSchema = z.object({
   token: z.string({ error: INVALID_RESET_LINK }).trim().min(1, INVALID_RESET_LINK),
-  // 72 bytes is bcrypt's limit; Supabase rejects longer passwords.
-  password: z
-    .string({ error: 'Enter a new password.' })
-    .min(8, 'Use at least 8 characters.')
-    .max(72, 'Use at most 72 characters.'),
+  password: newPasswordField,
 });
+
+const signUpSchema = z.object({
+  name: z
+    .string({ error: 'Enter your name.' })
+    .trim()
+    .min(1, 'Enter your name.')
+    .max(200, 'Use at most 200 characters.'),
+  email: emailField,
+  password: newPasswordField,
+});
+
+/** Where the sign-up confirmation email (when enabled) sends the user. */
+const SIGNUP_CONFIRM_PATH = '/login';
 
 function isRequestRateLimited(error: AuthError): boolean {
   return error.code === 'over_request_rate_limit' || error.status === 429;
@@ -220,5 +235,57 @@ export const signInWithOidc = withAction(
     }
     if (!data.url) throw new Error('signInWithOAuth returned no URL');
     return { url: data.url };
+  },
+);
+
+/**
+ * Request an account with email + password (REQ-AUTH-03, AUTH-07). Creates the
+ * Supabase auth user and a `pending` `users` row; an admin approves it later.
+ *
+ * The result is the same whether or not the email already has an account, so the
+ * form can't be used to probe for users: an existing email (Supabase reports it as
+ * an error when email confirmation is off, or as a user with no identities when it
+ * is on) is a silent success, and no row is touched. No session is left behind
+ * either way; the user signs in later to see their request's status.
+ */
+export const signUpWithPassword = withAction(
+  async (input: { name: string; email: string; password: string }): Promise<void> => {
+    const { name, email, password } = signUpSchema.parse(input);
+    const supabase = await createServerSupabase();
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: new URL(SIGNUP_CONFIRM_PATH, env.APP_URL).toString(),
+        data: { full_name: name },
+      },
+    });
+    if (error) {
+      if (error.code === 'user_already_exists' || error.code === 'email_exists') return;
+      // Per-address limit: only fires when re-sending to an existing address.
+      if (error.code === 'over_email_send_rate_limit') return;
+      if (isRequestRateLimited(error)) throw new ActionError('RATE_LIMITED', RATE_LIMITED);
+      if (error.code === 'weak_password') {
+        throw new ActionError('VALIDATION', 'Choose a stronger password.', {
+          password: ['Choose a stronger password.'],
+        });
+      }
+      throw error;
+    }
+
+    const authUser = data.user;
+    // Email confirmation on + existing email: Supabase returns an obfuscated user.
+    if (!authUser || !authUser.identities?.length) return;
+
+    // The DATABASE_URL role bypasses RLS: the new user has no access yet.
+    await getDb()
+      .insert(users)
+      .values({ id: authUser.id, email, name, authProvider: 'password', accessStatus: 'pending' })
+      .onConflictDoNothing();
+
+    // With email confirmation off Supabase signs the new user in; don't keep that
+    // session, so the outcome looks the same as for an existing email.
+    if (data.session) await supabase.auth.signOut({ scope: 'local' });
   },
 );

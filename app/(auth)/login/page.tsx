@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import Link from 'next/link';
+
 import { LoginForm } from '@/features/auth/ui/LoginForm';
 import { SsoButtons } from '@/features/auth/ui/SsoButtons';
 import { env } from '@/lib/env';
@@ -41,6 +43,16 @@ export default async function LoginPage({
         </div>
       ) : null}
       <LoginForm next={safeNext(next)} />
+      {/* AUTH-07: self sign-up (REQ-AUTH-03). */}
+      <p className="mt-2 text-center text-sm">
+        Need an account?{' '}
+        <Link
+          href="/signup"
+          className="inline-flex min-h-10 items-center text-primary underline underline-offset-4 hover:decoration-2"
+        >
+          Request access
+        </Link>
+      </p>
     </AuthShell>
   );
 }

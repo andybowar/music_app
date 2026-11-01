@@ -30,8 +30,13 @@ const { eq } = await import('drizzle-orm');
 const { users } = await import('@/db/schema');
 const { getDb } = await import('@/lib/db');
 const { createServerSupabase, createServiceSupabase } = await import('@/lib/supabase/server');
-const { confirmPasswordReset, requestPasswordReset, signInWithPassword, signOut } =
-  await import('./actions');
+const {
+  confirmPasswordReset,
+  requestPasswordReset,
+  signInWithPassword,
+  signOut,
+  signUpWithPassword,
+} = await import('./actions');
 
 const MAILPIT = process.env.MAILPIT_URL ?? 'http://127.0.0.1:54324';
 const PASSWORD = `pw-${randomUUID()}`;
@@ -118,6 +123,50 @@ describe('password sign-in', () => {
     expect(await signOut()).toEqual({ ok: true, data: undefined });
     expect(hasSession()).toBe(false);
     expect(await currentUserId()).toBeNull();
+  });
+});
+
+describe('self sign-up (AUTH-07)', () => {
+  const OK = { ok: true, data: undefined };
+
+  test('creates a pending account, leaves no session, and the user can sign in', async () => {
+    const email = `auth07-new-${run}@example.test`;
+    expect(await signUpWithPassword({ name: 'AUTH-07 New', email, password: PASSWORD })).toEqual(
+      OK,
+    );
+    expect(hasSession()).toBe(false);
+
+    const [row] = await getDb().select().from(users).where(eq(users.email, email));
+    expect(row).toMatchObject({
+      name: 'AUTH-07 New',
+      authProvider: 'password',
+      accessStatus: 'pending',
+      branchId: null,
+      role: 'member',
+    });
+    created.push(row!.id);
+
+    // Signing in works (the guard sends them to /account-status); status is unchanged.
+    expect(await signInWithPassword(email, PASSWORD)).toEqual(OK);
+    expect(await currentUserId()).toBe(row!.id);
+    const [after] = await getDb().select().from(users).where(eq(users.id, row!.id));
+    expect(after!.accessStatus).toBe('pending');
+  });
+
+  test('an existing email gets the same response and its account is untouched', async () => {
+    const before = (await getDb().select().from(users).where(eq(users.id, active.id)))[0]!;
+    const result = await signUpWithPassword({
+      name: 'Someone else',
+      email: active.email.toUpperCase(),
+      password: `other-${randomUUID()}`,
+    });
+    expect(result).toEqual(OK);
+    expect(hasSession()).toBe(false);
+
+    const after = await getDb().select().from(users).where(eq(users.email, active.email));
+    expect(after).toEqual([before]);
+    // The original password still works; the new one doesn't.
+    expect(await signInWithPassword(active.email, PASSWORD)).toEqual(OK);
   });
 });
 

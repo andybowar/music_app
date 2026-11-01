@@ -21,8 +21,7 @@ const { eq, inArray } = await import('drizzle-orm');
 const { branches, users } = await import('@/db/schema');
 const { getDb } = await import('@/lib/db');
 const { createServiceSupabase } = await import('@/lib/supabase/server');
-const { DISABLED_MESSAGE, EMAIL_CONFLICT_MESSAGE, NO_ACCOUNT_MESSAGE, provisionUser } =
-  await import('./provision');
+const { DISABLED_MESSAGE, EMAIL_CONFLICT_MESSAGE, provisionUser } = await import('./provision');
 
 const run = randomUUID().slice(0, 8);
 const GROUP = `auth02-group-${run}`;
@@ -109,7 +108,7 @@ describe('provisionUser (database)', () => {
       role: 'member',
       authProvider: 'microsoft',
       disabledAt: null,
-      accessStatus: 'pending', // DB-07 column default; AUTH-07 owns approval on first login
+      accessStatus: 'pending', // AUTH-07: every new SSO identity is an access request
     });
     const row = await rowFor(authUser.id);
     expect(row).toMatchObject({ ssoSubject: 'sub-1', branchId, role: 'member' });
@@ -135,15 +134,27 @@ describe('provisionUser (database)', () => {
     expect(count).toHaveLength(1);
   });
 
-  test('a new identity whose groups map to no branch is rejected and not created', async () => {
+  test('a new identity whose groups map to no branch is created pending with no branch', async () => {
     const authUser = await createAuthUser('unmapped');
-    await expect(
-      provisionUser(asMicrosoftLogin(authUser), [`not-a-branch-${run}`]),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN', message: NO_ACCOUNT_MESSAGE });
-    await expect(provisionUser(asMicrosoftLogin(authUser), [])).rejects.toMatchObject({
-      code: 'FORBIDDEN',
-    });
-    expect(await rowFor(authUser.id)).toBeUndefined();
+    const created = await provisionUser(asMicrosoftLogin(authUser), [`not-a-branch-${run}`]);
+    expect(created).toMatchObject({ branchId: null, role: 'member', accessStatus: 'pending' });
+    expect(await rowFor(authUser.id)).toMatchObject({ branchId: null, accessStatus: 'pending' });
+
+    // A repeat login leaves the request pending.
+    const again = await provisionUser(asMicrosoftLogin(authUser), []);
+    expect(again.accessStatus).toBe('pending');
+  });
+
+  test('a repeat login never changes an approved or rejected status', async () => {
+    for (const status of ['approved', 'rejected'] as const) {
+      const authUser = await createAuthUser(`decided-${status}`);
+      await provisionUser(asMicrosoftLogin(authUser), [GROUP]);
+      await getDb().update(users).set({ accessStatus: status }).where(eq(users.id, authUser.id));
+
+      const again = await provisionUser(asMicrosoftLogin(authUser), [GROUP]);
+      expect(again.accessStatus).toBe(status);
+      expect((await rowFor(authUser.id))!.accessStatus).toBe(status);
+    }
   });
 
   test('an invited user with an unmapped group signs in with branch null', async () => {

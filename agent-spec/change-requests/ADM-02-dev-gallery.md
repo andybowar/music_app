@@ -1,6 +1,6 @@
 # CR ADM-02 · `/dev/admin-branches` gallery page
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-01. Applied to `tasks/ADM-02.md`; the gallery page is an ADM-02 follow-up.
 
 ## Problem
 

@@ -159,7 +159,7 @@ Phases describe *release* order. Tasks inside them run concurrently wherever dep
 Each has a **default** that agents must use until a human resolves it. Do not block on these.
 
 - **Copyright / CCLI licensing** for storing lyrics, sheet music and MP3s. *Default:* build everything behind login with signed URLs; share pages never expose files.
-- **SSO identity provider(s).** *Default:* implement Google + Microsoft OIDC and generic SAML; providers enabled by env/config.
+- **SSO identity provider(s).** *Default:* implement Google + Microsoft OIDC and generic SAML; providers enabled by env/config. *Decided (project owner, 2026-11-01):* enable Google only (`SSO_PROVIDERS=google`); Microsoft is skipped. Google sends no group claim, so REQ-AUTH-04 branch suggestions don't apply; the approving admin sets the branch (REQ-AUTH-08). Microsoft code paths stay, off.
 - **Do SSO users whose group maps to a branch skip approval?** *Decided (project owner, 2026-10-29):* no. Every new account, SSO included, starts pending (REQ-AUTH-03).
 - **Must a self-registered email be confirmed before the request reaches admins?** *Default:* yes when the Supabase project has email confirmation on (hosted); local dev runs with it off. The account is pending either way.
 - **SAML on Supabase plan tier** (may require paid plan). *Default:* SAML code path ships behind `FEATURE_SAML=false`.

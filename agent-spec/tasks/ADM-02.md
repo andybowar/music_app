@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["ADM-01"]
 blocks: []
-owns: ["app/(app)/admin/branches/", "features/admin/ui/branches/"]
+owns: ["app/(app)/admin/branches/", "features/admin/ui/branches/", "app/dev/admin-branches/"]
 touches: ["features/admin/server.ts"]
 requirements: []
 ---

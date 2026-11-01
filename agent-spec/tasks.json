@@ -1247,11 +1247,15 @@
       "owns": [
         "sentry.*.config.ts",
         "instrumentation.ts",
-        "lib/log.ts"
+        "instrumentation-client.ts",
+        "lib/log.ts",
+        "app/global-error.tsx",
+        "app/api/debug/sentry/"
       ],
       "touches": [
         "lib/action.ts",
-        "next.config.ts"
+        "next.config.ts",
+        ".env.example"
       ],
       "reqs": [
         "REQ-NF-04"
@@ -1432,7 +1436,10 @@
         "lib/auth.ts",
         "middleware.ts"
       ],
-      "touches": [],
+      "touches": [
+        "app/(app)/layout.tsx",
+        "lib/permissions.ts"
+      ],
       "reqs": [
         "REQ-AUTH-06",
         "REQ-AUTH-08"
@@ -1498,7 +1505,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/DB-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-08",
@@ -1521,7 +1528,7 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/SRCH-08.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "ADM-01",
@@ -1545,7 +1552,8 @@
       "owns": [
         "app/(app)/admin/users/",
         "features/admin/server.ts",
-        "features/admin/ui/users/"
+        "features/admin/ui/users/",
+        "app/dev/admin-users/"
       ],
       "touches": [],
       "reqs": [
@@ -1554,7 +1562,7 @@
         "REQ-AUTH-08"
       ],
       "file": "tasks/ADM-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "AUTH-03",
@@ -1618,7 +1626,7 @@
         "REQ-LIB-12"
       ],
       "file": "tasks/LIB-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-02",
@@ -1645,7 +1653,7 @@
         "REQ-LIB-08"
       ],
       "file": "tasks/LIB-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-03",
@@ -1673,7 +1681,7 @@
         "REQ-LIB-03"
       ],
       "file": "tasks/LIB-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-04",
@@ -1701,7 +1709,7 @@
         "REQ-LIB-07"
       ],
       "file": "tasks/LIB-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-05",
@@ -1729,7 +1737,7 @@
         "REQ-LIB-05"
       ],
       "file": "tasks/LIB-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-06",
@@ -1761,7 +1769,7 @@
         "REQ-LIB-11"
       ],
       "file": "tasks/LIB-06.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-07",
@@ -1789,7 +1797,7 @@
         "REQ-LIB-09"
       ],
       "file": "tasks/LIB-07.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-02",
@@ -1819,7 +1827,7 @@
         "REQ-LIST-05"
       ],
       "file": "tasks/LIST-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-10",
@@ -1844,7 +1852,7 @@
         "REQ-SRCH-03"
       ],
       "file": "tasks/SRCH-10.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "ADM-02",
@@ -1860,14 +1868,15 @@
       "blocks": [],
       "owns": [
         "app/(app)/admin/branches/",
-        "features/admin/ui/branches/"
+        "features/admin/ui/branches/",
+        "app/dev/admin-branches/"
       ],
       "touches": [
         "features/admin/server.ts"
       ],
       "reqs": [],
       "file": "tasks/ADM-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "AUTH-06",
@@ -1926,7 +1935,7 @@
         "REQ-LIB-13"
       ],
       "file": "tasks/IMP-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-17",
@@ -1961,14 +1970,16 @@
         "app/(app)/songs/new/",
         "app/(app)/songs/[id]/edit/",
         "features/songs/ui/SongForm.tsx",
-        "features/songs/ui/form/toInput.ts"
+        "features/songs/ui/form/toInput.ts",
+        "app/dev/song-form/",
+        "tests/e2e/song-form.spec.ts"
       ],
       "touches": [],
       "reqs": [
         "REQ-LIB-01"
       ],
       "file": "tasks/LIB-17.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-18",
@@ -1992,15 +2003,22 @@
       ],
       "owns": [
         "app/(app)/songs/[id]/page.tsx",
-        "features/songs/ui/SongPage.tsx"
+        "app/(app)/songs/[id]/page.test.tsx",
+        "app/(app)/songs/[id]/loading.tsx",
+        "app/(app)/songs/[id]/error.tsx",
+        "features/songs/ui/SongPage.tsx",
+        "features/songs/ui/SongPage.test.tsx",
+        "app/dev/song-page/"
       ],
-      "touches": [],
+      "touches": [
+        "components/song/panels/ResourcesPanel.test.tsx"
+      ],
       "reqs": [
         "REQ-ROW-03",
         "REQ-ROW-04"
       ],
       "file": "tasks/LIB-18.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-01",
@@ -2035,7 +2053,7 @@
         "REQ-LIST-08"
       ],
       "file": "tasks/LIST-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-02",
@@ -2067,7 +2085,7 @@
         "REQ-SRCH-01"
       ],
       "file": "tasks/SRCH-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "BR-01",

@@ -9,8 +9,8 @@ status: done
 human_required: false
 depends_on: ["LIB-01", "LIB-06", "UI-06", "UI-07", "UI-08", "UI-02"]
 blocks: ["LIB-19", "H-01"]
-owns: ["app/(app)/songs/[id]/page.tsx", "features/songs/ui/SongPage.tsx"]
-touches: []
+owns: ["app/(app)/songs/[id]/page.tsx", "app/(app)/songs/[id]/page.test.tsx", "app/(app)/songs/[id]/loading.tsx", "app/(app)/songs/[id]/error.tsx", "features/songs/ui/SongPage.tsx", "features/songs/ui/SongPage.test.tsx", "app/dev/song-page/"]
+touches: ["components/song/panels/ResourcesPanel.test.tsx"]
 requirements: ["REQ-ROW-03", "REQ-ROW-04"]
 ---
 

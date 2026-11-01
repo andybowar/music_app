@@ -1,6 +1,6 @@
 # CR AUTH-04 · Export `roleAtLeast` from `lib/permissions.ts`
 
-**Status:** proposed (follow-up from the PM review of PR #60, item 8).
+**Status:** approved by project owner 2026-11-01. Contract added to `contracts/api.md`; implementing it in `lib/permissions.ts` / `lib/auth.ts` is an AUTH-04 follow-up (AUTH-04 now touches `lib/permissions.ts`).
 
 ## Problem
 

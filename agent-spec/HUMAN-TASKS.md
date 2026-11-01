@@ -10,11 +10,11 @@ Rules for everything below:
 
 ## Order of operations
 
-1. [ ] Section 1: decide the 3 open change requests (5 minutes, anytime).
-2. [ ] Section 2: create the Supabase projects and Vercel project (OPS-01). Everything else needs this.
-3. [ ] Section 3: Supabase Auth URL configuration, then email confirmation (section 7).
-4. [ ] Sections 4 and 5: Google and Microsoft sign-in apps (need the Supabase project ref from step 2).
-5. [ ] Sections 6 and 8: Resend and Sentry accounts.
+1. [x] Section 1: decide the 3 open change requests (5 minutes, anytime).
+2. [x] Section 2: create the Supabase projects and Vercel project (OPS-01). Everything else needs this.
+3. [x] Section 3: Supabase Auth URL configuration, then email confirmation (section 7).
+4. [x] Section 4: Google sign-in app. Section 5 (Microsoft) skipped by project owner 2026-11-01 (need the Supabase project ref from step 2).
+5. [x] Sections 6 and 8: Resend and Sentry accounts.
 6. [ ] Section 9: set Vercel environment variables (needs values from 2 to 8).
 7. [ ] Section 10: write `docs/ops/environments.md`.
 8. [ ] Section 11: backups and restore drill (OPS-03, after OPS-01).
@@ -26,13 +26,13 @@ Rules for everything below:
 
 Three change requests (CRs) are still marked `proposed`. To decide: open the file, change its **Status** line to `approved by project owner <date>` or `rejected <date>`, and tell the lead agent so contracts and task files are updated. All three are small and low risk.
 
-- [ ] `change-requests/AUTH-04-layout-require-user.md`
+- [x] `change-requests/AUTH-04-layout-require-user.md`
   - Plain English: the page shell still uses a temporary login check. This swaps in the real one from the auth module (it also sends pending and rejected users to the account-status page).
   - Approving: AUTH-04 gets permission to edit `app/(app)/layout.tsx` (one line). Nothing changes if you reject, because the middleware already blocks those users.
-- [ ] `change-requests/AUTH-04-role-at-least.md`
+- [x] `change-requests/AUTH-04-role-at-least.md`
   - Plain English: the role order (member, contributor, music leader, admin) is written in two places and could drift. This keeps one copy and shares it.
   - Approving: adds a small `roleAtLeast` helper to `lib/permissions.ts` and to `contracts/api.md`. No user-visible change.
-- [ ] `change-requests/OPS-02-instrumentation-client.md`
+- [x] `change-requests/OPS-02-instrumentation-client.md`
   - Plain English: makes error reporting (Sentry) catch browser errors in dev and React page crashes, and adds a locked test endpoint so you can trigger a test error on staging.
   - Approving: OPS-02 gets new files (`instrumentation-client.ts`, `app/global-error.tsx`, `app/api/debug/sentry/`) and `.env.example` gains `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`. Decide before the OPS-02 wave runs. Section 8 has a workaround that works if you reject it.
 
@@ -103,6 +103,8 @@ Unblocks: Google SSO testing (AUTH-02, PR #45 test steps).
 
 ## 5. Microsoft Entra app (with groups claim)
 
+**Skipped (project owner, 2026-11-01).** Set `SSO_PROVIDERS=google`. Google sends no groups, so automatic branch suggestions (REQ-AUTH-04) won't happen; admins pick the branch when approving. Kept below in case Microsoft is added later.
+
 Prerequisites: admin access to your Microsoft Entra tenant, Supabase project ref.
 
 1. Go to entra.microsoft.com, then Identity, Applications, App registrations, New registration.
@@ -143,6 +145,8 @@ SPEC §6 default: hosted projects require a confirmed email before a self-regist
 
 Verify: sign up with a new email on staging; you receive a confirmation email, and the account cannot sign in until you click it. Afterwards it appears as pending for admins.
 Tick: add a note under OPS-01 in this file.
+
+Note (2026-11-01): email confirmation configured by the project owner.
 
 ## 8. Sentry
 

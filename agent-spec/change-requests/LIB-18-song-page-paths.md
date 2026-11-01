@@ -1,6 +1,6 @@
 # CR LIB-18 · Song page: gallery, route states and a lint-forced test edit
 
-**Status:** proposed (LIB-18, 2026-11-01). Awaiting approval.
+**Status:** approved by project owner 2026-11-01. Applied to `tasks/LIB-18.md` (also owns `app/(app)/songs/[id]/loading.tsx` and `error.tsx` for the follow-up). The `ResourcesPanel.test.tsx` touch merged in #82.
 
 ## Problem
 

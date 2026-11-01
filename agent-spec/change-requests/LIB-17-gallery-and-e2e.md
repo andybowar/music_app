@@ -1,6 +1,6 @@
 # CR LIB-17 · `/dev/song-form` gallery page and a song-form e2e spec
 
-**Status:** proposed (LIB-17, 2026-11-01).
+**Status:** approved by project owner 2026-11-01. Applied to `tasks/LIB-17.md`; the gallery and e2e spec are a LIB-17 follow-up.
 
 ## Problem
 

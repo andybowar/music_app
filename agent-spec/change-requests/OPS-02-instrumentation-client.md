@@ -1,6 +1,6 @@
 # CR OPS-02 · Client Sentry under Turbopack, React render errors, staging test route, env docs
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-01. Applied to `tasks/OPS-02.md` owns/touches; the files themselves are an OPS-02 follow-up.
 
 ## Problem
 

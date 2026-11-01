@@ -5,7 +5,7 @@ phase: 1
 wave: 8
 stream: frontend
 size: M
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["LIB-01", "LIB-06", "UI-06", "UI-07", "UI-08", "UI-02"]
 blocks: ["LIB-19", "H-01"]

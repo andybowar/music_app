@@ -25,9 +25,9 @@ requirements: []
 - `agent-spec/SPEC.md`
 
 ## Deliverables
-- [ ] Two Supabase projects; private `resources` bucket in each
+- [x] Two Supabase projects; private `resources` bucket in each
 - [ ] Vercel project linked to repo; env vars set per environment
-- [ ] Google + Microsoft OAuth apps created; redirect URLs registered
+- [x] Google OAuth app created; redirect URLs registered (Microsoft skipped by project owner 2026-11-01)
 - [ ] docs/ops/environments.md (no secrets) listing what exists and who owns it
 
 ## Acceptance criteria

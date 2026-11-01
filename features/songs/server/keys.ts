@@ -4,13 +4,14 @@
  * Song keys (contracts/api.md, REQ-LIB-08): replace-all save of a song's keys and
  * their first chords.
  *
- * The input carries no row ids, so existing rows are matched to input entries:
- *   1. by key name (an unchanged key keeps its row, id and resources);
- *   2. if exactly one existing row and exactly one input entry are left over, that is
- *      an unambiguous rename: the row keeps its id, so its resources stay attached;
- *   3. otherwise leftovers are delete-plus-insert. Deleting a row that still has
+ * Existing rows are matched to input entries (CR LIB-02-song-key-input-id):
+ *   1. by `id` when the entry has one: rename or edit in place, the row keeps its id and
+ *      its resources. An id that isn't one of this song's keys is a VALIDATION error;
+ *   2. entries without `id`, by key name (an unchanged key keeps its row);
+ *   3. fallback only when the request carries no ids at all: if exactly one row and
+ *      exactly one entry are left over, that is an unambiguous rename;
+ *   4. otherwise leftovers are delete-plus-insert. Deleting a row that still has
  *      resources is refused with CONFLICT (the FK would otherwise cascade-delete them).
- * TODO(CR LIB-02-song-key-input-id): match on an optional `id` once SongKeyInput has one.
  */
 
 import 'server-only';
@@ -75,6 +76,25 @@ function byPrimaryThenKey(a: Pick<SongKeyRow, 'isPrimary' | 'key'>, b: typeof a)
   return a.key.localeCompare(b.key);
 }
 
+/** Every key `song_keys.key` accepts (`^[A-G](#|b)?m?$`): 42 values. */
+const ALL_KEYS = [...'ABCDEFG'].flatMap((n) =>
+  ['', '#', 'b'].flatMap((acc) => ['', 'm'].map((minor) => `${n}${acc}${minor}`)),
+);
+
+/** Hands out valid keys not in `used`, for parking rows mid-rename. */
+function unusedKeys(used: string[]): { next: () => string } {
+  const taken = new Set(used);
+  const free = ALL_KEYS.filter((k) => !taken.has(k));
+  return {
+    next: () => {
+      const key = free.shift();
+      // Unreachable: at most 12 inputs plus the song's rows leave most of the 42 free.
+      if (key === undefined) throw new Error('No temporary key available for rename.');
+      return key;
+    },
+  };
+}
+
 interface KeyPlan {
   updates: Array<{ row: SongKeyRow; input: SongKeyInput }>;
   inserts: SongKeyInput[];
@@ -82,11 +102,30 @@ interface KeyPlan {
 }
 
 function planKeyChanges(existing: SongKeyRow[], keys: SongKeyInput[]): KeyPlan {
-  const byKey = new Map(existing.map((row) => [row.key, row]));
+  const byId = new Map(existing.map((row) => [row.id, row]));
   const updates: KeyPlan['updates'] = [];
-  const unmatchedInputs: SongKeyInput[] = [];
+  const unknownIds: Record<string, string[]> = {};
 
+  // 1. Entries that name their row by id (ids are unique per songKeysInputSchema).
+  keys.forEach((input, i) => {
+    if (input.id === undefined) return;
+    const row = byId.get(input.id);
+    if (row) {
+      updates.push({ row, input });
+      byId.delete(input.id);
+    } else {
+      unknownIds[`${i}.id`] = ['This key does not belong to the song.'];
+    }
+  });
+  if (Object.keys(unknownIds).length > 0) {
+    throw new ActionError('VALIDATION', 'Invalid input.', unknownIds);
+  }
+
+  // 2. Id-less entries, by key name among the rows not already claimed.
+  const byKey = new Map([...byId.values()].map((row) => [row.key, row]));
+  const unmatchedInputs: SongKeyInput[] = [];
   for (const input of keys) {
+    if (input.id !== undefined) continue;
     const row = byKey.get(input.key);
     if (row) {
       updates.push({ row, input });
@@ -96,8 +135,11 @@ function planKeyChanges(existing: SongKeyRow[], keys: SongKeyInput[]): KeyPlan {
     }
   }
 
+  // 3. Callers that send no ids at all: a single leftover on each side is an
+  //    unambiguous rename. Id-aware callers get no guessing.
   const unmatchedRows = [...byKey.values()].sort(byPrimaryThenKey);
-  if (unmatchedRows.length === 1 && unmatchedInputs.length === 1) {
+  const usesIds = keys.some((k) => k.id !== undefined);
+  if (!usesIds && unmatchedRows.length === 1 && unmatchedInputs.length === 1) {
     updates.push({ row: unmatchedRows[0]!, input: unmatchedInputs[0]! });
     return { updates, inserts: [], deletes: [] };
   }
@@ -169,12 +211,22 @@ async function replaceSongKeys(
       });
     }
 
-    // Only one row may be primary at a time (song_keys_one_primary), so clear the
-    // outgoing primary before any row becomes primary.
+    // Unique (song_id, key) and song_keys_one_primary are checked row by row, so a
+    // swap (G <-> A by id) or a primary handover would collide mid-way. Phase 1 parks
+    // renamed rows on unused temporary keys and clears the outgoing primary; phase 2
+    // below writes the final values.
+    const tempKeys = unusedKeys([...existing.map((r) => r.key), ...keys.map((k) => k.key)]);
     for (const { row, input } of plan.updates) {
-      if (row.isPrimary && !input.isPrimary) {
-        await tx.update(songKeys).set({ isPrimary: false }).where(eq(songKeys.id, row.id));
-      }
+      const renamed = row.key !== input.key;
+      const losesPrimary = row.isPrimary && !input.isPrimary;
+      if (!renamed && !losesPrimary) continue;
+      await tx
+        .update(songKeys)
+        .set({
+          ...(renamed ? { key: tempKeys.next() } : {}),
+          ...(losesPrimary ? { isPrimary: false } : {}),
+        })
+        .where(eq(songKeys.id, row.id));
     }
 
     for (const { row, input } of plan.updates) {

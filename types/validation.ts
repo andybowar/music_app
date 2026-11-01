@@ -82,6 +82,8 @@ const firstChordsSchema = z.object(
 );
 
 export const songKeyInputSchema = z.object({
+  /** Existing `song_keys.id` (echo `SongKey.id` back); omit for a new key. CR LIB-02-song-key-input-id. */
+  id: uuid.optional(),
   key: musicalKey,
   isPrimary: z.boolean(),
   firstChords: firstChordsSchema.default({}),
@@ -103,6 +105,14 @@ export const songKeysInputSchema = z
         ctx.addIssue({ code: 'custom', path: [i, 'key'], message: `Duplicate key ${k.key}` });
       }
       seen.add(k.key);
+    });
+    const seenIds = new Set<string>();
+    keys.forEach((k, i) => {
+      if (k.id === undefined) return;
+      if (seenIds.has(k.id)) {
+        ctx.addIssue({ code: 'custom', path: [i, 'id'], message: 'Duplicate key id' });
+      }
+      seenIds.add(k.id);
     });
   });
 export type SongKeysInput = z.infer<typeof songKeysInputSchema>;

@@ -5,7 +5,7 @@ phase: 3
 wave: 8
 stream: backend
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["LIB-01", "LIST-03", "AUTH-05"]
 blocks: ["BR-01", "BR-03", "LIST-07", "LIST-08", "SHR-01", "LIST-09"]
@@ -38,14 +38,14 @@ requirements: ["REQ-LIST-01", "REQ-LIST-03", "REQ-LIST-06", "REQ-LIST-07", "REQ-
 - `REQ-LIST-08` — Setlists are readable by all members (supports "what other branches are using"); playlists are private to their owner unless shared.
 
 ## Deliverables
-- [ ] Functions per contract; getList resolves items via resolveItemDisplay
-- [ ] listLists: scope mine/branch/all; upcoming (event_date ≥ today) first asc, then past desc
-- [ ] Soft delete
+- [x] Functions per contract; getList resolves items via resolveItemDisplay
+- [x] listLists: scope mine/branch/all; upcoming (event_date ≥ today) first asc, then past desc
+- [x] Soft delete
 
 ## Acceptance criteria
-- [ ] Member cannot read another user's playlist; can read any setlist
-- [ ] Same-branch music leader can rename a setlist
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Member cannot read another user's playlist; can read any setlist
+- [x] Same-branch music leader can rename a setlist
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/lists/server/lists.ts`

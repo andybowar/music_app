@@ -5,7 +5,7 @@ phase: 2
 wave: 6
 stream: frontend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["UI-05"]
 blocks: ["SRCH-09"]
@@ -27,11 +27,11 @@ requirements: []
 - Output of `UI-05` (merged on main)
 
 ## Deliverables
-- [ ] Count header ("8 songs"), skeletons, empty state with "clear filters" action, load-more sentinel
+- [x] Count header ("8 songs"), skeletons, empty state with "clear filters" action, load-more sentinel
 
 ## Acceptance criteria
-- [ ] 1,000 fixture rows scroll smoothly (virtualize if needed)
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] 1,000 fixture rows scroll smoothly (virtualize if needed)
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/search/ui/ResultsList.tsx`, `app/dev/results/`

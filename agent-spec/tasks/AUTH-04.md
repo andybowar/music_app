@@ -10,7 +10,7 @@ human_required: false
 depends_on: ["F-05", "DB-06", "DB-07"]
 blocks: ["ADM-01", "LIB-01", "LIB-02", "LIB-03", "LIB-04", "LIB-05", "LIB-06", "LIB-07", "LIST-02", "SRCH-10", "SRCH-02"]
 owns: ["lib/auth.ts", "middleware.ts"]
-touches: []
+touches: ["app/(app)/layout.tsx", "lib/permissions.ts"]
 requirements: ["REQ-AUTH-06", "REQ-AUTH-08"]
 ---
 

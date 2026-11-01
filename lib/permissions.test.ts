@@ -257,7 +257,7 @@ describe('spot checks against the contract text', () => {
   });
 });
 
-describe('unauthenticated and disabled users', () => {
+describe('unauthenticated, disabled and non-approved users', () => {
   const contexts: (PermCtx | undefined)[] = [
     undefined,
     { list: { type: 'setlist', ownerId: ME, branchId: BRANCH_A } },
@@ -273,6 +273,22 @@ describe('unauthenticated and disabled users', () => {
     for (const action of ACTIONS) {
       for (const ctx of contexts) expect(can(user, action, ctx)).toBe(false);
     }
+  });
+
+  // CR DB-05-can-access-status: only approved users have any permissions.
+  it.each(
+    ROLES.flatMap((role) => (['pending', 'rejected'] as const).map((s) => [role, s] as const)),
+  )('%s with accessStatus %s is denied every action, even on own lists', (role, accessStatus) => {
+    const user = makeUser(role, { accessStatus });
+    for (const action of ACTIONS) {
+      for (const ctx of contexts) expect(can(user, action, ctx)).toBe(false);
+    }
+  });
+
+  it('a pending admin fails assertCan with FORBIDDEN', () => {
+    expect(() => assertCan(makeUser('admin', { accessStatus: 'pending' }), 'admin:users')).toThrow(
+      expect.objectContaining({ name: 'ActionError', code: 'FORBIDDEN' }),
+    );
   });
 });
 

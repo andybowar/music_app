@@ -1,8 +1,6 @@
 # CR AUTH-04 · Wire `(app)` layout to `@/lib/auth`'s `requireUser`
 
-**Status:** proposed. Depends on the approved direction in
-`agent-spec/change-requests/UI-02-require-user.md` (option 1: "the swap belongs with the code
-that owns auth"). AUTH-04 is now complete; this is the one-line follow-up that task.
+**Status:** approved by project owner 2026-11-01. Applied to `tasks/AUTH-04.md` (touches `app/(app)/layout.tsx`); the layout edit is an AUTH-04 follow-up.
 
 ## Problem
 

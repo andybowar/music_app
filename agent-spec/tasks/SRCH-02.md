@@ -5,7 +5,7 @@ phase: 2
 wave: 8
 stream: backend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["SRCH-01", "LIB-01", "AUTH-04"]
 blocks: ["BR-01", "BR-04", "H-02", "SRCH-03", "SRCH-09"]
@@ -34,11 +34,11 @@ requirements: ["REQ-SRCH-01"]
 - `REQ-SRCH-01` — Default view: all songs ordered by `created_at desc, title asc`.
 
 ## Deliverables
-- [ ] searchSongs per contract, mapping rows → SongSummary via assemble.ts
+- [x] searchSongs per contract, mapping rows → SongSummary via assemble.ts
 
 ## Acceptance criteria
-- [ ] No params → newest first then title
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] No params → newest first then title
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/search/server/search.ts`

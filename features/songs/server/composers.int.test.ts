@@ -133,7 +133,10 @@ describe('createComposer', () => {
     as('contributor');
     expect(await createComposer(`Contrib ${run}`)).toMatchObject({ ok: true });
     as('member');
-    expect(await createComposer(`Member ${run}`)).toMatchObject({ ok: false });
+    expect(await createComposer(`Member ${run}`)).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
   });
 });
 
@@ -205,7 +208,10 @@ describe('setComposerPop', () => {
     as('music_leader');
     expect(await setComposerPop(c.id, 'current')).toEqual({ ok: true, data: undefined });
     as('contributor');
-    expect(await setComposerPop(c.id, 'past')).toMatchObject({ ok: false });
+    expect(await setComposerPop(c.id, 'past')).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
 
     const [row] = await getDb().select().from(composers).where(eq(composers.id, c.id));
     expect(row?.popMember).toBe('current');
@@ -250,7 +256,7 @@ describe('mergeComposers', () => {
     expect(songAudits).toHaveLength(3);
   });
 
-  test('missing composer → NOT_FOUND; same id → VALIDATION; contributor denied', async () => {
+  test('missing composer → NOT_FOUND; same id → VALIDATION; contributor → FORBIDDEN', async () => {
     const keep = await newComposer('Keep solo');
     expect(await mergeComposers(keep.id, randomUUID())).toMatchObject({
       error: { code: 'NOT_FOUND' },
@@ -258,8 +264,10 @@ describe('mergeComposers', () => {
     expect(await mergeComposers(keep.id, keep.id)).toMatchObject({
       error: { code: 'VALIDATION' },
     });
-    // Code not pinned: assertCan denials map to INTERNAL until CR LIB-07-assertcan-actionerror lands.
     as('contributor');
-    expect(await mergeComposers(keep.id, randomUUID())).toMatchObject({ ok: false });
+    expect(await mergeComposers(keep.id, randomUUID())).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
   });
 });

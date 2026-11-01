@@ -22,7 +22,7 @@ Read helpers (non-action, server-only, used by RSC pages) return plain data or `
 | `lib/audit.ts` | `recordAudit(tx, { actorId, entity, entityId, action, before?, after? })` computes `diff` | DB-06 |
 | `lib/action.ts` | `class ActionError(code, message, fieldErrors?)`, `withAction<A,T>(fn): (...a:A)=>Promise<ActionResult<T>>`, `setSentryCapture(fn: ((error, context?) => void) \| null)` (default: `console.error`; OPS-02 installs it from `instrumentation.ts`) | DB-06 |
 | `lib/auth.ts` | `getUser(): Promise<AppUser\|null>` (any access status), `requireUser(): Promise<AppUser>` (approved only: throws UNAUTHENTICATED when signed out, FORBIDDEN when pending/rejected; pages redirect pending/rejected users to `/account-status`), `requireRole(r: Role)` | AUTH-04 |
-| `lib/permissions.ts` | `can`, `assertCan`, `Action`, `PermCtx` — see `permissions.md` | AUTH-05 |
+| `lib/permissions.ts` | `can`, `assertCan`, `Action`, `PermCtx` — see `permissions.md`; `roleAtLeast(role: Role, min: Role): boolean` (member < contributor < music_leader < admin; CR AUTH-04-role-at-least) | AUTH-05 |
 | `lib/storage.ts` | `createUploadUrl(path)`, `objectExists(path) → {size}\|null`, `signedReadUrl(path, ttl?)`, `removeObject(path)`, `resourcePath(songId, songKeyId\|null, resourceId, ext)` | LIB-06 |
 | `lib/email.ts` | `sendEmail({ to, subject, react })` | SHR-03 |
 

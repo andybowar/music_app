@@ -167,7 +167,7 @@ describe('ResourcesPanel', () => {
         keys={empty.keys}
         onOpen={() => {}}
         onShowLyrics={() => {}}
-        addFilesSlot={<a href="/songs/x/edit">Add files</a>}
+        addFilesSlot={<a href="#add-files">Add files</a>}
       />,
     );
     expect(screen.getByText('No files yet')).toBeInTheDocument();

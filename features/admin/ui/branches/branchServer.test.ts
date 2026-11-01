@@ -137,4 +137,16 @@ describe('admin', () => {
     db.withTx.mockRejectedValueOnce(new Error('boom'));
     expect(await upsertBranch(valid)).toMatchObject({ ok: false, error: { code: 'INTERNAL' } });
   });
+
+  test('a foreign key violation on delete (racing reference) is CONFLICT, not INTERNAL', async () => {
+    const fk = Object.assign(new Error('violates foreign key'), {
+      code: '23503',
+      constraint_name: 'users_branch_id_fkey',
+    });
+    db.withTx.mockRejectedValueOnce(new Error('Failed query', { cause: fk }));
+    expect(await deleteBranch(BRANCH)).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+
+    db.withTx.mockRejectedValueOnce(new Error('boom'));
+    expect(await deleteBranch(BRANCH)).toMatchObject({ ok: false, error: { code: 'INTERNAL' } });
+  });
 });

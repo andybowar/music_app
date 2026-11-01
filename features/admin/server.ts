@@ -21,6 +21,7 @@
 import 'server-only';
 
 import { and, asc, eq, isNull, ne, sql, type SQL } from 'drizzle-orm';
+import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 
 import { branchUsage, branches, lists, songs, users } from '@/db/schema';
@@ -451,16 +452,28 @@ const BRANCH_CONSTRAINT_FIELD: Record<string, keyof typeof BRANCH_TAKEN> = {
 
 const BRANCH_TAKEN_MSG = 'Another branch already uses some of these values.';
 
+/**
+ * `table.column`, always qualified. Drizzle drops the table prefix from columns inside `sql`
+ * fields of a single-table select, which would turn `users.branch_id = branches.id` in a
+ * correlated subquery into `branch_id = id` (both resolving to `users`), counting nothing.
+ */
+const qualified = (table: PgTable, column: AnyPgColumn) =>
+  sql`${table}.${sql.identifier(column.name)}`;
+
+/** Correlated `count(*)` of rows in `table` whose `column` points at the outer branch. */
+const countReferences = (table: PgTable, column: AnyPgColumn) =>
+  sql<number>`(select count(*) from ${table} where ${qualified(table, column)} = ${qualified(branches, branches.id)})::int`;
+
 const branchColumns = {
   id: branches.id,
   name: branches.name,
   code: branches.code,
   ssoGroup: branches.ssoGroup,
   // Soft-deleted songs and lists still hold the foreign key, so they count.
-  users: sql<number>`(select count(*) from ${users} where ${users.branchId} = ${branches.id})::int`,
-  songs: sql<number>`(select count(*) from ${songs} where ${songs.addedByBranchId} = ${branches.id})::int`,
-  lists: sql<number>`(select count(*) from ${lists} where ${lists.branchId} = ${branches.id})::int`,
-  usage: sql<number>`(select count(*) from ${branchUsage} where ${branchUsage.branchId} = ${branches.id})::int`,
+  users: countReferences(users, users.branchId),
+  songs: countReferences(songs, songs.addedByBranchId),
+  lists: countReferences(lists, lists.branchId),
+  usage: countReferences(branchUsage, branchUsage.branchId),
 };
 
 async function selectBranches(db: Tx | DB, where?: SQL): Promise<AdminBranch[]> {
@@ -486,11 +499,13 @@ function referenceTotal(refs: BranchReferences): number {
   return refs.users + refs.songs + refs.lists + refs.usage;
 }
 
-/** The constraint name of a Postgres unique violation (possibly wrapped by Drizzle), else null. */
-function uniqueViolation(error: unknown): string | null {
+/** The constraint name of a Postgres error with `code` (possibly wrapped by Drizzle), else null. */
+function pgViolation(error: unknown, code: '23505' | '23503'): string | null {
   for (let e: unknown = error; e && typeof e === 'object'; e = (e as { cause?: unknown }).cause) {
-    const { code, constraint_name } = e as { code?: unknown; constraint_name?: unknown };
-    if (code === '23505') return typeof constraint_name === 'string' ? constraint_name : '';
+    const found = e as { code?: unknown; constraint_name?: unknown };
+    if (found.code === code) {
+      return typeof found.constraint_name === 'string' ? found.constraint_name : '';
+    }
   }
   return null;
 }
@@ -577,7 +592,7 @@ export const upsertBranch = withAction(async (input: BranchInput): Promise<Admin
     });
   } catch (error) {
     // Two admins saving the same value at once: the pre-check passed for both.
-    const constraint = uniqueViolation(error);
+    const constraint = pgViolation(error, '23505');
     if (constraint === null) throw error;
     const field = BRANCH_CONSTRAINT_FIELD[constraint];
     throw new ActionError(
@@ -588,25 +603,34 @@ export const upsertBranch = withAction(async (input: BranchInput): Promise<Admin
   }
 });
 
-/** Delete a branch nobody references (users, songs, lists or usage); otherwise CONFLICT. */
+/**
+ * Delete a branch nobody references (users, songs, lists or usage); otherwise CONFLICT. A foreign
+ * key violation on the delete itself is also CONFLICT, never INTERNAL.
+ */
 export const deleteBranch = withAction(async (id: string): Promise<void> => {
   const admin = await requireBranchAdmin();
   const branchId = uuid.parse(id);
 
-  await withTx(async (tx) => {
-    const [row] = await tx.select().from(branches).where(eq(branches.id, branchId)).for('update');
-    if (!row) throw new ActionError('NOT_FOUND', 'That branch no longer exists.');
-    const [current] = await selectBranches(tx, eq(branches.id, branchId));
-    if (current && referenceTotal(current.references) > 0) {
-      throw new ActionError('CONFLICT', `${row.name} is in use, so it can't be deleted.`);
-    }
-    await tx.delete(branches).where(eq(branches.id, branchId));
-    await recordAudit(tx, {
-      actorId: admin.id,
-      entity: 'branch',
-      entityId: branchId,
-      action: 'delete',
-      before: branchSnapshot(row),
+  try {
+    await withTx(async (tx) => {
+      const [row] = await tx.select().from(branches).where(eq(branches.id, branchId)).for('update');
+      if (!row) throw new ActionError('NOT_FOUND', 'That branch no longer exists.');
+      const [current] = await selectBranches(tx, eq(branches.id, branchId));
+      if (current && referenceTotal(current.references) > 0) {
+        throw new ActionError('CONFLICT', `${row.name} is in use, so it can't be deleted.`);
+      }
+      await tx.delete(branches).where(eq(branches.id, branchId));
+      await recordAudit(tx, {
+        actorId: admin.id,
+        entity: 'branch',
+        entityId: branchId,
+        action: 'delete',
+        before: branchSnapshot(row),
+      });
     });
-  });
+  } catch (error) {
+    // A row that started pointing at the branch after the count (or one the count missed).
+    if (pgViolation(error, '23503') === null) throw error;
+    throw new ActionError('CONFLICT', "This branch is in use, so it can't be deleted.");
+  }
 });

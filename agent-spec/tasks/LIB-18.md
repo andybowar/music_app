@@ -5,7 +5,7 @@ phase: 1
 wave: 8
 stream: frontend
 size: M
-status: in_progress
+status: done
 human_required: false
 depends_on: ["LIB-01", "LIB-06", "UI-06", "UI-07", "UI-08", "UI-02"]
 blocks: ["LIB-19", "H-01"]
@@ -36,14 +36,14 @@ requirements: ["REQ-ROW-03", "REQ-ROW-04"]
 - `REQ-ROW-04` — PDFs open in an in-app viewer; audio plays inline; projection files download.
 
 ## Deliverables
-- [ ] Header (row atoms), panels inline, LyricsViewer, files open in PdfViewer/InlineAudio via getSignedResourceUrl
-- [ ] Edit button for contributors
-- [ ] History tab slot (filled by LIB-19)
+- [x] Header (row atoms), panels inline, LyricsViewer, files open in PdfViewer/InlineAudio via getSignedResourceUrl
+- [x] Edit button for contributors
+- [x] History tab slot (filled by LIB-19)
 
 ## Acceptance criteria
-- [ ] 404 for unknown or deleted song
-- [ ] Opening a PDF never exposes a non-signed URL
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] 404 for unknown or deleted song
+- [x] Opening a PDF never exposes a non-signed URL
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `app/(app)/songs/[id]/page.tsx`, `features/songs/ui/SongPage.tsx`

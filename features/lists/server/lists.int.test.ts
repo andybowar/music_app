@@ -270,10 +270,17 @@ describe('listLists', () => {
   });
 
   test('mine: only the caller’s lists, both types when type is omitted', async () => {
-    const result = ids(await listLists({ scope: 'mine' }));
-    expect(new Set(result)).toEqual(new Set([farPast, later, soon, ownPlaylist]));
-    // Undated lists come after dated ones.
-    expect(result.at(-1)).toBe(ownPlaylist);
+    const all = await listLists({ scope: 'mine' });
+    // Every list returned, from any suite, is the caller's own.
+    expect(all.length).toBeGreaterThan(0);
+    expect(all.every((l) => l.ownerId === owner.id)).toBe(true);
+
+    // Earlier describes in this file also create lists for `owner`, so compare only the
+    // lists this describe created.
+    const created = [farPast, later, past, today, soon, ownPlaylist, othersPlaylist];
+    const result = ids(all).filter((id) => created.includes(id));
+    expect(result).toEqual([soon, later, farPast, ownPlaylist]);
+    expect(result).not.toContain(deleted);
   });
 
   test("branch: the caller's lists and their branch's setlists, not others' playlists", async () => {

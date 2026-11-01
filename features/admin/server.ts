@@ -13,14 +13,18 @@
  *                    later.
  *
  * Every function needs `admin:users`. Mutations write an audit entry (entity `user`).
+ *
+ * Admin › Branches (ADM-02): `listBranches`, `upsertBranch`, `deleteBranch` need
+ * `admin:branches` and audit with entity `branch`.
  */
 
 import 'server-only';
 
 import { and, asc, eq, isNull, ne, sql, type SQL } from 'drizzle-orm';
+import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 
-import { branches, users } from '@/db/schema';
+import { branchUsage, branches, lists, songs, users } from '@/db/schema';
 import { ActionError, withAction } from '@/lib/action';
 import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
@@ -391,4 +395,242 @@ export const approveUser = withAction(
 /** Reject a pending access request. The user only sees `/account-status` until approved. */
 export const rejectUser = withAction(async (id: string): Promise<void> => {
   await decide(id, 'rejected');
+});
+
+// ----- Branches (ADM-02) -----------------------------------------------------------------
+
+/** How many rows point at a branch. A branch with any of these can't be deleted. */
+export interface BranchReferences {
+  users: number;
+  songs: number;
+  lists: number;
+  usage: number;
+}
+
+/** One row of the Admin › Branches table. */
+export interface AdminBranch extends Branch {
+  references: BranchReferences;
+}
+
+export interface BranchInput {
+  /** Omit to create a branch. */
+  id?: string;
+  name: string;
+  code: string;
+  ssoGroup?: string | null;
+}
+
+const branchSchema = z.object({
+  id: uuid.optional(),
+  name: z.string().trim().min(1, 'Enter a name').max(80, 'Use 80 characters or fewer'),
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2,3}$/, 'Use 2 or 3 letters, like SV'),
+  ssoGroup: z
+    .string()
+    .trim()
+    .max(200, 'Use 200 characters or fewer')
+    .nullish()
+    .transform((v) => (v ? v : null)),
+});
+
+/** Inline message for each field that must be unique across branches. */
+const BRANCH_TAKEN = {
+  name: 'Another branch already has this name',
+  code: 'Another branch already uses this code',
+  ssoGroup: 'Another branch is already mapped to this group',
+} as const;
+
+/** Unique constraint on `branches` → the form field it guards. */
+const BRANCH_CONSTRAINT_FIELD: Record<string, keyof typeof BRANCH_TAKEN> = {
+  branches_name_key: 'name',
+  branches_code_key: 'code',
+  branches_sso_group_key: 'ssoGroup',
+};
+
+const BRANCH_TAKEN_MSG = 'Another branch already uses some of these values.';
+
+/**
+ * `table.column`, always qualified. Drizzle drops the table prefix from columns inside `sql`
+ * fields of a single-table select, which would turn `users.branch_id = branches.id` in a
+ * correlated subquery into `branch_id = id` (both resolving to `users`), counting nothing.
+ */
+const qualified = (table: PgTable, column: AnyPgColumn) =>
+  sql`${table}.${sql.identifier(column.name)}`;
+
+/** Correlated `count(*)` of rows in `table` whose `column` points at the outer branch. */
+const countReferences = (table: PgTable, column: AnyPgColumn) =>
+  sql<number>`(select count(*) from ${table} where ${qualified(table, column)} = ${qualified(branches, branches.id)})::int`;
+
+const branchColumns = {
+  id: branches.id,
+  name: branches.name,
+  code: branches.code,
+  ssoGroup: branches.ssoGroup,
+  // Soft-deleted songs and lists still hold the foreign key, so they count.
+  users: countReferences(users, users.branchId),
+  songs: countReferences(songs, songs.addedByBranchId),
+  lists: countReferences(lists, lists.branchId),
+  usage: countReferences(branchUsage, branchUsage.branchId),
+};
+
+async function selectBranches(db: Tx | DB, where?: SQL): Promise<AdminBranch[]> {
+  const rows = await db
+    .select(branchColumns)
+    .from(branches)
+    .where(where)
+    .orderBy(asc(branches.name));
+  return rows.map(({ users: u, songs: s, lists: l, usage, ...branch }) => ({
+    ...branch,
+    references: { users: u, songs: s, lists: l, usage },
+  }));
+}
+
+async function requireBranchAdmin() {
+  const user = await requireUser();
+  assertCan(user, 'admin:branches');
+  return user;
+}
+
+/** Total rows pointing at a branch. (Not exported: a 'use server' file exports only actions.) */
+function referenceTotal(refs: BranchReferences): number {
+  return refs.users + refs.songs + refs.lists + refs.usage;
+}
+
+/** The constraint name of a Postgres error with `code` (possibly wrapped by Drizzle), else null. */
+function pgViolation(error: unknown, code: '23505' | '23503'): string | null {
+  for (let e: unknown = error; e && typeof e === 'object'; e = (e as { cause?: unknown }).cause) {
+    const found = e as { code?: unknown; constraint_name?: unknown };
+    if (found.code === code) {
+      return typeof found.constraint_name === 'string' ? found.constraint_name : '';
+    }
+  }
+  return null;
+}
+
+/** Throws CONFLICT with a field error per value another branch already uses. */
+async function assertBranchUnique(tx: Tx, data: z.output<typeof branchSchema>): Promise<void> {
+  const clashes = await tx
+    .select({ name: branches.name, code: branches.code, ssoGroup: branches.ssoGroup })
+    .from(branches)
+    .where(
+      and(
+        data.id ? ne(branches.id, data.id) : undefined,
+        sql`(lower(${branches.name}) = lower(${data.name}) or ${branches.code} = ${data.code}${
+          data.ssoGroup ? sql` or ${branches.ssoGroup} = ${data.ssoGroup}` : sql``
+        })`,
+      ),
+    );
+  const fieldErrors: Record<string, string[]> = {};
+  for (const c of clashes) {
+    if (c.name.toLowerCase() === data.name.toLowerCase()) {
+      fieldErrors.name = [BRANCH_TAKEN.name];
+    }
+    if (c.code === data.code) fieldErrors.code = [BRANCH_TAKEN.code];
+    if (data.ssoGroup && c.ssoGroup === data.ssoGroup) {
+      fieldErrors.ssoGroup = [BRANCH_TAKEN.ssoGroup];
+    }
+  }
+  if (Object.keys(fieldErrors).length > 0) {
+    throw new ActionError('CONFLICT', BRANCH_TAKEN_MSG, fieldErrors);
+  }
+}
+
+type BranchRow = typeof branches.$inferSelect;
+
+function branchSnapshot(row: BranchRow) {
+  return { name: row.name, code: row.code, ssoGroup: row.ssoGroup };
+}
+
+/** Every branch with its reference counts, by name. Needs `admin:branches`. */
+export async function listBranches(): Promise<AdminBranch[]> {
+  await requireBranchAdmin();
+  return selectBranches(getDb());
+}
+
+/**
+ * Create a branch (no `id`) or update one. Name, code and SSO group must be unique; a clash is
+ * CONFLICT with a field error on each clashing field. The code is upper-cased.
+ */
+export const upsertBranch = withAction(async (input: BranchInput): Promise<AdminBranch> => {
+  const admin = await requireBranchAdmin();
+  const data = branchSchema.parse(input);
+
+  try {
+    return await withTx(async (tx) => {
+      let before: BranchRow | null = null;
+      if (data.id) {
+        const [row] = await tx
+          .select()
+          .from(branches)
+          .where(eq(branches.id, data.id))
+          .for('update');
+        if (!row) throw new ActionError('NOT_FOUND', 'That branch no longer exists.');
+        before = row;
+      }
+      await assertBranchUnique(tx, data);
+
+      const values = { name: data.name, code: data.code, ssoGroup: data.ssoGroup };
+      const [after] = before
+        ? await tx.update(branches).set(values).where(eq(branches.id, before.id)).returning()
+        : await tx.insert(branches).values(values).returning();
+      if (!after) throw new Error('branch write returned no row');
+
+      await recordAudit(tx, {
+        actorId: admin.id,
+        entity: 'branch',
+        entityId: after.id,
+        action: before ? 'update' : 'create',
+        before: before ? branchSnapshot(before) : null,
+        after: branchSnapshot(after),
+      });
+      const [saved] = await selectBranches(tx, eq(branches.id, after.id));
+      if (!saved) throw new Error('saved branch vanished');
+      return saved;
+    });
+  } catch (error) {
+    // Two admins saving the same value at once: the pre-check passed for both.
+    const constraint = pgViolation(error, '23505');
+    if (constraint === null) throw error;
+    const field = BRANCH_CONSTRAINT_FIELD[constraint];
+    throw new ActionError(
+      'CONFLICT',
+      BRANCH_TAKEN_MSG,
+      field ? { [field]: [BRANCH_TAKEN[field]] } : undefined,
+    );
+  }
+});
+
+/**
+ * Delete a branch nobody references (users, songs, lists or usage); otherwise CONFLICT. A foreign
+ * key violation on the delete itself is also CONFLICT, never INTERNAL.
+ */
+export const deleteBranch = withAction(async (id: string): Promise<void> => {
+  const admin = await requireBranchAdmin();
+  const branchId = uuid.parse(id);
+
+  try {
+    await withTx(async (tx) => {
+      const [row] = await tx.select().from(branches).where(eq(branches.id, branchId)).for('update');
+      if (!row) throw new ActionError('NOT_FOUND', 'That branch no longer exists.');
+      const [current] = await selectBranches(tx, eq(branches.id, branchId));
+      if (current && referenceTotal(current.references) > 0) {
+        throw new ActionError('CONFLICT', `${row.name} is in use, so it can't be deleted.`);
+      }
+      await tx.delete(branches).where(eq(branches.id, branchId));
+      await recordAudit(tx, {
+        actorId: admin.id,
+        entity: 'branch',
+        entityId: branchId,
+        action: 'delete',
+        before: branchSnapshot(row),
+      });
+    });
+  } catch (error) {
+    // A row that started pointing at the branch after the count (or one the count missed).
+    if (pgViolation(error, '23503') === null) throw error;
+    throw new ActionError('CONFLICT', "This branch is in use, so it can't be deleted.");
+  }
 });

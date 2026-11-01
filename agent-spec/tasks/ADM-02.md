@@ -5,7 +5,7 @@ phase: 1
 wave: 8
 stream: frontend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["ADM-01"]
 blocks: []
@@ -27,11 +27,11 @@ requirements: []
 - Output of `ADM-01` (merged on main)
 
 ## Deliverables
-- [ ] CRUD for name, code, sso_group (no delete if referenced)
+- [x] CRUD for name, code, sso_group (no delete if referenced)
 
 ## Acceptance criteria
-- [ ] Code uniqueness error shown inline
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Code uniqueness error shown inline
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `app/(app)/admin/branches/`, `features/admin/ui/branches/`

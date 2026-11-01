@@ -5,7 +5,7 @@ phase: 1
 wave: 8
 stream: frontend
 size: S
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["ADM-01"]
 blocks: []

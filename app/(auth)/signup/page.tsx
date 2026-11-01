@@ -8,6 +8,10 @@ import { AuthShell } from '../login/AuthShell';
 
 export const metadata: Metadata = { title: 'Request access' };
 
+// Render per request: the SSO buttons read server env (SSO_PROVIDERS), which must not be
+// needed at build time (`next build` without server env) or baked into a static page.
+export const dynamic = 'force-dynamic';
+
 /**
  * `/signup` (REQ-AUTH-03): request an account. A first SSO sign-in creates a
  * request too, so the organization sign-in buttons are offered here as well.

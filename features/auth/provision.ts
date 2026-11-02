@@ -9,13 +9,16 @@
  *   Supabase linked to this identity by verified email): records the provider,
  *   subject and login time. A branch is filled in from the IdP groups only when
  *   the account has none; an admin-assigned branch or role is never overwritten.
- * - **Disabled account** (`disabled_at` set): rejected with `FORBIDDEN`.
- *   The access status is never changed here (pending stays pending).
+ * - **Disabled account** (`disabled_at` set): rejected with `FORBIDDEN`, and every
+ *   session the user holds is revoked (AUTH-06). The access status is never changed
+ *   here (pending stays pending, rejected stays rejected).
+ * - **Unverified link**: an existing account reached through an identity the IdP did
+ *   not verify the email for is rejected with `CONFLICT` (AUTH-06, `./linking`).
  * - **New identity**: a `pending` `member` is created (REQ-AUTH-03, AUTH-07). If
  *   the IdP groups map to a branch (`branches.sso_group`) it is filled in as a
  *   suggestion for the approving admin (REQ-AUTH-04); otherwise branch is null.
- * - **Email already used by another account** that Supabase did not link (the
- *   email was not verified by the IdP): rejected with `CONFLICT`.
+ * - **Email already used by another account** (case-insensitive) that Supabase did
+ *   not link (the email was not verified by the IdP): rejected with `CONFLICT`.
  *
  * Writes go through Drizzle as the `DATABASE_URL` role (`postgres`), which owns
  * the tables and so is not subject to the RLS policies in `0003_rls.sql`. That is
@@ -33,6 +36,8 @@ import { eq } from 'drizzle-orm';
 import { branches, users } from '@/db/schema';
 import { ActionError } from '@/lib/action';
 import { withTx, type Tx } from '@/lib/db';
+
+import { resolveSsoAccount, revokeUserSessions } from './linking';
 
 /** The OIDC providers AUTH-02 supports, as named in the app and in Supabase. */
 export const OIDC_PROVIDERS = { google: 'google', microsoft: 'azure' } as const;
@@ -168,16 +173,24 @@ export async function provisionUser(authUser: User, idpGroups: string[]): Promis
   if (!email) throw new ActionError('UNAUTHENTICATED', NO_ACCOUNT_MESSAGE);
   const now = new Date();
 
-  return withTx(async (tx) => {
-    const [existing] = await tx
-      .select()
-      .from(users)
-      .where(eq(users.id, authUser.id))
-      .for('update')
-      .limit(1);
+  const result = await withTx(async (tx) => {
+    // AUTH-06: which account this sign-in belongs to (link by verified email, REQ-AUTH-05).
+    const link = await resolveSsoAccount(tx, authUser, email, {
+      ...identity,
+      supabaseProvider: OIDC_PROVIDERS[identity.provider],
+    });
 
-    if (existing) {
-      if (existing.disabledAt) throw new ActionError('FORBIDDEN', DISABLED_MESSAGE);
+    if (link.kind === 'disabled') {
+      // REQ-AUTH-06: end every session they still hold, then reject (after commit).
+      await revokeUserSessions(tx, authUser.id);
+      return 'disabled' as const;
+    }
+    if (link.kind === 'unverified' || link.kind === 'email_taken') {
+      throw new ActionError('CONFLICT', EMAIL_CONFLICT_MESSAGE);
+    }
+
+    if (link.kind === 'existing') {
+      const existing = link.row;
       const branchId = existing.branchId ?? (await mappedBranch(tx, idpGroups));
       const [updated] = await tx
         .update(users)
@@ -191,13 +204,6 @@ export async function provisionUser(authUser: User, idpGroups: string[]): Promis
         .returning();
       return toAppUser(updated!);
     }
-
-    const [sameEmail] = await tx
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-    if (sameEmail) throw new ActionError('CONFLICT', EMAIL_CONFLICT_MESSAGE);
 
     // AUTH-07: every new identity becomes a pending access request; the mapped
     // branch (or none) is only a suggestion for the approving admin.
@@ -219,4 +225,7 @@ export async function provisionUser(authUser: User, idpGroups: string[]): Promis
       .returning();
     return toAppUser(created!);
   });
+
+  if (result === 'disabled') throw new ActionError('FORBIDDEN', DISABLED_MESSAGE);
+  return result;
 }

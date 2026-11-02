@@ -146,15 +146,39 @@ describe('searchSongs', () => {
     expect(h.execute).toHaveBeenCalledTimes(1);
   });
 
-  test('no matches on page 1: total 0, one query', async () => {
-    h.results = [[]];
+  test('no matches on page 1: total 0; only the fuzzy fallback runs after', async () => {
+    h.results = [[], []];
     expect(await searchSongs({ q: 'nothing' })).toEqual({
       items: [],
       total: 0,
       page: 1,
       pageSize: 50,
     });
+    expect(h.execute).toHaveBeenCalledTimes(2);
+  });
+
+  test('3+ full-text matches: no fallback query', async () => {
+    h.results = [[row({ total: 3 })]];
+    const result = await searchSongs({ q: 'grace' });
+    expect(result.total).toBe(3);
+    expect(result).not.toHaveProperty('didYouMean');
     expect(h.execute).toHaveBeenCalledTimes(1);
+  });
+
+  test('few full-text matches: fuzzy title matches appended, didYouMean set (SRCH-03)', async () => {
+    const fuzzy = {
+      ...row({ id: '00000000-0000-4000-8000-00000000000c', title: 'A Thousand Hallelujahs' }),
+      fuzzyTotal: 1,
+      didYouMean: '1000 Hallelujahs',
+    };
+    h.results = [[row({ total: 1 })], [fuzzy]];
+    const result = await searchSongs({ q: 'halelujahs' });
+    expect(result.items.map((i) => i.id)).toEqual([
+      '00000000-0000-4000-8000-00000000000a',
+      '00000000-0000-4000-8000-00000000000c',
+    ]);
+    expect(result).toMatchObject({ total: 2, didYouMean: '1000 Hallelujahs' });
+    expect(h.execute).toHaveBeenCalledTimes(2);
   });
 
   test('page past the end: total read from page 1', async () => {

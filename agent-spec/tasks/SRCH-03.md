@@ -5,7 +5,7 @@ phase: 2
 wave: 9
 stream: backend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["SRCH-02"]
 blocks: ["SRCH-11"]
@@ -32,11 +32,11 @@ requirements: ["REQ-SRCH-06"]
 - `REQ-SRCH-06` — Typo-tolerant title matching (trigram) when full-text finds few results.
 
 ## Deliverables
-- [ ] If FTS total < 3 and q present: union trigram matches (similarity > 0.3) on title/alt_titles; set `didYouMean` to best title
+- [x] If FTS total < 3 and q present: union trigram matches (similarity > 0.3) on title/alt_titles; set `didYouMean` to best title
 
 ## Acceptance criteria
-- [ ] "halelujahs" finds "1000 Hallelujahs"
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] "halelujahs" finds "1000 Hallelujahs"
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/search/server/fuzzy.ts`

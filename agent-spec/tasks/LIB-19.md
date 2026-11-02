@@ -5,7 +5,7 @@ phase: 1
 wave: 9
 stream: frontend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["LIB-18", "DB-06"]
 blocks: []
@@ -31,12 +31,12 @@ requirements: ["REQ-LIB-12"]
 - `REQ-LIB-12` — Edits are recorded in an audit log (who, when, what changed) viewable on the song.
 
 ## Deliverables
-- [ ] `getAuditTrail` read helper
-- [ ] History tab: timeline of entries with field diffs
+- [x] `getAuditTrail` read helper
+- [x] History tab: timeline of entries with field diffs
 
 ## Acceptance criteria
-- [ ] Visible to contributor+; hidden for members
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Visible to contributor+; hidden for members
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/audit/`

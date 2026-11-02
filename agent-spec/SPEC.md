@@ -120,7 +120,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 | Drag & drop | dnd-kit |
 | PDF | react-pdf (pdf.js) |
 | Audio | HTML5 Audio + YouTube IFrame Player API |
-| Email | Resend + react-email |
+| Email | SMTP via Nodemailer (Gmail app password by default) + react-email for templates (CR OWNER-gmail-smtp-email) |
 | PWA | Serwist |
 | Tests | Vitest (unit/integration), Playwright (e2e), @axe-core/playwright |
 | Monitoring | Sentry |

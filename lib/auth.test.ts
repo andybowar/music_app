@@ -8,6 +8,7 @@ const auth = { getUser: vi.fn(), signOut: vi.fn() };
 vi.mock('@/lib/supabase/server', () => ({ createServerSupabase: vi.fn(async () => ({ auth })) }));
 
 import type { users } from '@/db/schema';
+import { ROLES } from '@/types/domain';
 import type * as Navigation from 'next/navigation';
 type UserRow = (typeof users)['$inferSelect'];
 
@@ -199,6 +200,15 @@ describe('requireRole', () => {
     dbState.row = rowOver({ role: 'admin' });
     expect(await requireRole('music_leader')).toMatchObject({ role: 'admin' });
   });
+
+  it.each(ROLES.flatMap((role, ri) => ROLES.map((min, mi) => ({ role, min, ok: ri >= mi }))))(
+    'requireRole($min) as $role follows the shared role order (ok: $ok)',
+    async ({ role, min, ok }) => {
+      dbState.row = rowOver({ role });
+      if (ok) expect(await requireRole(min)).toMatchObject({ role });
+      else await expect(requireRole(min)).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    },
+  );
 
   it('requires approval first (a pending user never satisfies any role)', async () => {
     dbState.row = rowOver({ role: 'admin', accessStatus: 'pending' });

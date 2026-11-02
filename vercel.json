@@ -1,4 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [{ "path": "/api/cron/usage", "schedule": "0 9 * * *" }]
+  "buildCommand": "bash scripts/vercel-build.sh"
 }

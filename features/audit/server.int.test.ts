@@ -264,7 +264,13 @@ describe('getAuditTrail', () => {
   test('other entities: exact match for song-related ones, nothing for users', async () => {
     setRole('contributor');
     const other = await getAuditTrail('song', otherSongId);
-    expect(other.map((e) => e.diff)).toEqual([{ title: { from: 'a', to: 'b' } }]);
+    expect(other.map((e) => e.diff)).toEqual(
+      expect.arrayContaining([
+        { title: { from: 'a', to: 'b' } },
+        { label: { from: 'Theirs', to: null } },
+      ]),
+    );
+    expect(other).toHaveLength(2);
     await expect(getAuditTrail('user', otherId)).resolves.toEqual([]);
     await expect(getAuditTrail('song', randomUUID())).resolves.toEqual([]);
   });

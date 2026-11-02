@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { ROLES, type AppUser, type ListType, type Role } from '@/types/domain';
 
-import { assertCan, can, type Action, type PermCtx } from './permissions';
+import { assertCan, can, roleAtLeast, type Action, type PermCtx } from './permissions';
 
 // ---------------------------------------------------------------------------------------
 // The matrix below is a line-by-line transcription of contracts/permissions.md § Actions.
@@ -322,5 +322,36 @@ describe('assertCan()', () => {
     const ctx: PermCtx = { list: { type: 'playlist', ownerId: OTHER, branchId: BRANCH_A } };
     expect(() => assertCan(makeUser('member'), 'list:write', ctx)).toThrow();
     expect(() => assertCan(makeUser('member', { id: OTHER }), 'list:write', ctx)).not.toThrow();
+  });
+});
+
+describe('roleAtLeast()', () => {
+  // ROLES is declared in enum order (member < contributor < music_leader < admin).
+  const pairs = ROLES.flatMap((role, ri) => ROLES.map((min, mi) => ({ role, min, ok: ri >= mi })));
+
+  it.each(pairs)('roleAtLeast($role, $min) is $ok', ({ role, min, ok }) => {
+    expect(roleAtLeast(role, min)).toBe(ok);
+  });
+
+  it('is reflexive and admin satisfies every minimum', () => {
+    for (const role of ROLES) {
+      expect(roleAtLeast(role, role)).toBe(true);
+      expect(roleAtLeast('admin', role)).toBe(true);
+    }
+  });
+
+  it('agrees with can() for every role-only action', () => {
+    // song:write needs contributor; theme:merge needs music_leader; admin:users needs admin.
+    const mins: ReadonlyArray<[Action, Role]> = [
+      ['song:read', 'member'],
+      ['song:write', 'contributor'],
+      ['theme:merge', 'music_leader'],
+      ['admin:users', 'admin'],
+    ];
+    for (const role of ROLES) {
+      for (const [action, min] of mins) {
+        expect(can(makeUser(role), action)).toBe(roleAtLeast(role, min));
+      }
+    }
   });
 });

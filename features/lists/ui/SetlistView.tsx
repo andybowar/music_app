@@ -53,6 +53,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { deleteList, renameList } from '@/features/lists/server/lists';
 import { removeListItem, reorderList, updateListItem } from '@/features/lists/server/items';
+import { listIndexHref } from '@/features/lists/ui/ListIndex';
 import { getSignedResourceUrl } from '@/features/resources/server/files';
 import { openPlan } from '@/features/songs/ui/SongPage';
 import { resolveItemDisplay } from '@/lib/lists/resolve';
@@ -96,7 +97,7 @@ const FALLBACK_ERROR = 'Something went wrong. Please try again.';
 const NAME_MAX = 120;
 
 /** Where to go after deleting a setlist (Open Setlist, LIST-08). */
-export const SETLISTS_HREF = '/lists?type=setlist';
+export const SETLISTS_HREF = listIndexHref('setlist');
 
 export const songHref = (songId: UUID) => `/songs/${encodeURIComponent(songId)}`;
 

@@ -56,7 +56,7 @@ Unblocks: real SSO testing, hosted password reset, Vercel previews that reach a 
 Verify: both projects show "Healthy"; each has a private bucket named `resources`.
 Tick: `tasks/OPS-01.md` deliverable "Two Supabase projects; private `resources` bucket in each".
 
-Database tables are created later by running the repo migrations against each project. Ask the lead agent to run them (or follow `README.md`) once the projects exist.
+Database tables are created by the deploy: once `MIGRATION_DATABASE_URL` is set for an environment (section 9), every Vercel deploy applies any pending migrations before building, and a failed migration fails the deploy. To run them by hand instead, paste the migration SQL into the Supabase SQL Editor or run `pnpm db:migrate` with `DATABASE_URL` set to the session pooler string. See `change-requests/OWNER-migrate-on-deploy.md`.
 
 ### 2b. Vercel project
 
@@ -180,6 +180,7 @@ Rule for the Supabase values: Preview uses the **staging** project, Production u
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same page: the `anon` / public key | Preview, Production |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same page: the `service_role` key. Secret; server only; mark Sensitive | Preview, Production |
 | `DATABASE_URL` | Supabase: click Connect (or Project Settings, Database) and copy the connection string. Prefer the pooled/transaction string for Vercel; put your DB password in it | Preview, Production |
+| `MIGRATION_DATABASE_URL` | Supabase: click Connect and copy the **Session pooler** string (port `5432`), with your DB password filled in. Used only during the build to apply migrations; leave it out of an environment to skip migrations there. Mark Sensitive | Preview (staging), Production (production) |
 | `SSO_PROVIDERS` | You choose: `google`, `microsoft`, or `google,microsoft` (only providers you finished in sections 4 and 5) | Preview, Production |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` / `_SECRET` | Local Supabase CLI only. Hosted projects take these in Supabase, Providers (sections 4 and 5). Leave out of Vercel | Local only |
 | `SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID` / `_SECRET` / `_URL` | Same: local CLI only; hosted values go in Supabase, Providers | Local only |

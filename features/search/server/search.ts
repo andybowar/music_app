@@ -7,6 +7,9 @@
  * statement; rows map to `SongSummary` via `assembleSongSummary` (features/songs/server).
  *
  * With no params this is the default view: every song, newest first, then by title.
+ *
+ * When `q` finds fewer than 3 songs, trigram title matches are appended and `didYouMean` is set
+ * (SRCH-03; `fuzzyFallback` in ./fuzzy).
  */
 import 'server-only';
 
@@ -17,6 +20,7 @@ import { assertCan } from '@/lib/permissions';
 import type { SearchParams, SearchResult, SongSummary } from '@/types/domain';
 import { searchParamsSchema, serializeSearchParams } from '@/types/validation';
 
+import { fuzzyFallback } from './fuzzy';
 import { buildSearchQuery, DEFAULT_PAGE_SIZE, type SearchRow } from './query';
 
 /** Validates and normalizes `params` (lists deduped, bad values dropped, defaults omitted). */
@@ -55,7 +59,7 @@ export async function searchSongs(params: SearchParams = {}): Promise<SearchResu
   const p = normalizeSearchParams(params);
   const ctx = { userBranchId: user.branchId };
   const db = getDb();
-  const rows = [...(await db.execute<SearchRow>(buildSearchQuery(p, ctx)))];
+  let rows = [...(await db.execute<SearchRow>(buildSearchQuery(p, ctx)))];
 
   let total = rows.length > 0 ? Number(rows[0]!.total) : 0;
   if (rows.length === 0 && (p.page ?? 1) > 1) {
@@ -66,10 +70,14 @@ export async function searchSongs(params: SearchParams = {}): Promise<SearchResu
     total = first.length > 0 ? Number(first[0]!.total) : 0;
   }
 
+  const fuzzy = await fuzzyFallback(db, p, ctx, rows, total);
+  if (fuzzy) ({ rows, total } = fuzzy);
+
   return {
     items: rows.map(rowToSummary),
     total,
     page: p.page ?? 1,
     pageSize: p.pageSize ?? DEFAULT_PAGE_SIZE,
+    ...(fuzzy?.didYouMean !== undefined && { didYouMean: fuzzy.didYouMean }),
   };
 }

@@ -1482,7 +1482,7 @@
         "REQ-AUTH-08"
       ],
       "file": "tasks/AUTH-07.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DB-05",
@@ -2585,7 +2585,11 @@
         "emails/ShareList.tsx"
       ],
       "touches": [
-        "features/sharing/server.ts"
+        "features/sharing/server.ts",
+        "lib/env.ts",
+        "lib/env.test.ts",
+        ".env.example",
+        ".github/workflows/ci.yml"
       ],
       "reqs": [
         "REQ-SHARE-02"

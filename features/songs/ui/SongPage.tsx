@@ -28,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ROW_TOKEN } from '@/components/ui/tokens';
 import { cn } from '@/components/ui/utils';
+import { SongHistory } from '@/features/audit/ui/SongHistory';
 import {
   ENERGY_META,
   SECTIONS,
@@ -50,7 +51,7 @@ export interface SongPageProps {
   canViewHistory: boolean;
   /** `getSignedResourceUrl` from `features/resources/server/files.ts` (contracts/api.md). */
   getSignedResourceUrl(id: UUID): Promise<SignedUrlResult>;
-  /** Content of the History tab. LIB-19 fills this; until then a placeholder shows. */
+  /** Content of the History tab. Defaults to `SongHistory` (LIB-19), which loads on open. */
   historySlot?: ReactNode;
 }
 
@@ -416,10 +417,7 @@ export function SongPage({
             {details}
           </TabsContent>
           <TabsContent value="history" className="pt-2">
-            {/* LIB-19 fills this slot with the song's change history. */}
-            {historySlot ?? (
-              <p className="text-sm text-muted-foreground">No change history to show yet.</p>
-            )}
+            {historySlot ?? <SongHistory songId={song.id} />}
           </TabsContent>
         </Tabs>
       ) : (

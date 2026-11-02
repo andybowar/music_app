@@ -11,6 +11,7 @@ import {
   LogOut,
   Search,
   Share2,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -69,7 +70,9 @@ export interface NavOverflowLink {
  * Extra destinations shown in the overflow ("More") menu on every screen size.
  * Later tasks append here (BR-02 "Other branches", BR-04 quick theme lookup).
  */
-export const NAV_OVERFLOW_LINKS: readonly NavOverflowLink[] = [];
+export const NAV_OVERFLOW_LINKS: readonly NavOverflowLink[] = [
+  { href: '/quick', label: 'Quick theme lookup', icon: Sparkles },
+];
 
 const CREATE_ITEMS: ReadonlyArray<{ type: ListType; label: string; icon: LucideIcon }> = [
   { type: 'setlist', label: 'Create event setlist', icon: CalendarPlus },

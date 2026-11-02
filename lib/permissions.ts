@@ -55,6 +55,14 @@ type ListScopedAction = 'list:read' | 'list:write' | 'share:create' | 'share:rev
 /** Mirrors the Postgres `role` enum order: member < contributor < music_leader < admin. */
 const RANK: Record<Role, number> = { member: 0, contributor: 1, music_leader: 2, admin: 3 };
 
+/**
+ * True when `role` is at or above `min` (member < contributor < music_leader < admin).
+ * The single source of the role order: `can()` and `lib/auth.ts`'s role guards both use it.
+ */
+export function roleAtLeast(role: Role, min: Role): boolean {
+  return RANK[role] >= RANK[min];
+}
+
 function canWriteList(user: AppUser, list: NonNullable<PermCtx['list']>): boolean {
   if (list.ownerId === user.id) return true;
   return (
@@ -85,7 +93,7 @@ export function can(user: AppUser | null, action: Action, ctx?: PermCtx): boolea
     case 'share:revoke':
       return ctx?.list ? canWriteList(user, ctx.list) : false;
     default:
-      return RANK[user.role] >= RANK[MIN_ROLE[action]];
+      return roleAtLeast(user.role, MIN_ROLE[action]);
   }
 }
 

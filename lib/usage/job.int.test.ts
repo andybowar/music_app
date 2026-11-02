@@ -172,9 +172,11 @@ test('updates a changed derived level and still skips manual rows', async () => 
 });
 
 test('drops derived rows whose history falls out of the window', async () => {
-  // A year later every setlist above is too old.
+  // A year later every setlist above is too old, except the one that was dated
+  // "tomorrow" (2026-06-16), which is now inside the window.
   await runUsageJob(new Date('2027-06-15T17:00:00Z'));
   expect(await usage()).toEqual({
+    [`${anthem}:${A}`]: { level: 'rare', source: 'derived' },
     [`${hymn}:${B}`]: { level: 'rare', source: 'manual' },
   });
 });

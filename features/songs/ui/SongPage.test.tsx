@@ -28,6 +28,12 @@ vi.mock('@/components/media/PdfDocument', () => ({
   },
 }));
 
+// The History tab's default content calls the LIB-19 server action; stub it.
+const loadAuditTrail = vi.fn(async () => ({ ok: true as const, data: [] }));
+vi.mock('@/features/audit/actions', () => ({
+  loadAuditTrail: (...a: unknown[]) => loadAuditTrail(...(a as [])),
+}));
+
 const toastError = vi.fn();
 vi.mock('sonner', () => ({ toast: { error: (...a: unknown[]) => toastError(...a) } }));
 
@@ -177,10 +183,12 @@ describe('SongPage', () => {
     expect(screen.getByText('History goes here')).toBeInTheDocument();
   });
 
-  it('shows a placeholder in the History tab before LIB-19 fills it', async () => {
+  it('loads the song history (LIB-19) when the History tab opens', async () => {
     renderPage({ canViewHistory: true });
+    expect(loadAuditTrail).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole('tab', { name: 'History' }));
-    expect(screen.getByText('No change history to show yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No changes recorded yet.')).toBeInTheDocument();
+    expect(loadAuditTrail).toHaveBeenCalledWith('song', full.id);
   });
 
   it('opens a PDF in the viewer through a signed URL only', async () => {

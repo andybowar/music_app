@@ -107,6 +107,8 @@ beforeAll(async () => {
       name: 'H-02 test',
       authProvider: 'password',
     });
+  // Nested suites' beforeAll hooks create themes before any beforeEach runs.
+  signInAs('music_leader');
 });
 
 afterAll(async () => {

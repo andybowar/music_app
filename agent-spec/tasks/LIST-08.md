@@ -5,7 +5,7 @@ phase: 3
 wave: 9
 stream: frontend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["LIST-01", "UI-02"]
 blocks: []
@@ -31,11 +31,11 @@ requirements: ["REQ-LIST-07"]
 - `REQ-LIST-07` — Open Setlist / Open Playlist show the user's lists and their branch's lists; upcoming events first.
 
 ## Deliverables
-- [ ] Tabs Mine / My branch / All branches (setlists only); upcoming first; "Set as current" action
+- [x] Tabs Mine / My branch / All branches (setlists only); upcoming first; "Set as current" action
 
 ## Acceptance criteria
-- [ ] Empty state with create button
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Empty state with create button
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `app/(app)/lists/page.tsx`, `features/lists/ui/ListIndex.tsx`

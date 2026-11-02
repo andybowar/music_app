@@ -22,7 +22,17 @@ function chain(op?: 'update' | 'insert'): unknown {
   };
   return self;
 }
-const tx = { select: () => chain(), update: () => chain('update'), insert: () => chain('insert') };
+const revoked: unknown[] = [];
+const tx = {
+  select: () => chain(),
+  update: () => chain('update'),
+  insert: () => chain('insert'),
+  // AUTH-06: `revokeUserSessions` deletes the user's auth sessions.
+  execute: async (query: unknown) => {
+    revoked.push(query);
+    return [];
+  },
+};
 vi.mock('@/lib/db', () => ({ withTx: (fn: (t: typeof tx) => unknown) => fn(tx) }));
 
 const {
@@ -59,7 +69,8 @@ function authUser(overrides: Partial<User> = {}): User {
         identity_id: 'i1',
         user_id: USER_ID,
         provider: 'azure',
-        identity_data: { sub: 'azure-sub-1' },
+        // As Supabase stores it: the IdP's verified email (AUTH-06 links only on these).
+        identity_data: { sub: 'azure-sub-1', email: 'ana@example.test', email_verified: true },
         last_sign_in_at: '2026-10-01T00:00:00Z',
       },
     ],
@@ -87,6 +98,7 @@ function row(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   results.length = 0;
   writes.length = 0;
+  revoked.length = 0;
 });
 
 describe('toAuthProvider', () => {
@@ -280,13 +292,14 @@ describe('provisionUser', () => {
     expect(user.role).toBe('admin');
   });
 
-  it('rejects a disabled user without writing', async () => {
+  it('rejects a disabled user without writing, revoking their sessions', async () => {
     results.push([row({ disabledAt: new Date('2026-05-01T00:00:00Z') })]);
     await expect(provisionUser(authUser(), ['pop-branch-sv'])).rejects.toMatchObject({
       code: 'FORBIDDEN',
       message: DISABLED_MESSAGE,
     });
     expect(writes).toEqual([]);
+    expect(revoked).toHaveLength(1);
   });
 
   it('rejects when another account already has the email', async () => {

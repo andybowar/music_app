@@ -71,7 +71,9 @@ export function ThemesAdmin({
   const visible = useMemo(
     () =>
       needle
-        ? themes.filter((t) => t.name.includes(needle) || t.synonyms.some((s) => s.includes(needle)))
+        ? themes.filter(
+            (t) => t.name.includes(needle) || t.synonyms.some((s) => s.includes(needle)),
+          )
         : themes,
     [themes, needle],
   );

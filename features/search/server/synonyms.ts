@@ -84,9 +84,7 @@ export const MAX_SYNONYMS = 50;
  */
 export const themeSynonymsInputSchema = z.object({
   themeId: z.guid(),
-  synonyms: z
-    .array(themeNameSchema)
-    .max(MAX_SYNONYMS, `Up to ${MAX_SYNONYMS} synonyms per theme.`),
+  synonyms: z.array(themeNameSchema).max(MAX_SYNONYMS, `Up to ${MAX_SYNONYMS} synonyms per theme.`),
 });
 
 const vocabularySchema = z.array(

@@ -99,7 +99,11 @@ describe('useResourceOpener', () => {
     const { result } = renderHook(() => useResourceOpener(getUrl));
     const pdf = resource({});
     await act(() => result.current.open(songRef, pdf));
-    expect(result.current.pdf).toEqual({ song: songRef, resource: pdf, url: 'https://files.test/a' });
+    expect(result.current.pdf).toEqual({
+      song: songRef,
+      resource: pdf,
+      url: 'https://files.test/a',
+    });
     act(() => result.current.closePdf());
     expect(result.current.pdf).toBeNull();
     await act(() => result.current.open(songRef, pdf));
@@ -150,7 +154,10 @@ describe('useResourceOpener', () => {
   });
 
   it('toasts when the signed URL fails', async () => {
-    getUrl.mockResolvedValueOnce({ ok: false, error: { code: 'FORBIDDEN', message: 'No access.' } });
+    getUrl.mockResolvedValueOnce({
+      ok: false,
+      error: { code: 'FORBIDDEN', message: 'No access.' },
+    });
     getUrl.mockRejectedValueOnce(new Error('network'));
     const { result } = renderHook(() => useResourceOpener(getUrl));
     await act(() => result.current.open(songRef, resource({})));

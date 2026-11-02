@@ -89,7 +89,9 @@ describe('library route', () => {
     expect(searchSongs).toHaveBeenCalledWith(
       expect.objectContaining({ q: 'redemption', fields: ['themes'], energy: ['high_praise'] }),
     );
-    expect(requirePageUser).toHaveBeenCalledWith(expect.stringMatching(/^\/library\?.*q=redemption/));
+    expect(requirePageUser).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/library\?.*q=redemption/),
+    );
   });
 
   it('lets the auth redirect through', async () => {

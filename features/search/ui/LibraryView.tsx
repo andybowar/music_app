@@ -144,7 +144,12 @@ export function LibraryView({
     setLoaded((prev) =>
       prev.base !== base
         ? prev
-        : { ...prev, items: appendPage(prev.items, data.items), total: data.total, page: data.page },
+        : {
+            ...prev,
+            items: appendPage(prev.items, data.items),
+            total: data.total,
+            page: data.page,
+          },
     );
   }, [loaded, loadingMore, params, searchMore]);
 

@@ -324,7 +324,10 @@ export function RowPanelBody({ kind, summary, state, onRetry, opener }: RowPanel
   switch (kind) {
     case 'key':
       return (
-        <KeyPanel keys={song.keys} highlightKey={summary.primaryKey ?? song.primaryKey ?? undefined} />
+        <KeyPanel
+          keys={song.keys}
+          highlightKey={summary.primaryKey ?? song.primaryKey ?? undefined}
+        />
       );
     case 'title':
       return <ReminderPanel chorusLine={song.chorusLine} verse1Line={song.verse1Line} />;

@@ -171,9 +171,9 @@ describe('LibraryView', () => {
     await user.click(screen.getByRole('button', { name: /Load more songs/ }));
     expect(searchMore).toHaveBeenCalledWith('q=grace&page=2');
     await waitFor(() =>
-      expect(within(screen.getByRole('list', { name: 'Songs' })).getAllByRole('listitem')).toHaveLength(
-        6,
-      ),
+      expect(
+        within(screen.getByRole('list', { name: 'Songs' })).getAllByRole('listitem'),
+      ).toHaveLength(6),
     );
     expect(screen.queryByRole('button', { name: /Load more songs/ })).not.toBeInTheDocument();
   });
@@ -257,7 +257,9 @@ describe('LibraryView', () => {
     const user = userEvent.setup();
     renderView();
     const song = first[0]!;
-    await user.click(within(rowFor(song.title)).getByRole('button', { name: /show all composers/ }));
+    await user.click(
+      within(rowFor(song.title)).getByRole('button', { name: /show all composers/ }),
+    );
     const panel = await screen.findByRole('dialog', { name: 'Composers' });
     await waitFor(() => expect(within(panel).queryByLabelText(/Loading/)).not.toBeInTheDocument());
     expect(loadSong).toHaveBeenCalledWith(song.id);

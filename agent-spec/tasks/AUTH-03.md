@@ -5,7 +5,7 @@ phase: 0
 wave: 7
 stream: auth
 size: S
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["AUTH-02", "AUTH-07"]
 blocks: []

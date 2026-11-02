@@ -5,7 +5,7 @@ phase: 4
 wave: 9
 stream: backend
 size: M
-status: in_progress
+status: done
 human_required: false
 depends_on: ["LIST-01", "AUTH-05"]
 blocks: ["SHR-02", "SHR-03", "SHR-04"]
@@ -34,12 +34,12 @@ requirements: ["REQ-SHARE-01", "REQ-SHARE-03"]
 - `REQ-SHARE-03` — The public share page shows list content and overrides; opening files still requires sign-in.
 
 ## Deliverables
-- [ ] createShare (32-byte base64url token), revokeShare, listShares, getSharedList (service role; checks expiry/revocation; strips resource url/storagePath)
+- [x] createShare (32-byte base64url token), revokeShare, listShares, getSharedList (service role; checks expiry/revocation; strips resource url/storagePath)
 
 ## Acceptance criteria
-- [ ] Expired/revoked token → null
-- [ ] Shared ListDetail contains overrides but no file URLs
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Expired/revoked token → null
+- [x] Shared ListDetail contains overrides but no file URLs
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/sharing/server.ts`

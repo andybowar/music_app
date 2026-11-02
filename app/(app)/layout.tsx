@@ -4,42 +4,11 @@ import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { NavBar, UserMenu } from '@/components/NavBar';
-import { branches, users } from '@/db/schema';
+import { branches } from '@/db/schema';
+import { requirePageUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { createServerSupabase } from '@/lib/supabase/server';
-import type { AppUser, ListType } from '@/types/domain';
-
-/**
- * Shell for every signed-in page (contracts/ui.md: `app/(app)/…` = shell + `requireUser`).
- *
- * TEMPORARY `requireUser`: `@/lib/auth` (AUTH-04) is not on main yet, so this local stand-in
- * follows the contracted behaviour (signed-in, provisioned, not disabled → AppUser; otherwise
- * no access). When AUTH-04 merges, delete it and `import { requireUser } from '@/lib/auth'`.
- * See agent-spec/change-requests/UI-02-require-user.md.
- */
-async function requireUser(): Promise<AppUser> {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) redirect('/login');
-
-  const [row] = await db
-    .select({
-      id: users.id,
-      email: users.email,
-      name: users.name,
-      branchId: users.branchId,
-      role: users.role,
-      authProvider: users.authProvider,
-      disabledAt: users.disabledAt,
-      accessStatus: users.accessStatus,
-    })
-    .from(users)
-    .where(eq(users.id, data.user.id))
-    .limit(1);
-  if (!row || row.disabledAt) redirect('/login');
-
-  return { ...row, disabledAt: null };
-}
+import type { ListType } from '@/types/domain';
 
 async function loadBranchName(branchId: string | null): Promise<string | null> {
   if (!branchId) return null;
@@ -69,8 +38,16 @@ async function sharePlaceholder(): Promise<void> {
   'use server';
 }
 
+/**
+ * Shell for every signed-in page (contracts/ui.md: `app/(app)/…` = shell + `requireUser`).
+ *
+ * `requirePageUser` (AUTH-04) is the page form of `requireUser`: no usable session (signed out,
+ * no profile, disabled) → `/login`; pending/rejected → `/account-status`. `middleware.ts` already
+ * enforces the same on every non-public route; this is defence in depth.
+ * See agent-spec/change-requests/AUTH-04-layout-require-user.md.
+ */
 export default async function AppLayout({ children }: { children: ReactNode }) {
-  const user = await requireUser();
+  const user = await requirePageUser();
   const branchName = await loadBranchName(user.branchId);
 
   return (

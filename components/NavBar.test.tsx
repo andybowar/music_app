@@ -103,10 +103,15 @@ describe('NavBar links', () => {
     expect(desktop.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
   });
 
-  it('hides the desktop More menu while there are no overflow links', () => {
-    expect(NAV_OVERFLOW_LINKS).toHaveLength(0);
+  it('desktop More menu holds the overflow links (BR-04 quick theme lookup)', async () => {
+    expect(NAV_OVERFLOW_LINKS.length).toBeGreaterThan(0);
+    const user = userEvent.setup();
     const { desktop } = setup();
-    expect(desktop.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
+    await user.click(desktop.getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Quick theme lookup' })).toHaveAttribute(
+      'href',
+      '/quick',
+    );
   });
 
   it('server-renders without throwing', () => {

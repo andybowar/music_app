@@ -14,7 +14,8 @@ Rules for everything below:
 2. [x] Section 2: create the Supabase projects and Vercel project (OPS-01). Everything else needs this.
 3. [x] Section 3: Supabase Auth URL configuration, then email confirmation (section 7).
 4. [x] Section 4: Google sign-in app. Section 5 (Microsoft) skipped by project owner 2026-11-01 (need the Supabase project ref from step 2).
-5. [x] Sections 6 and 8: Resend and Sentry accounts.
+5. [x] Section 8: Sentry account. Resend replaced by Gmail on 2026-11-02 (CR `OWNER-gmail-smtp-email`).
+   - [ ] Section 6: Gmail sending account and app password, then point Supabase SMTP at it (section 7, step 3).
 6. [ ] Section 9: set Vercel environment variables (needs values from 2 to 8).
 7. [ ] Section 10: write `docs/ops/environments.md`.
 8. [ ] Section 11: backups and restore drill (OPS-03, after OPS-01).
@@ -55,7 +56,7 @@ Unblocks: real SSO testing, hosted password reset, Vercel previews that reach a 
 Verify: both projects show "Healthy"; each has a private bucket named `resources`.
 Tick: `tasks/OPS-01.md` deliverable "Two Supabase projects; private `resources` bucket in each".
 
-Database tables are created later by running the repo migrations against each project. Ask the lead agent to run them (or follow `README.md`) once the projects exist.
+Database tables are created by the deploy: once `MIGRATION_DATABASE_URL` is set for an environment (section 9), every Vercel deploy applies any pending migrations before building, and a failed migration fails the deploy. To run them by hand instead, paste the migration SQL into the Supabase SQL Editor or run `pnpm db:migrate` with `DATABASE_URL` set to the session pooler string. See `change-requests/OWNER-migrate-on-deploy.md`.
 
 ### 2b. Vercel project
 
@@ -122,18 +123,20 @@ Verify: sign in with a Microsoft account that is in a mapped group; you land as 
 Tick: `tasks/OPS-01.md` Google + Microsoft item.
 Unblocks: Microsoft SSO and automatic branch mapping (REQ-AUTH-04).
 
-## 6. Resend (email)
+## 6. Gmail sending account (email)
 
-Prerequisites: a domain you can edit DNS for. Used by SHR-03 and ADM-04 emails.
+Used for share-by-email (SHR-03), admin notifications (ADM-04), and Supabase's sign-up confirmation and password-reset emails (section 7). Recipients see this Gmail address, not your domain. See `change-requests/OWNER-gmail-smtp-email.md`.
 
-1. Sign up at resend.com. Go to Domains, Add domain, and enter the sending domain (a subdomain such as `mail.<yourdomain>` is fine).
-2. Resend shows DNS records (SPF, DKIM, and so on). Add them at your DNS host, then click Verify in Resend. This can take minutes to hours.
-3. Look for API Keys, create a key with sending access, and store it in a password manager.
-4. Decide the from address, for example `Worship Library <no-reply@mail.<yourdomain>>`. That is `EMAIL_FROM`.
+1. Create a new Google account just for the app, for example `pop.worship.library@gmail.com`. Don't use your personal account: its address would show to recipients, and its password would sit in Vercel and Supabase.
+2. In that account, open myaccount.google.com, then Security, and turn on **2-Step Verification**. App passwords don't exist without it.
+3. Go to myaccount.google.com/apppasswords (or search "App passwords" in the account settings). Create one named `Worship Library`. Google shows a 16-character password once: store it in a password manager. This is `SMTP_PASSWORD`.
+4. Your from address is `Worship Library <pop.worship.library@gmail.com>` (use your actual address). That is `EMAIL_FROM`. Gmail only lets you change the display name, not the address.
 
-Verify: the domain shows Verified in Resend.
-Tick: `tasks/OPS-01.md` is satisfied without it, but SHR-03 and ADM-04 need it. Record in `docs/ops/environments.md` that Resend exists.
-Unblocks: share-by-email and admin notification emails.
+Limits: about 500 recipients a day on a free account, which is plenty for a pilot. If you ever turn off 2-Step Verification, Google revokes the app password and email stops until you make a new one.
+
+Verify: from a mail client or the Supabase SMTP test in section 7, a test message arrives from the Gmail address.
+Tick: `tasks/OPS-01.md` is satisfied without it, but SHR-03 and ADM-04 need it. Record in `docs/ops/environments.md` which Gmail account sends app email and who has its login.
+Unblocks: share-by-email, admin notification emails, and reliable sign-up and reset emails.
 
 ## 7. Email confirmation for sign-ups
 
@@ -141,7 +144,7 @@ SPEC §6 default: hosted projects require a confirmed email before a self-regist
 
 1. In each Supabase project open Authentication, then Sign In / Providers (look for Email), and turn on **Confirm email**.
 2. Save.
-3. Optional: Authentication, SMTP Settings, point Supabase at Resend (host, port, username, and the Resend API key as the password; use the values from Resend's SMTP docs) so confirmation emails come from your domain. Supabase's built-in sender is rate limited.
+3. Authentication, then SMTP Settings (look for "Enable custom SMTP"): sender email = your Gmail address, sender name = `Worship Library`, host `smtp.gmail.com`, port `465`, username = your Gmail address, password = the app password from section 6. Save. Do this in both projects. Without it, Supabase's built-in sender is heavily rate limited and won't reliably reach members.
 
 Verify: sign up with a new email on staging; you receive a confirmation email, and the account cannot sign in until you click it. Afterwards it appears as pending for admins.
 Tick: add a note under OPS-01 in this file.
@@ -177,13 +180,17 @@ Rule for the Supabase values: Preview uses the **staging** project, Production u
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same page: the `anon` / public key | Preview, Production |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same page: the `service_role` key. Secret; server only; mark Sensitive | Preview, Production |
 | `DATABASE_URL` | Supabase: click Connect (or Project Settings, Database) and copy the connection string. Prefer the pooled/transaction string for Vercel; put your DB password in it | Preview, Production |
+| `MIGRATION_DATABASE_URL` | Supabase: click Connect and copy the **Session pooler** string (port `5432`), with your DB password filled in. Used only during the build to apply migrations; leave it out of an environment to skip migrations there. Mark Sensitive | Preview (staging), Production (production) |
 | `SSO_PROVIDERS` | You choose: `google`, `microsoft`, or `google,microsoft` (only providers you finished in sections 4 and 5) | Preview, Production |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` / `_SECRET` | Local Supabase CLI only. Hosted projects take these in Supabase, Providers (sections 4 and 5). Leave out of Vercel | Local only |
 | `SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID` / `_SECRET` / `_URL` | Same: local CLI only; hosted values go in Supabase, Providers | Local only |
 | `FEATURE_SAML` | `false` (SAML needs a paid Supabase tier; default per SPEC §6) | Preview, Production |
 | `SAML_PROVIDER_ID` | Leave empty unless SAML is turned on | Preview, Production (optional) |
-| `RESEND_API_KEY` | Resend, API Keys (section 6). Secret | Preview, Production |
-| `EMAIL_FROM` | Your chosen from address, for example `Worship Library <no-reply@mail.<yourdomain>>` | Preview, Production |
+| `SMTP_HOST` | `smtp.gmail.com` (optional; that is the default) | Preview, Production |
+| `SMTP_PORT` | `465` (optional; that is the default) | Preview, Production |
+| `SMTP_USER` | The app's Gmail address (section 6) | Preview, Production |
+| `SMTP_PASSWORD` | The Gmail app password (section 6). Secret; mark Sensitive | Preview, Production |
+| `EMAIL_FROM` | `Worship Library <your-app-address@gmail.com>`; the address must be the Gmail account itself | Preview, Production |
 | `SENTRY_DSN` | Sentry project DSN (section 8) | Preview, Production |
 | `NEXT_PUBLIC_SENTRY_DSN` | Same DSN value | Preview, Production |
 | `CRON_SECRET` | Make up a long random string (for example generate 32+ random characters in a password manager). Use a different one per environment. Vercel sends it to the cron route at `/api/cron/usage` | Preview, Production |
@@ -195,7 +202,7 @@ Verify: trigger a redeploy of a preview branch; the build passes, the preview lo
 
 Prerequisite: sections 2 to 9 done. Owned by OPS-01.
 
-1. Create `docs/ops/environments.md` listing, with no secrets: the two Supabase project names and refs, the Vercel project and domains, which OAuth apps exist and where, the Resend domain, the Sentry project, who owns each account, and when the Entra client secret expires.
+1. Create `docs/ops/environments.md` listing, with no secrets: the two Supabase project names and refs, the Vercel project and domains, which OAuth apps exist and where, the Gmail sending account, the Sentry project, who owns each account, and when the Entra client secret expires.
 2. Commit it on a branch `task/OPS-01-environments` with `status: done` in `tasks/OPS-01.md`, and open a PR titled `[OPS-01] Provision cloud environments`.
 
 Verify: the PR merges. Unblocks: OPS-03.

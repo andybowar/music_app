@@ -15,6 +15,8 @@
  * - `mergeThemes`    moves every tag from `dropId` to `keepId` without duplicates,
  *                    keeps the dropped name as a synonym of the kept theme, then
  *                    deletes the dropped theme.
+ * - `setThemeSynonyms` replace-all of a theme's search synonyms (H-02; rules and
+ *                    search expansion in `features/search/server/synonyms.ts`).
  */
 
 import 'server-only';
@@ -23,6 +25,7 @@ import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { songs, songThemes, themes, themeSynonyms } from '@/db/schema';
+import { replaceThemeSynonyms, themeSynonymsInputSchema } from '@/features/search/server/synonyms';
 import { ActionError, withAction } from '@/lib/action';
 import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
@@ -289,3 +292,18 @@ export const mergeThemes = withAction(async (keepId: string, dropId: string): Pr
     });
   });
 });
+
+/**
+ * Replace all of a theme's search synonyms (H-02). Needs `theme:synonyms`. Synonyms are
+ * normalized like theme names. NOT_FOUND for a missing theme; VALIDATION (keys
+ * `synonyms.<index>`) for an invalid synonym or one that is a theme name or another theme's
+ * synonym.
+ */
+export const setThemeSynonyms = withAction(
+  async (themeId: string, synonyms: string[]): Promise<void> => {
+    const user = await requireUser();
+    assertCan(user, 'theme:synonyms');
+    const input = themeSynonymsInputSchema.parse({ themeId, synonyms });
+    await withTx((tx) => replaceThemeSynonyms(tx, user.id, input.themeId, input.synonyms));
+  },
+);

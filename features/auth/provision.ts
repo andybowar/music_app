@@ -17,6 +17,7 @@
  * - **New identity**: a `pending` `member` is created (REQ-AUTH-03, AUTH-07). If
  *   the IdP groups map to a branch (`branches.sso_group`) it is filled in as a
  *   suggestion for the approving admin (REQ-AUTH-04); otherwise branch is null.
+ *   The admins are emailed about the request (ADM-04).
  * - **Email already used by another account** (case-insensitive) that Supabase did
  *   not link (the email was not verified by the IdP): rejected with `CONFLICT`.
  *
@@ -34,6 +35,7 @@ import type { AppUser, AuthProvider, UUID } from '@/types/domain';
 import { eq } from 'drizzle-orm';
 
 import { branches, users } from '@/db/schema';
+import { notifyAccessRequested } from '@/features/admin/notifications';
 import { ActionError } from '@/lib/action';
 import { withTx, type Tx } from '@/lib/db';
 
@@ -202,7 +204,7 @@ export async function provisionUser(authUser: User, idpGroups: string[]): Promis
         })
         .where(eq(users.id, authUser.id))
         .returning();
-      return toAppUser(updated!);
+      return { user: toAppUser(updated!), created: false };
     }
 
     // AUTH-07: every new identity becomes a pending access request; the mapped
@@ -223,9 +225,12 @@ export async function provisionUser(authUser: User, idpGroups: string[]): Promis
         accessStatus: 'pending',
       })
       .returning();
-    return toAppUser(created!);
+    return { user: toAppUser(created!), created: true };
   });
 
   if (result === 'disabled') throw new ActionError('FORBIDDEN', DISABLED_MESSAGE);
-  return result;
+  // ADM-04: a new pending account is an access request; tell the admins (after commit).
+  // Never throws, so a failed email can't fail the sign-in.
+  if (result.created) await notifyAccessRequested(result.user);
+  return result.user;
 }

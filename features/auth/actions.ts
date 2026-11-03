@@ -19,6 +19,7 @@ import { z } from 'zod';
 
 import { safeNext } from '@/app/(auth)/login/safeNext';
 import { users } from '@/db/schema';
+import { notifyAccessRequested } from '@/features/admin/notifications';
 import { OIDC_PROVIDERS, type OidcProvider } from '@/features/auth/provision';
 import { startSamlSignIn } from '@/features/auth/saml';
 import { ActionError, withAction } from '@/lib/action';
@@ -292,10 +293,22 @@ export const signUpWithPassword = withAction(
     if (!authUser || !authUser.identities?.length) return;
 
     // The DATABASE_URL role bypasses RLS: the new user has no access yet.
-    await getDb()
+    const inserted = await getDb()
       .insert(users)
       .values({ id: authUser.id, email, name, authProvider: 'password', accessStatus: 'pending' })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
+      .returning({ id: users.id });
+
+    // ADM-04: tell the admins. Never throws, so a failed email can't fail the sign-up.
+    if (inserted.length > 0) {
+      await notifyAccessRequested({
+        id: authUser.id,
+        email,
+        name,
+        authProvider: 'password',
+        branchId: null,
+      });
+    }
 
     // With email confirmation off Supabase signs the new user in; don't keep that
     // session, so the outcome looks the same as for an existing email.

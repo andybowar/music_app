@@ -53,7 +53,14 @@ import { PlayerBar } from '@/features/player/ui/PlayerBar';
 import { usePlayer, type PlayerAdapterFactories } from '@/features/player/ui/usePlayer';
 import { getSignedResourceUrl } from '@/features/resources/server/files';
 import { parseYouTubeId } from '@/lib/youtube';
-import type { ActionResult, ListDetail, ResolvedItem, Resource, UUID } from '@/types/domain';
+import type {
+  ActionResult,
+  ListDetail,
+  ResolvedItem,
+  Resource,
+  SongDetail,
+  UUID,
+} from '@/types/domain';
 
 // contracts/ui.md → PlaylistView (PLAY-05; REQ-LIST-05). A listening playlist: each song plays
 // its chosen recording (an MP3 or a YouTube link, picked per row with AudioPicker). Play, pause,
@@ -61,12 +68,39 @@ import type { ActionResult, ListDetail, ResolvedItem, Resource, UUID } from '@/t
 // remove, rename and delete with the same list actions the setlist uses (LIST-01/02), all
 // optimistic with rollback. Songs without a playable recording stay in the list but are skipped.
 
+/** The server actions the view calls; `actions` overrides any of them (gallery seam). */
+export interface PlaylistActions {
+  renameList: typeof renameList;
+  deleteList: typeof deleteList;
+  removeListItem: typeof removeListItem;
+  reorderList: typeof reorderList;
+  updateListItem: typeof updateListItem;
+  getSignedResourceUrl: typeof getSignedResourceUrl;
+}
+
+const SERVER_ACTIONS: PlaylistActions = {
+  renameList,
+  deleteList,
+  removeListItem,
+  reorderList,
+  updateListItem,
+  getSignedResourceUrl,
+};
+
 export interface PlaylistViewProps {
   list: ListDetail;
   /** `can(user, 'list:write', { list })`: pick recordings, reorder, remove, rename, delete. */
   canEdit: boolean;
+  /**
+   * Full details of the list's songs (CR PLAY-05 option a). When given, each row offers every
+   * audio/video recording of its song, in any key or unkeyed; without it, only the resources of
+   * the primary key plus unkeyed ones (`ResolvedItem.resources`).
+   */
+  songs?: SongDetail[];
   /** Test/gallery seam for the player adapters; defaults to the real MP3 and YouTube adapters. */
   adapters?: PlayerAdapterFactories;
+  /** Gallery seam: replaces any of the server actions. Defaults to the real ones. */
+  actions?: Partial<PlaylistActions>;
 }
 
 const FALLBACK_ERROR = 'Something went wrong. Please try again.';
@@ -89,6 +123,17 @@ async function settle<T>(run: () => Promise<ActionResult<T>>): Promise<ActionRes
 
 export function songCountLabel(n: number): string {
   return n === 1 ? '1 song' : `${n} songs`;
+}
+
+/**
+ * The row as the playlist sees it: with the song's details, every resource of the song (all keys
+ * plus unkeyed), since a listening playlist isn't tied to a key. Without them, unchanged.
+ */
+export function withSongRecordings(
+  resolved: ResolvedItem,
+  song: SongDetail | undefined,
+): ResolvedItem {
+  return song ? { ...resolved, resources: song.resources } : resolved;
 }
 
 /** The recording a row plays: its chosen resource, when that is still a playable item of the song. */
@@ -338,7 +383,9 @@ function RenameDialog({
   open,
   onOpenChange,
   onRenamed,
+  rename,
 }: {
+  rename: PlaylistActions['renameList'];
   name: string;
   listId: UUID;
   eventDate: string | null;
@@ -365,7 +412,7 @@ function RenameDialog({
       return;
     }
     setPending(true);
-    const result = await settle(() => renameList(listId, trimmed, eventDate));
+    const result = await settle(() => rename(listId, trimmed, eventDate));
     setPending(false);
     if (!result.ok) {
       setError(result.error.fieldErrors?.name?.[0] ?? null);
@@ -423,7 +470,9 @@ function DeleteDialog({
   open,
   onOpenChange,
   onDeleted,
+  remove,
 }: {
+  remove: PlaylistActions['deleteList'];
   name: string;
   listId: UUID;
   open: boolean;
@@ -434,7 +483,7 @@ function DeleteDialog({
 
   async function confirm() {
     setPending(true);
-    const result = await settle(() => deleteList(listId));
+    const result = await settle(() => remove(listId));
     setPending(false);
     if (!result.ok) {
       toast.error("Couldn't delete the playlist", { description: result.error.message });
@@ -469,8 +518,19 @@ function DeleteDialog({
 
 // ----- View -------------------------------------------------------------------------------
 
-export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
+export function PlaylistView({
+  list,
+  canEdit,
+  songs,
+  adapters,
+  actions: actionOverrides,
+}: PlaylistViewProps) {
   const router = useRouter();
+  const actions = useMemo(() => ({ ...SERVER_ACTIONS, ...actionOverrides }), [actionOverrides]);
+  const actionsRef = useRef(actions);
+  useEffect(() => {
+    actionsRef.current = actions;
+  }, [actions]);
   const [items, setItems] = useState(list.items);
   const [name, setName] = useState(list.name);
   const [renameOpen, setRenameOpen] = useState(false);
@@ -481,18 +541,25 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
   useEffect(() => setItems(list.items), [list.items]);
   useEffect(() => setName(list.name), [list.name]);
 
-  const tracks = useMemo(() => playlistTracks(items), [items]);
+  // Rows with every recording of their song when details are available (CR PLAY-05).
+  const details = useMemo(() => new Map((songs ?? []).map((s) => [s.id, s])), [songs]);
+  const rows = useMemo(
+    () => items.map((i) => withSongRecordings(i, details.get(i.song.id))),
+    [items, details],
+  );
+
+  const tracks = useMemo(() => playlistTracks(rows), [rows]);
 
   // Signed URLs for stored MP3s, fetched when a track loads and reused until close to expiry.
   const chosenByItem = useMemo(
     () =>
       new Map(
-        items.flatMap((i) => {
+        rows.flatMap((i) => {
           const r = chosenResource(i);
           return r ? [[i.item.id, r] as const] : [];
         }),
       ),
-    [items],
+    [rows],
   );
   const resourcesByItem = useRef(chosenByItem);
   useEffect(() => {
@@ -507,7 +574,7 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
     if (cached && cached.expiresAt - Date.now() > URL_REUSE_MARGIN_MS) {
       return { ...t, source: { type: 'mp3', url: cached.url } };
     }
-    const result = await settle(() => getSignedResourceUrl(resource.id));
+    const result = await settle(() => actionsRef.current.getSignedResourceUrl(resource.id));
     if (!result.ok) {
       toast.error(`Couldn't play “${t.title}”`, { description: result.error.message });
       throw new Error(result.error.message);
@@ -541,7 +608,7 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
     const title = before[from]?.song.title ?? 'song';
     setStatus(movedMessage(title, to, next.length));
     const result = await settle(() =>
-      reorderList(
+      actions.reorderList(
         list.id,
         next.map((i) => i.item.id),
       ),
@@ -563,7 +630,7 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
   async function remove(resolved: ResolvedItem) {
     const before = items;
     setItems(items.filter((i) => i.item.id !== resolved.item.id));
-    const result = await settle(() => removeListItem(resolved.item.id));
+    const result = await settle(() => actions.removeListItem(resolved.item.id));
     if (!result.ok) {
       setItems(before);
       toast.error(`Couldn't remove “${resolved.song.title}”`, {
@@ -584,7 +651,7 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
         ),
       );
     replace({ resourceId });
-    const result = await settle(() => updateListItem(resolved.item.id, { resourceId }));
+    const result = await settle(() => actions.updateListItem(resolved.item.id, { resourceId }));
     if (!result.ok) {
       setItems(before);
       toast.error(`Couldn't change the recording for “${resolved.song.title}”`, {
@@ -666,7 +733,7 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
               strategy={verticalListSortingStrategy}
             >
               <ol aria-label={`Songs in ${name}`} className="flex flex-col gap-2">
-                {items.map((resolved, index) => {
+                {rows.map((resolved, index) => {
                   const isCurrent = active && currentTrack?.id === resolved.item.id;
                   return (
                     <PlaylistRow
@@ -715,6 +782,7 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
       {canEdit && (
         <>
           <RenameDialog
+            rename={actions.renameList}
             name={name}
             listId={list.id}
             eventDate={list.eventDate}
@@ -726,6 +794,7 @@ export function PlaylistView({ list, canEdit, adapters }: PlaylistViewProps) {
             }}
           />
           <DeleteDialog
+            remove={actions.deleteList}
             name={name}
             listId={list.id}
             open={deleteOpen}

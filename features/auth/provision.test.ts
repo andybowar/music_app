@@ -34,6 +34,9 @@ const tx = {
   },
 };
 vi.mock('@/lib/db', () => ({ withTx: (fn: (t: typeof tx) => unknown) => fn(tx) }));
+// ADM-04: the access-requested email (never throws; covered in features/admin/notifications.test.ts).
+const notifyAccessRequested = vi.fn(async () => true);
+vi.mock('@/features/admin/notifications', () => ({ notifyAccessRequested }));
 
 const {
   DISABLED_MESSAGE,
@@ -98,6 +101,7 @@ function row(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   results.length = 0;
   writes.length = 0;
+  notifyAccessRequested.mockClear();
   revoked.length = 0;
 });
 
@@ -240,6 +244,8 @@ describe('provisionUser', () => {
       disabledAt: null,
       accessStatus: 'pending',
     });
+    expect(notifyAccessRequested).toHaveBeenCalledTimes(1);
+    expect(notifyAccessRequested).toHaveBeenCalledWith(user);
   });
 
   it('creates a pending user with no branch when no group is mapped (unknown group)', async () => {
@@ -265,6 +271,7 @@ describe('provisionUser', () => {
     const user = await provisionUser(authUser(), []);
     expect(writes[0]!.values).not.toHaveProperty('accessStatus');
     expect(user.accessStatus).toBe('rejected');
+    expect(notifyAccessRequested).not.toHaveBeenCalled();
   });
 
   it('updates an existing user; unknown group leaves branch null', async () => {

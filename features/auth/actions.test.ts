@@ -17,7 +17,10 @@ const auth = {
 vi.mock('@/lib/supabase/server', () => ({ createServerSupabase: vi.fn(async () => ({ auth })) }));
 
 // Minimal Drizzle stand-in: select(...).from().where().limit() → rows; update().set().where().
-const dbState = { rows: [] as Array<{ disabledAt: Date | null }> };
+const dbState = {
+  rows: [] as Array<{ disabledAt: Date | null }>,
+  inserted: [] as Array<{ id: string }>,
+};
 const updateSet = vi.fn();
 const insertValues = vi.fn();
 const db = {
@@ -26,10 +29,16 @@ const db = {
   })),
   update: vi.fn(() => ({ set: (v: unknown) => (updateSet(v), { where: async () => undefined }) })),
   insert: vi.fn(() => ({
-    values: (v: unknown) => (insertValues(v), { onConflictDoNothing: async () => undefined }),
+    values: (v: unknown) => (
+      insertValues(v),
+      { onConflictDoNothing: () => ({ returning: async () => dbState.inserted }) }
+    ),
   })),
 };
 vi.mock('@/lib/db', () => ({ getDb: () => db, withTx: vi.fn() }));
+// ADM-04: the access-requested email (never throws; covered in features/admin/notifications.test.ts).
+const notifyAccessRequested = vi.fn(async () => true);
+vi.mock('@/features/admin/notifications', () => ({ notifyAccessRequested }));
 const envMock = {
   APP_URL: 'https://app.example.test',
   SSO_PROVIDERS: ['google', 'microsoft'],
@@ -57,6 +66,7 @@ const capture = vi.fn();
 beforeEach(() => {
   vi.clearAllMocks();
   dbState.rows = [{ disabledAt: null }];
+  dbState.inserted = [{ id: USER_ID }];
   setSentryCapture(capture);
   auth.signInWithPassword.mockResolvedValue({ data: { user: { id: USER_ID } }, error: null });
   auth.signOut.mockResolvedValue({ error: null });
@@ -423,6 +433,20 @@ describe('signUpWithPassword', () => {
       accessStatus: 'pending',
     });
     expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    expect(notifyAccessRequested).toHaveBeenCalledWith({
+      id: USER_ID,
+      email: 'ana@example.test',
+      name: 'Ana Example',
+      authProvider: 'password',
+      branchId: null,
+    });
+  });
+
+  it('does not email admins again when the row already existed', async () => {
+    dbState.inserted = [];
+    auth.signUp.mockResolvedValue({ data: { user: newUser, session: null }, error: null });
+    expect(await signUpWithPassword(INPUT)).toEqual(OK);
+    expect(notifyAccessRequested).not.toHaveBeenCalled();
   });
 
   it('does not sign out when email confirmation leaves no session', async () => {
@@ -445,6 +469,7 @@ describe('signUpWithPassword', () => {
     auth.signUp.mockResolvedValue(response);
     expect(await signUpWithPassword(INPUT)).toEqual(OK);
     expect(insertValues).not.toHaveBeenCalled();
+    expect(notifyAccessRequested).not.toHaveBeenCalled();
   });
 
   it('validates name, email and password before calling Supabase', async () => {

@@ -1,9 +1,16 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
+import { Toaster } from '@/components/ui/sonner';
 import { adminAreasFor, ADMIN_HREF } from '@/features/admin/adminAreas';
+import { listRequests, listTodos } from '@/features/admin/backlog/server';
+import type { AdminTodo, FeatureRequest } from '@/features/admin/backlog/types';
+import { BacklogTodos } from '@/features/admin/backlog/ui/BacklogTodos';
+import { RequestList, REQUESTS_HREF } from '@/features/admin/backlog/ui/RequestList';
+import { SectionError } from '@/features/admin/backlog/ui/RouteStates';
 import { listUsers } from '@/features/admin/server';
 import { requirePageUser } from '@/lib/auth';
 import { reportError } from '@/lib/log';
@@ -25,9 +32,38 @@ async function pendingCount(): Promise<number | null> {
   }
 }
 
+/** The backlog's to-dos, or `null` when they couldn't be loaded (that section shows an error). */
+async function loadTodos(): Promise<AdminTodo[] | null> {
+  try {
+    const result = await listTodos();
+    if (result.ok) return result.data;
+    reportError(new Error(result.error.message), { where: '(app)/admin listTodos' });
+    return null;
+  } catch (e) {
+    unstable_rethrow(e);
+    reportError(e, { where: '(app)/admin listTodos' });
+    return null;
+  }
+}
+
+/** The 5 newest requests, or `null` when they couldn't be loaded. */
+async function loadRequests(): Promise<FeatureRequest[] | null> {
+  try {
+    return (await listRequests()).slice(0, DASHBOARD_REQUESTS);
+  } catch (e) {
+    unstable_rethrow(e);
+    reportError(e, { where: '(app)/admin listRequests' });
+    return null;
+  }
+}
+
+const DASHBOARD_REQUESTS = 5;
+
 /**
  * Admin dashboard (ADM-05), reached from the account menu: one card per admin area the user
- * may open. Admins see Users, Branches and Themes; music leaders see Themes only.
+ * may open. Admins see Users, Branches and Themes; music leaders see Themes only. Below the
+ * cards, users with `admin:backlog` (admins) get the To-dos and Enhancement requests sections
+ * (ADM-06); each shows its own error state if its data fails to load.
  */
 export default async function AdminPage() {
   const user = await requirePageUser(ADMIN_HREF);
@@ -46,7 +82,12 @@ export default async function AdminPage() {
     );
   }
 
-  const pending = can(user, 'admin:users') ? await pendingCount() : null;
+  const backlog = can(user, 'admin:backlog');
+  const [pending, todos, requests] = await Promise.all([
+    can(user, 'admin:users') ? pendingCount() : null,
+    backlog ? loadTodos() : null,
+    backlog ? loadRequests() : null,
+  ]);
 
   return (
     <div className="mx-auto grid max-w-3xl gap-4 px-4 py-6">
@@ -74,6 +115,42 @@ export default async function AdminPage() {
           </li>
         ))}
       </ul>
+
+      {backlog ? (
+        <>
+          <section aria-labelledby="admin-todos" className="grid gap-3 rounded-lg border p-4">
+            <h2 id="admin-todos" className="text-lg font-semibold">
+              To-dos
+            </h2>
+            {todos ? <BacklogTodos todos={todos} /> : <SectionError what="the to-dos" />}
+          </section>
+
+          <section aria-labelledby="admin-requests" className="grid gap-3 rounded-lg border p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 id="admin-requests" className="text-lg font-semibold">
+                Enhancement requests
+              </h2>
+              <Button asChild size="sm" className="min-h-tap">
+                <Link href={`${REQUESTS_HREF}/new`}>
+                  <Plus aria-hidden /> New request
+                </Link>
+              </Button>
+            </div>
+            {requests ? (
+              <RequestList requests={requests} limit={DASHBOARD_REQUESTS} />
+            ) : (
+              <SectionError what="the requests" />
+            )}
+            <Link
+              href={REQUESTS_HREF}
+              className="justify-self-start text-sm font-medium underline-offset-4 hover:underline"
+            >
+              View all requests
+            </Link>
+          </section>
+          <Toaster />
+        </>
+      ) : null}
     </div>
   );
 }

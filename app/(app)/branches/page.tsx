@@ -6,6 +6,7 @@ import { addListItem, removeListItem } from '@/features/lists/server/items';
 import { createList } from '@/features/lists/server/lists';
 import { getSignedResourceUrl } from '@/features/resources/server/files';
 import { requirePageUser } from '@/lib/auth';
+import { can } from '@/lib/permissions';
 
 import { loadBranchSong } from './actions';
 import { BRANCHES_PATH, loadBranches } from './loadBranches';
@@ -32,6 +33,7 @@ export default async function BranchesPage() {
         actions={{ addListItem, createList, removeListItem }}
         loadSong={loadBranchSong}
         getSignedResourceUrl={getSignedResourceUrl}
+        canEditSongs={can(user, 'song:write')}
       />
       <Toaster />
     </>

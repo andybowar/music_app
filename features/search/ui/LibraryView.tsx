@@ -70,6 +70,8 @@ export interface LibraryViewProps {
   rowAddSlot?(song: SongSummary): ReactNode;
   /** Show the "Add song" link to the new-song form (LIB-20). Pass `can(user, 'song:write')`. */
   canAddSong?: boolean;
+  /** Offer "Edit song" in the row panels (LIB-21). Pass `can(user, 'song:write')`. */
+  canEditSongs?: boolean;
 }
 
 interface Loaded {
@@ -115,6 +117,7 @@ export function LibraryView({
   getSignedResourceUrl,
   rowAddSlot = defaultRowAddSlot,
   canAddSong = false,
+  canEditSongs = false,
 }: LibraryViewProps) {
   const router = useRouter();
   const search = useSearchState();
@@ -224,6 +227,7 @@ export function LibraryView({
             state={details.get(song.id)}
             onRetry={() => details.ensure(song.id)}
             opener={opener}
+            canEdit={canEditSongs}
           />
         ) : null}
       </RowWithPanel>

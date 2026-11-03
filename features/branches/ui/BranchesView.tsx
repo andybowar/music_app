@@ -51,6 +51,8 @@ export interface BranchesViewProps {
   loadSong: LoadSongDetail;
   /** `getSignedResourceUrl` (contracts/api.md), for opening uploaded files. */
   getSignedResourceUrl: GetSignedResourceUrl;
+  /** Offer "Edit song" in the row panels (LIB-21). Pass `can(user, 'song:write')`. */
+  canEditSongs?: boolean;
 }
 
 /** Which section of which branch card a row is in; the same song can show in several. */
@@ -107,6 +109,7 @@ function BranchesBody({
   actions,
   loadSong,
   getSignedResourceUrl,
+  canEditSongs = false,
 }: BranchesViewProps) {
   const router = useRouter();
   const [retrying, startRetry] = useTransition();
@@ -191,6 +194,7 @@ function BranchesBody({
             state={details.get(song.id)}
             onRetry={() => details.ensure(song.id)}
             opener={opener}
+            canEdit={canEditSongs}
           />
         ) : null}
       </RowWithPanel>

@@ -1,6 +1,7 @@
 'use client';
 
-import { ArrowLeftIcon, TriangleAlert, XIcon } from 'lucide-react';
+import { ArrowLeftIcon, ExternalLink, Pencil, TriangleAlert, XIcon } from 'lucide-react';
+import Link from 'next/link';
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 
@@ -314,10 +315,55 @@ export interface RowPanelBodyProps {
   state: SongDetailState | undefined;
   onRetry(): void;
   opener: Pick<ResourceOpener, 'open' | 'pending' | 'audio' | 'closeAudio'>;
+  /** Also offer "Edit song" (→ `/songs/[id]/edit`). Pass `can(user, 'song:write')` (LIB-21). */
+  canEdit?: boolean;
+}
+
+/** Song page and edit links under every row panel (LIB-21): the way from a row to the song. */
+export function SongPanelLinks({ songId, canEdit = false }: { songId: string; canEdit?: boolean }) {
+  const href = `/songs/${encodeURIComponent(songId)}`;
+  const link =
+    'inline-flex min-h-tap items-center gap-1.5 rounded-sm text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 [&_svg]:size-4';
+  return (
+    <div className="mt-3 flex flex-wrap gap-x-4 border-t pt-2" data-testid="song-panel-links">
+      <Link href={href} className={link}>
+        <ExternalLink aria-hidden />
+        Open song page
+      </Link>
+      {canEdit ? (
+        <Link href={`${href}/edit`} className={link}>
+          <Pencil aria-hidden />
+          Edit song
+        </Link>
+      ) : null}
+    </div>
+  );
 }
 
 /** One detail panel's content: skeleton while the song loads, error with retry, or the panel. */
-export function RowPanelBody({ kind, summary, state, onRetry, opener }: RowPanelBodyProps) {
+export function RowPanelBody({
+  kind,
+  summary,
+  state,
+  onRetry,
+  opener,
+  canEdit = false,
+}: RowPanelBodyProps) {
+  return (
+    <>
+      <RowPanelContent
+        kind={kind}
+        summary={summary}
+        state={state}
+        onRetry={onRetry}
+        opener={opener}
+      />
+      <SongPanelLinks songId={summary.id} canEdit={canEdit} />
+    </>
+  );
+}
+
+function RowPanelContent({ kind, summary, state, onRetry, opener }: RowPanelBodyProps) {
   if (!state || state.status === 'loading') return <PanelSkeleton kind={kind} />;
   if (state.status === 'error') return <PanelError message={state.message} onRetry={onRetry} />;
   const song = state.song;

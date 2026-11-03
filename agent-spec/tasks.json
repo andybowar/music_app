@@ -1997,6 +1997,7 @@
         "CNT-03",
         "H-04",
         "LIB-20",
+        "LIB-21",
         "H-05"
       ],
       "owns": [
@@ -2032,7 +2033,8 @@
       ],
       "blocks": [
         "LIB-19",
-        "H-01"
+        "H-01",
+        "LIB-21"
       ],
       "owns": [
         "app/(app)/songs/[id]/page.tsx",
@@ -2419,6 +2421,7 @@
         "LIST-09",
         "H-04",
         "LIB-20",
+        "LIB-21",
         "DOC-01",
         "H-05"
       ],
@@ -2483,7 +2486,9 @@
         "UI-05",
         "UI-02"
       ],
-      "blocks": [],
+      "blocks": [
+        "LIB-21"
+      ],
       "owns": [
         "app/(app)/branches/",
         "features/branches/ui/"
@@ -2794,6 +2799,37 @@
         "REQ-LIB-01"
       ],
       "file": "tasks/LIB-20.md",
+      "status": "done"
+    },
+    {
+      "id": "LIB-21",
+      "title": "Song page and Edit links from row panels",
+      "phase": 1,
+      "wave": 11,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-09",
+        "BR-02",
+        "LIB-17",
+        "LIB-18"
+      ],
+      "blocks": [],
+      "owns": [],
+      "touches": [
+        "features/search/ui/RowPanels.tsx",
+        "features/search/ui/LibraryView.tsx",
+        "features/branches/ui/BranchesView.tsx",
+        "app/(app)/library/page.tsx",
+        "app/(app)/library/page.test.tsx",
+        "app/(app)/library/RowPanels.test.tsx",
+        "app/(app)/branches/page.tsx"
+      ],
+      "reqs": [
+        "REQ-LIB-01"
+      ],
+      "file": "tasks/LIB-21.md",
       "status": "done"
     },
     {

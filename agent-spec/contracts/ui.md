@@ -19,7 +19,8 @@
 | `/branches` | Other branches activity | BR-02 |
 | `/quick` | Quick theme lookup | BR-04 |
 | `/share/[token]` | Public read-only list | SHR-02 |
-| `/admin` | Admin dashboard: a card per admin area the user may open (from the account menu) | ADM-05 |
+| `/admin` | Admin dashboard: a card per admin area the user may open (from the account menu); for `admin:backlog`, To-dos and Enhancement requests sections | ADM-05 (backlog sections: ADM-06) |
+| `/admin/requests`, `/admin/requests/new`, `/admin/requests/[id]`, `/admin/requests/[id]/edit` | Enhancement/change requests: list, form with wireframe uploader, detail | ADM-06 |
 | `/admin/users`, `/admin/branches` | Admin | ADM-01, ADM-02 |
 | `/dev/[component]` | Component gallery with fixtures; 404 on the production deployment via `if (!isDevGalleryEnabled()) notFound()` (`lib/devGallery.ts`), served on previews | each UI task adds its own page |
 
@@ -86,6 +87,10 @@ All components are client components unless noted, props-only (no data fetching 
 | `AudioPicker` | `features/player/ui/AudioPicker.tsx` | `{ resources: Resource[]; value: UUID \| null; onChange(id: UUID \| null): void; label?: string; className?: string }` (`null` = recording cleared) | PLAY-06 |
 | `PlaylistView` | `features/player/ui/PlaylistView.tsx` | `{ list: ListDetail; canEdit: boolean; songs?: SongDetail[]; adapters?: PlayerAdapterFactories; actions?: Partial<PlaylistActions> }` (`songs`: details of the list's songs, so each row offers every audio/video resource of the song, not only the primary key's; falls back to `resolved.resources`. `adapters` / `actions`: test and gallery seams, defaulting to the real MP3 and YouTube players and the real list server actions. CR PLAY-05) | PLAY-05 |
 | `ShareDialog` | `features/sharing/ui/ShareDialog.tsx` | `{ list: List; open; onOpenChange }` | SHR-04 |
+| `BacklogTodos` | `features/admin/backlog/ui/BacklogTodos.tsx` | `{ todos: AdminTodo[]; actions?: Partial<TodoActions> }` (optimistic add / done / delete with undo) | ADM-06 |
+| `RequestList` | `features/admin/backlog/ui/RequestList.tsx` | `{ requests: FeatureRequest[]; status?: FeatureRequestStatus \| 'all'; limit?: number }` | ADM-06 |
+| `RequestForm` | `features/admin/backlog/ui/RequestForm.tsx` | `{ request?: FeatureRequestDetail; actions?: Partial<RequestActions> }` (kind, title, description, wireframe uploader: pick / drop / paste, ≤5 images) | ADM-06 |
+| `RequestDetail` | `features/admin/backlog/ui/RequestDetail.tsx` | `{ request: FeatureRequestDetail; actions?: Partial<RequestActions> }` (status selector, image grid + full-size dialog) | ADM-06 |
 | Song form sections | `features/songs/ui/form/*.tsx` | each `{ value: Partial<SongFormValue>; onChange(v): void; errors?: Record<string,string[]> }` | LIB-10…15 |
 | `ResourcesSection` (extra props) | `features/songs/ui/form/ResourcesSection.tsx` | form-section props plus `{ songId: UUID \| null; initialResources: Resource[]; onResourcesChange?(r: Resource[]): void; requestUpload, finalizeUpload, deleteResource, getSignedResourceUrl, addLink, updateLink` (api.md signatures)`; putFile?(uploadUrl, file, onProgress): Promise<void> }`. Resources save immediately via their own actions and are not part of `SongFormValue`; the section never calls `onChange`. | LIB-14 |
 | `UsageSection` (extra props) | `features/songs/ui/form/UsageSection.tsx` | form-section props plus `{ saved: BranchUsage[] }` (stored `SongDetail.usage`, shows derived values). `value.usage` holds **manual entries only**; build it with `usageFromSong(song)`. | LIB-15 |

@@ -104,6 +104,11 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-NF-04** Errors tracked (Sentry); daily DB backups; storage usage alerts.
 - **REQ-NF-05** Every server mutation is authorized server-side; RLS is defense in depth.
 
+### 2.9 Admin backlog (REQ-ADM)
+
+- **REQ-ADM-01** The admin dashboard shows a shared to-do list: admins add items, mark them done, and delete them. Admins only.
+- **REQ-ADM-02** Admins submit enhancement or change requests (kind, title, description, up to 5 wireframe images: PNG/JPEG/WebP/GIF, ≤ 10 MiB each), list them by status (new, planned, in progress, done, declined), and update or delete them. Admins only; images are stored privately.
+
 ## 3. Tech stack (decided)
 
 | Layer | Choice |

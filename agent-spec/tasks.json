@@ -967,7 +967,8 @@
       "blocks": [
         "LIB-14",
         "LIB-18",
-        "SRCH-09"
+        "SRCH-09",
+        "LIST-11"
       ],
       "owns": [
         "components/media/",
@@ -1394,7 +1395,8 @@
       ],
       "blocks": [
         "LIB-18",
-        "SRCH-09"
+        "SRCH-09",
+        "LIST-11"
       ],
       "owns": [
         "components/song/panels/ResourcesPanel.tsx",
@@ -1610,6 +1612,7 @@
         "DB-05"
       ],
       "blocks": [
+        "ADM-06",
         "SHR-05"
       ],
       "owns": [
@@ -1621,7 +1624,7 @@
       ],
       "reqs": [],
       "file": "tasks/DB-08.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-01",
@@ -2300,6 +2303,7 @@
         "H-01",
         "LIST-10",
         "PLAY-05",
+        "LIST-11",
         "SHR-04"
       ],
       "owns": [
@@ -2457,7 +2461,9 @@
         "H-02",
         "UI-02"
       ],
-      "blocks": [],
+      "blocks": [
+        "ADM-06"
+      ],
       "owns": [
         "app/(app)/admin/page.tsx",
         "app/(app)/admin/page.test.tsx",
@@ -2517,7 +2523,9 @@
         "LIST-07",
         "LIB-18"
       ],
-      "blocks": [],
+      "blocks": [
+        "LIST-11"
+      ],
       "owns": [
         "app/manifest.ts",
         "app/sw.ts",
@@ -2780,6 +2788,47 @@
       "status": "done"
     },
     {
+      "id": "ADM-06",
+      "title": "Admin backlog: to-dos and enhancement requests with wireframes",
+      "phase": 4,
+      "wave": 11,
+      "stream": "fullstack",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "ADM-05",
+        "DB-08"
+      ],
+      "blocks": [
+        "SHR-05"
+      ],
+      "owns": [
+        "db/migrations/0006_admin_backlog.sql",
+        "features/admin/backlog/",
+        "app/(app)/admin/requests/",
+        "app/dev/admin-backlog/",
+        "tests/db/backlog.int.test.ts",
+        "tests/e2e/admin-backlog.spec.ts"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "db/schema/backlog.ts",
+        "db/schema/index.ts",
+        "lib/permissions.ts",
+        "lib/permissions.test.ts",
+        "app/(app)/admin/page.tsx",
+        "app/(app)/admin/page.test.tsx",
+        "features/admin/adminAreas.ts",
+        "features/admin/adminAreas.test.ts"
+      ],
+      "reqs": [
+        "REQ-ADM-01",
+        "REQ-ADM-02"
+      ],
+      "file": "tasks/ADM-06.md",
+      "status": "todo"
+    },
+    {
       "id": "H-04",
       "title": "Accessibility audit + fixes",
       "phase": 5,
@@ -2872,10 +2921,46 @@
       "status": "done"
     },
     {
+      "id": "LIST-11",
+      "title": "Play a setlist: full-screen worship mode",
+      "phase": 5,
+      "wave": 11,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIST-07",
+        "UI-07",
+        "UI-08",
+        "H-01"
+      ],
+      "blocks": [],
+      "owns": [
+        "features/lists/ui/SetPlayer.tsx",
+        "features/lists/ui/SetPlayer.test.tsx",
+        "features/lists/ui/wakeLock.ts",
+        "features/lists/ui/wakeLock.test.ts",
+        "app/dev/set-player/",
+        "tests/e2e/set-player.spec.ts"
+      ],
+      "touches": [
+        "features/lists/ui/SetlistView.tsx",
+        "features/lists/ui/SetlistView.test.tsx"
+      ],
+      "reqs": [
+        "REQ-LIST-09",
+        "REQ-ROW-03",
+        "REQ-NF-02",
+        "REQ-NF-03"
+      ],
+      "file": "tasks/LIST-11.md",
+      "status": "blocked"
+    },
+    {
       "id": "SHR-05",
       "title": "Store share tokens hashed",
       "phase": 4,
-      "wave": 11,
+      "wave": 12,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -2883,13 +2968,14 @@
         "SHR-01",
         "SHR-02",
         "SHR-03",
-        "DB-08"
+        "DB-08",
+        "ADM-06"
       ],
       "blocks": [
         "SHR-04"
       ],
       "owns": [
-        "db/migrations/0006_share_token_hash.sql"
+        "db/migrations/0007_share_token_hash.sql"
       ],
       "touches": [
         "db/migrations/meta/",
@@ -2913,7 +2999,7 @@
       "id": "SHR-04",
       "title": "ShareDialog + nav Share wiring",
       "phase": 4,
-      "wave": 12,
+      "wave": 13,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2949,7 +3035,7 @@
       "id": "DOC-01",
       "title": "User guide",
       "phase": 5,
-      "wave": 13,
+      "wave": 14,
       "stream": "content",
       "size": "S",
       "human": false,
@@ -2973,7 +3059,7 @@
       "id": "H-05",
       "title": "End-to-end journey suite",
       "phase": 5,
-      "wave": 13,
+      "wave": 14,
       "stream": "qa",
       "size": "M",
       "human": false,
@@ -3003,7 +3089,7 @@
       "id": "PILOT-01",
       "title": "Pilot branch rollout",
       "phase": 5,
-      "wave": 14,
+      "wave": 15,
       "stream": "content",
       "size": "L",
       "human": true,

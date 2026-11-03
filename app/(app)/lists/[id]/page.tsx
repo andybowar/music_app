@@ -6,12 +6,13 @@ import { Toaster } from '@/components/ui/sonner';
 import { getList } from '@/features/lists/server/lists';
 import { getSongs } from '@/features/songs/server/songs';
 import { SetlistView } from '@/features/lists/ui/SetlistView';
+import { PlaylistView } from '@/features/player/ui/PlaylistView';
 import { requirePageUser } from '@/lib/auth';
 import { reportError } from '@/lib/log';
 import { can } from '@/lib/permissions';
 import type { ListDetail, SongDetail } from '@/types/domain';
 
-import { ListLoadError, PlaylistPlaceholder } from './views';
+import { ListLoadError } from './views';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -57,8 +58,12 @@ export default async function ListRoute({ params }: Props) {
   const canEdit = can(user, 'list:write', { list });
 
   if (list.type === 'playlist') {
-    // PlaylistView (features/player/ui) arrives with PLAY-05.
-    return <PlaylistPlaceholder list={list} />;
+    return (
+      <>
+        <PlaylistView list={list} canEdit={canEdit} />
+        <Toaster />
+      </>
+    );
   }
 
   // Song details feed the row panels; the setlist still works without them.

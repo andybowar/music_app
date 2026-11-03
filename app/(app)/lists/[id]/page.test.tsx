@@ -19,13 +19,15 @@ vi.mock('@/features/songs/server/songs', () => ({ getSongs: (ids: string[]) => g
 
 // The client view pulls in server actions; the route test only checks what it is given.
 vi.mock('@/features/lists/ui/SetlistView', () => ({ SetlistView: () => null }));
+vi.mock('@/features/player/ui/PlaylistView', () => ({ PlaylistView: () => null }));
 
 const reportError = vi.fn();
 vi.mock('@/lib/log', () => ({ reportError: (...a: unknown[]) => reportError(...a) }));
 
 const { default: ListRoute, generateMetadata, dynamic } = await import('./page');
 const { SetlistView } = await import('@/features/lists/ui/SetlistView');
-const { ListLoadError, PlaylistPlaceholder } = await import('./views');
+const { PlaylistView } = await import('@/features/player/ui/PlaylistView');
+const { ListLoadError } = await import('./views');
 
 function detailOf(id: string): ListDetail {
   return {
@@ -100,10 +102,14 @@ describe('list route', () => {
     expect(reportError).toHaveBeenCalled();
   });
 
-  it('dispatches a playlist to the playlist view placeholder', async () => {
+  it('dispatches a playlist to the playlist view', async () => {
     getList.mockResolvedValue(playlist);
+    requirePageUser.mockResolvedValue(userWith('member', playlist.ownerId));
     const page = await ListRoute(params(playlist.id));
-    expect(findElement(page, PlaylistPlaceholder)).not.toBeNull();
+    expect(findElement<ViewProps>(page, PlaylistView)?.props).toMatchObject({
+      list: playlist,
+      canEdit: true,
+    });
     expect(getSongs).not.toHaveBeenCalled();
   });
 

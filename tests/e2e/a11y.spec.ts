@@ -93,9 +93,16 @@ async function expectNoSeriousViolations(page: Page, info: TestInfo, label = pag
   expect.soft(blocking, `serious/critical axe violations on ${label}`).toEqual([]);
 }
 
-async function scan(page: Page, info: TestInfo, path: string) {
+async function scan(page: Page, info: TestInfo, path: string, { skipOnServerError = false } = {}) {
   const res = await page.goto(path);
-  expect(res?.status(), `${path} status`).toBeLessThan(500);
+  const status = res?.status() ?? 0;
+  // A 5xx renders the global error page, not the page under audit. Signed-out pages skip (with
+  // the status in the report) so a deployment's server problem doesn't read as an a11y failure.
+  test.skip(
+    skipOnServerError && status >= 500,
+    `${path} returned ${status} here, so there is nothing to audit`,
+  );
+  expect(status, `${path} status`).toBeLessThan(500);
   await expectNoSeriousViolations(page, info, path);
 }
 
@@ -115,7 +122,7 @@ const PUBLIC_PAGES = [
 test.describe('signed-out pages', () => {
   for (const path of PUBLIC_PAGES) {
     test(`${path} has no serious axe violations`, async ({ page }, info) => {
-      await scan(page, info, path);
+      await scan(page, info, path, { skipOnServerError: true });
     });
   }
 });

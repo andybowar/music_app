@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["SRCH-02", "SRCH-05", "SRCH-06", "SRCH-07", "SRCH-08", "SRCH-10", "UI-06", "UI-07", "UI-08", "UI-02", "LIB-06"]
 blocks: ["LIST-09", "H-04", "DOC-01", "H-05"]
-owns: ["app/(app)/library/", "features/search/ui/LibraryView.tsx", "features/search/ui/RowPanels.tsx"]
+owns: ["app/(app)/library/", "features/search/ui/LibraryView.tsx", "features/search/ui/RowPanels.tsx", "app/dev/library/", "tests/e2e/library.spec.ts"]
 touches: []
 requirements: ["REQ-NAV-02", "REQ-SRCH-01", "REQ-ROW-02"]
 ---
@@ -52,5 +52,5 @@ requirements: ["REQ-NAV-02", "REQ-SRCH-01", "REQ-ROW-02"]
 - [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `app/(app)/library/`, `features/search/ui/LibraryView.tsx`, `features/search/ui/RowPanels.tsx`
+- **Owns** (create/modify freely): `app/(app)/library/`, `features/search/ui/LibraryView.tsx`, `features/search/ui/RowPanels.tsx`, `app/dev/library/`, `tests/e2e/library.spec.ts`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

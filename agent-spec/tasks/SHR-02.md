@@ -8,7 +8,7 @@ size: S
 status: todo
 human_required: false
 depends_on: ["SHR-01", "UI-05"]
-blocks: []
+blocks: ["SHR-05"]
 owns: ["app/share/[token]/"]
 touches: []
 requirements: ["REQ-SHARE-01", "REQ-SHARE-03"]

@@ -1,6 +1,6 @@
 # Task index
 
-96 tasks · 13 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
+98 tasks · 14 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
 
 **How to use.** A task is *ready* when every task in `depends_on` is merged. All ready tasks in a wave can run at the same time — their `owns` paths never overlap (checked by `scripts/check_tasks.py`). Start a task by setting `status: in_progress` in its file; see `AGENTS.md` for the full protocol.
 
@@ -95,12 +95,13 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → LIST-01 �
 | [DB-05](tasks/DB-05.md) | RLS + permission parity tests | 0 Foundations | security | M | DB-03, DB-04, AUTH-05, DB-07 |
 | [SRCH-08](tasks/SRCH-08.md) | ResultsList | 2 Search | frontend | S | UI-05 |
 
-### Wave 7 — 11 tasks in parallel
+### Wave 7 — 12 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
 | [ADM-01](tasks/ADM-01.md) | Admin: users | 1 Library | frontend | L | AUTH-04, AUTH-05, UI-02, DB-07 |
 | [AUTH-03](tasks/AUTH-03.md) | SAML SSO | 0 Foundations | auth | S | AUTH-02, AUTH-07 |
+| [DB-08](tasks/DB-08.md) | Music leaders can soft-delete same-branch setlists (RLS fix) | 0 Foundations | data | S | DB-05 |
 | [LIB-01](tasks/LIB-01.md) | Song server actions (create/update/delete/get) | 1 Library | backend | L | DB-02, DB-06, AUTH-04, AUTH-05 |
 | [LIB-02](tasks/LIB-02.md) | Song keys action | 1 Library | backend | S | DB-06, AUTH-04, AUTH-05 |
 | [LIB-03](tasks/LIB-03.md) | Composers actions | 1 Library | backend | S | DB-06, AUTH-04, AUTH-05 |
@@ -158,16 +159,22 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → LIST-01 �
 |---|---|---|---|---|---|
 | [ADM-04](tasks/ADM-04.md) | Access request emails | 4 Sharing | backend | S | SHR-03, AUTH-07, ADM-01 |
 | [H-04](tasks/H-04.md) | Accessibility audit + fixes | 5 Hardening | qa | M | SRCH-09, LIST-09, PLAY-05, LIB-17 |
-| [SHR-04](tasks/SHR-04.md) | ShareDialog + nav Share wiring | 4 Sharing | frontend | S | SHR-01, SHR-03, LIST-09, LIST-07, PLAY-05 |
+| [SHR-05](tasks/SHR-05.md) | Store share tokens hashed | 4 Sharing | backend | M | SHR-01, SHR-02, SHR-03, DB-08 |
 
-### Wave 12 — 2 tasks in parallel
+### Wave 12 — 1 tasks in parallel
+
+| ID | Title | Phase | Stream | Size | Depends on |
+|---|---|---|---|---|---|
+| [SHR-04](tasks/SHR-04.md) | ShareDialog + nav Share wiring | 4 Sharing | frontend | S | SHR-01, SHR-03, LIST-09, LIST-07, PLAY-05, SHR-05 |
+
+### Wave 13 — 2 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
 | [DOC-01](tasks/DOC-01.md) | User guide | 5 Hardening | content | S | SRCH-09, LIST-09, SHR-04 |
 | [H-05](tasks/H-05.md) | End-to-end journey suite | 5 Hardening | qa | M | SRCH-09, LIST-09, SHR-04, PLAY-05, LIB-17 |
 
-### Wave 13 — 1 tasks in parallel
+### Wave 14 — 1 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
@@ -180,9 +187,9 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → LIST-01 �
 | Stream | Tasks |
 |---|---|
 | auth | AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-06, AUTH-07 |
-| backend | ADM-04, BR-01, BR-03, H-02, H-03, LIB-01, LIB-02, LIB-03, LIB-04, LIB-05, LIB-06, LIB-07, LIB-16, LIST-01, LIST-02, LIST-03, SHR-01, SHR-03, SRCH-01, SRCH-02, SRCH-03, SRCH-10, SRCH-11 |
+| backend | ADM-04, BR-01, BR-03, H-02, H-03, LIB-01, LIB-02, LIB-03, LIB-04, LIB-05, LIB-06, LIB-07, LIB-16, LIST-01, LIST-02, LIST-03, SHR-01, SHR-03, SHR-05, SRCH-01, SRCH-02, SRCH-03, SRCH-10, SRCH-11 |
 | content | CNT-01, CNT-02, CNT-03, DOC-01, PILOT-01 |
-| data | DB-01, DB-02, DB-04, DB-07, IMP-01, IMP-02, IMP-03 |
+| data | DB-01, DB-02, DB-04, DB-07, DB-08, IMP-01, IMP-02, IMP-03 |
 | frontend | ADM-01, ADM-02, BR-02, BR-04, H-01, LIB-10, LIB-11, LIB-12, LIB-13, LIB-14, LIB-15, LIB-17, LIB-18, LIB-19, LIST-04, LIST-05, LIST-06, LIST-07, LIST-08, LIST-09, PLAY-01, PLAY-02, PLAY-03, PLAY-04, PLAY-05, PLAY-06, SHR-02, SHR-04, SRCH-04, SRCH-05, SRCH-06, SRCH-07, SRCH-08, SRCH-09, UI-01, UI-02, UI-04, UI-05, UI-06, UI-07, UI-08 |
 | ops | OPS-01, OPS-02, OPS-03 |
 | platform | DB-06, F-01, F-02, F-03, F-04, F-05 |
@@ -239,9 +246,9 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → LIST-01 �
 | REQ-ROW-02 | UI-05, UI-06, UI-07, SRCH-09 |
 | REQ-ROW-03 | UI-07, LIB-18 |
 | REQ-ROW-04 | UI-08, LIB-18 |
-| REQ-SHARE-01 | SHR-01, SHR-02, SHR-04, H-05 |
+| REQ-SHARE-01 | SHR-01, SHR-02, SHR-05, SHR-04, H-05 |
 | REQ-SHARE-02 | SHR-03, SHR-04 |
-| REQ-SHARE-03 | SHR-01, SHR-02 |
+| REQ-SHARE-03 | SHR-01, SHR-02, SHR-05 |
 | REQ-SRCH-01 | SRCH-01, SRCH-02, SRCH-09 |
 | REQ-SRCH-02 | DB-02, SRCH-05, SRCH-01 |
 | REQ-SRCH-03 | SRCH-01, SRCH-06, SRCH-10 |

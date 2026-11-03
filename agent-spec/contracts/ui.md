@@ -80,7 +80,7 @@ All components are client components unless noted, props-only (no data fetching 
 | `CreateListDialog` | `features/lists/ui/CreateListDialog.tsx` | `{ type: ListType; open; onOpenChange; onSubmit(input): Promise<ActionResult<List>> }` | LIST-05 |
 | `AddToListMenu` | `features/lists/ui/AddToListMenu.tsx` | `{ songId; current: List \| null; lists: List[]; onAdd(listId): Promise<ActionResult<unknown>>; onCreate(input): Promise<ActionResult<List>>; onUndo?(listId, added: unknown): Promise<ActionResult<unknown>>; songTitle?: string }` | LIST-06 |
 | `ItemOverrideEditor` | `features/lists/ui/ItemOverrideEditor.tsx` | `{ resolved: ResolvedItem; keys: SongKey[]; onChange(patch): void }` | LIST-07 |
-| `SetlistView` | `features/lists/ui/SetlistView.tsx` | `{ list: ListDetail; canEdit: boolean }` | LIST-07 |
+| `SetlistView` | `features/lists/ui/SetlistView.tsx` | `{ list: ListDetail; canEdit: boolean; songs?: SongDetail[] }` (`songs`: details of the list's songs, from `getSongs`, for row panels and override keys; CR LIST-07) | LIST-07 |
 | `PlayerBar` | `features/player/ui/PlayerBar.tsx` | `{ state: PlayerState; dispatch(e: PlayerEvent): void }` | PLAY-04 |
 | `AudioPicker` | `features/player/ui/AudioPicker.tsx` | `{ resources: Resource[]; value: UUID \| null; onChange(id: UUID \| null): void; label?: string; className?: string }` (`null` = recording cleared) | PLAY-06 |
 | `PlaylistView` | `features/player/ui/PlaylistView.tsx` | `{ list: ListDetail; canEdit: boolean }` | PLAY-05 |

@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["LIST-01", "UI-02"]
 blocks: []
-owns: ["app/(app)/lists/page.tsx", "features/lists/ui/ListIndex.tsx"]
+owns: ["app/(app)/lists/page.tsx", "features/lists/ui/ListIndex.tsx", "app/dev/list-index/"]
 touches: []
 requirements: ["REQ-LIST-07"]
 ---
@@ -38,5 +38,5 @@ requirements: ["REQ-LIST-07"]
 - [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `app/(app)/lists/page.tsx`, `features/lists/ui/ListIndex.tsx`
+- **Owns** (create/modify freely): `app/(app)/lists/page.tsx`, `features/lists/ui/ListIndex.tsx`, `app/dev/list-index/`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

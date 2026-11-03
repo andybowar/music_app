@@ -1,6 +1,6 @@
 # CR AUTH-06 · Wire session revocation into "disable", and cap sessions at 30 days
 
-**Status:** proposed.
+**Status:** rejected by project owner 2026-11-03. `updateUser` does not revoke sessions and no session time-box is set; access still stops on the next request (middleware, `requireUser`, RLS). `revokeUserSessions` stays in `features/auth/linking.ts`, unused.
 
 AUTH-06 owns `features/auth/linking.ts` and touches `features/auth/provision.ts`. Two of its
 deliverables need one-line changes in files other tasks own.

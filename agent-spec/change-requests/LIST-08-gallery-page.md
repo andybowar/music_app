@@ -1,6 +1,6 @@
 # CR LIST-08 · Gallery page for ListIndex
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/LIST-08.md`; the gallery page is a LIST-08 follow-up.
 
 ## Problem
 

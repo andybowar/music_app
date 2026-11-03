@@ -2,12 +2,12 @@
 id: SHR-04
 title: "ShareDialog + nav Share wiring"
 phase: 4
-wave: 11
+wave: 12
 stream: frontend
 size: S
 status: todo
 human_required: false
-depends_on: ["SHR-01", "SHR-03", "LIST-09", "LIST-07", "PLAY-05"]
+depends_on: ["SHR-01", "SHR-03", "LIST-09", "LIST-07", "PLAY-05", "SHR-05"]
 blocks: ["DOC-01", "H-05"]
 owns: ["features/sharing/ui/"]
 touches: ["features/lists/ui/NavListActions.tsx", "features/lists/ui/SetlistView.tsx", "features/player/ui/PlaylistView.tsx"]
@@ -26,6 +26,7 @@ requirements: ["REQ-NAV-04", "REQ-SHARE-01", "REQ-SHARE-02"]
 - `agent-spec/contracts/types.md`
 - Output of `SHR-01` (merged on main)
 - Output of `SHR-03` (merged on main)
+- Output of `SHR-05` (merged on main): links can't be shown again after creation, so the dialog lists existing links by prefix ("…abc123", created date) with Revoke, plus "Create new link"
 - Output of `LIST-09` (merged on main)
 - Output of `LIST-07` (merged on main)
 - Output of `PLAY-05` (merged on main)

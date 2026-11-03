@@ -1,6 +1,6 @@
 # CR BR-04 · `/dev/quick` gallery page and NavBar test touch
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/BR-04.md` and `tasks/BR-02.md`; the gallery page is a BR-04 follow-up.
 
 ## Problem
 

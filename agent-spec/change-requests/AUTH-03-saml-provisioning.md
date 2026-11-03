@@ -1,6 +1,6 @@
 # CR AUTH-03 · Wire SAML into the login page and `provisionUser`
 
-**Status:** proposed.
+**Status:** rejected by project owner 2026-11-03. SAML stays unreachable: no button on `/login`, and `provisionUser` keeps refusing SAML identities. `FEATURE_SAML` remains `false` (SPEC §6).
 
 AUTH-03 ships `signInWithSaml` (`features/auth/actions.ts` → `features/auth/saml.ts`) and a `saml` prop on `SsoButtons`, all behind `FEATURE_SAML` (default `false`). Two integration points sit outside AUTH-03's owned and touched paths. Until they land, SAML is unreachable: there's no button, and a first-time SAML user is refused. With the flag off, which is the decided default (SPEC §6), nothing changes for anyone.
 

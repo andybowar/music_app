@@ -8,7 +8,7 @@ size: M
 status: done
 human_required: false
 depends_on: ["LIST-01", "AUTH-05"]
-blocks: ["SHR-02", "SHR-03", "SHR-04"]
+blocks: ["SHR-02", "SHR-03", "SHR-04", "SHR-05"]
 owns: ["features/sharing/server.ts"]
 touches: []
 requirements: ["REQ-SHARE-01", "REQ-SHARE-03"]

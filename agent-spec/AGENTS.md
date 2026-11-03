@@ -113,7 +113,7 @@ Never "just fix" a contract or another task's file inside your PR.
 
 ## 8. Local environment notes
 
-- **Git remote is `music_app`, not `origin`.** Use `git fetch music_app`, `git push music_app <branch>`, and branch from `music_app/main`.
+- **Git remote:** check `git remote -v`. The owner's main checkout uses `origin` (older notes said `music_app`). Fetch, branch from, and push to that remote's `main`.
 - **Fresh worktree:** run `pnpm install`, and copy `.env.local` from the main checkout (it is gitignored, so a new worktree has none). Integration tests and `pnpm dev` need it.
 - **Docker:** the Supabase CLI needs Docker on `PATH`. On the owner's Mac it lives in `~/.docker/bin`: `export PATH="$HOME/.docker/bin:$PATH"`.
 - **One shared local database.** Start it with `pnpm db:start` if it isn't running; never run `pnpm db:stop`. `pnpm db:reset` wipes it **without** applying this repo's migrations (they are Drizzle migrations, not Supabase ones), so always follow it with `pnpm db:migrate && pnpm db:seed`. When several agents run at once, wrap reset/migrate/seed/`pnpm test:int` in a lock: `until mkdir /tmp/music-app-db.lock 2>/dev/null; do sleep 5; done; …; rmdir /tmp/music-app-db.lock`.

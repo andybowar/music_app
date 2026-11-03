@@ -274,6 +274,23 @@ describe('UserMenu', () => {
     submit.mockRestore();
   });
 
+  it('offers "Admin" only when adminHref is set (ADM-05)', async () => {
+    const user = userEvent.setup();
+    const props = { name: 'Jordan Ellis', email: 'j@example.com', branchName: null };
+    const { unmount } = render(<UserMenu {...props} signOut={vi.fn(async () => {})} />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    await screen.findByRole('menu');
+    expect(screen.queryByRole('menuitem', { name: 'Admin' })).not.toBeInTheDocument();
+    unmount();
+
+    render(<UserMenu {...props} signOut={vi.fn(async () => {})} adminHref="/admin" />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    expect(await screen.findByRole('menuitem', { name: 'Admin' })).toHaveAttribute(
+      'href',
+      '/admin',
+    );
+  });
+
   it('shows "No branch" when the user has none', async () => {
     const user = userEvent.setup();
     render(

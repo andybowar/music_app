@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { getSignedResourceUrl } from '@/features/resources/server/files';
 import { LibraryView } from '@/features/search/ui/LibraryView';
 import { requirePageUser } from '@/lib/auth';
+import { can } from '@/lib/permissions';
 
 import { loadSongDetail, searchLibraryPage } from './actions';
 import { libraryPath, loadLibrary, type RawSearchParams } from './loadLibrary';
@@ -21,7 +22,7 @@ type Props = { searchParams: Promise<RawSearchParams> };
  */
 export default async function LibraryPage({ searchParams }: Props) {
   const raw = await searchParams;
-  await requirePageUser(libraryPath(raw));
+  const user = await requirePageUser(libraryPath(raw));
   const data = await loadLibrary(raw);
 
   return (
@@ -31,6 +32,7 @@ export default async function LibraryPage({ searchParams }: Props) {
         searchMore={searchLibraryPage}
         loadSong={loadSongDetail}
         getSignedResourceUrl={getSignedResourceUrl}
+        canAddSong={can(user, 'song:write')}
       />
       <Toaster />
     </>

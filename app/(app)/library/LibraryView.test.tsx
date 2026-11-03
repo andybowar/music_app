@@ -151,6 +151,14 @@ describe('LibraryView', () => {
     expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
   });
 
+  it('links to the new-song form only with canAddSong (LIB-20)', () => {
+    renderView();
+    expect(screen.queryByRole('link', { name: 'Add song' })).not.toBeInTheDocument();
+    cleanup();
+    renderView({ canAddSong: true });
+    expect(screen.getByRole('link', { name: 'Add song' })).toHaveAttribute('href', '/songs/new');
+  });
+
   it('shows the search from the URL in the box', () => {
     url.set('/library?q=grace');
     renderView();

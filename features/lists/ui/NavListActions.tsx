@@ -14,6 +14,8 @@ import { useCurrentList } from './CurrentList';
 export interface NavListActionsProps {
   /** Share the current list (SHR-04). Only called while a current list is set. */
   onShare(): void;
+  /** Passed to `NavBar`: show "Add song" in the More menu (LIB-20). */
+  canAddSong?: boolean;
 }
 
 /** Where a newly created list sends the user: the library, to start adding songs. */
@@ -30,7 +32,7 @@ const UNAVAILABLE: ActionResult<List> = {
  * current list and the user lands on the Worship Library. Must sit inside `CurrentListProvider`
  * and `ListActionsProvider`.
  */
-export function NavListActions({ onShare }: NavListActionsProps) {
+export function NavListActions({ onShare, canAddSong = false }: NavListActionsProps) {
   const router = useRouter();
   const { current } = useCurrentList();
   const actions = useListActions();
@@ -45,7 +47,12 @@ export function NavListActions({ onShare }: NavListActionsProps) {
 
   return (
     <>
-      <NavBar currentList={current} onCreate={setDialogType} onShare={onShare} />
+      <NavBar
+        currentList={current}
+        onCreate={setDialogType}
+        onShare={onShare}
+        canAddSong={canAddSong}
+      />
       {(['setlist', 'playlist'] as const).map((type) => (
         <CreateListDialog
           key={type}

@@ -108,6 +108,20 @@ describe('NavListActions', () => {
     expect(screen.getByRole('dialog', { name: 'Create listening playlist' })).toBeInTheDocument();
   });
 
+  it('passes canAddSong through to the NavBar More menu (LIB-20)', async () => {
+    const user = userEvent.setup();
+    render(
+      <CurrentListProvider initial={null}>
+        <NavListActions onShare={vi.fn()} canAddSong />
+      </CurrentListProvider>,
+    );
+    await user.click(desktop().getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Add song' })).toHaveAttribute(
+      'href',
+      '/songs/new',
+    );
+  });
+
   it('shares the current list', async () => {
     const { user, onShare } = setup(undefined, setlist);
     await user.click(desktop().getByRole('button', { name: `Share “${setlist.name}”` }));

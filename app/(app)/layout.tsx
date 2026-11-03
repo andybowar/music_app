@@ -105,7 +105,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
                 Worship Library
               </Link>
               <div className="flex min-w-0 flex-1 justify-center">
-                <NavListActions onShare={sharePlaceholder} />
+                <NavListActions onShare={sharePlaceholder} canAddSong={can(user, 'song:write')} />
               </div>
               <UserMenu
                 name={user.name}

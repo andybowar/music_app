@@ -1,10 +1,13 @@
 'use client';
 
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from 'react';
 
 import { PdfViewer } from '@/components/media/PdfViewer';
 import { SongRow } from '@/components/song/SongRow';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/components/ui/utils';
 import { AddToListAction } from '@/features/lists/ui/AddToListAction';
 import {
@@ -65,6 +68,8 @@ export interface LibraryViewProps {
    * nothing outside the app shell's list providers.
    */
   rowAddSlot?(song: SongSummary): ReactNode;
+  /** Show the "Add song" link to the new-song form (LIB-20). Pass `can(user, 'song:write')`. */
+  canAddSong?: boolean;
 }
 
 interface Loaded {
@@ -109,6 +114,7 @@ export function LibraryView({
   loadSong,
   getSignedResourceUrl,
   rowAddSlot = defaultRowAddSlot,
+  canAddSong = false,
 }: LibraryViewProps) {
   const router = useRouter();
   const search = useSearchState();
@@ -262,6 +268,14 @@ export function LibraryView({
           hasQuery={Boolean(params.q)}
           onChange={(sort, dir) => setParams({ sort, dir })}
         />
+        {canAddSong ? (
+          <Button asChild variant="outline" className="min-h-tap">
+            <Link href="/songs/new">
+              <Plus aria-hidden />
+              Add song
+            </Link>
+          </Button>
+        ) : null}
       </div>
 
       {result.didYouMean && !isPending ? (

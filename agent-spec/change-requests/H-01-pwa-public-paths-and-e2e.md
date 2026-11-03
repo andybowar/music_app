@@ -1,6 +1,6 @@
 # CR H-01 · Public PWA paths in middleware, ignore the generated worker, offline e2e spec
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/H-01.md` (also touches `middleware.test.ts`). Items 1 and 2 (public PWA paths, ignore the generated worker) are implemented in the same PR; `tests/e2e/offline.spec.ts` is an H-01 follow-up.
 
 ## Problem
 

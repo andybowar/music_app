@@ -54,6 +54,9 @@ const PUBLIC_PREFIXES = [
   '/share',
   '/api',
   '/dev',
+  // PWA (H-01): the manifest is fetched without cookies, and a worker script can't be a redirect.
+  '/sw.js',
+  '/manifest.webmanifest',
   // Framework internals the matcher doesn't already skip (dev HMR, etc.).
   '/_next',
 ] as const;

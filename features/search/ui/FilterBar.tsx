@@ -478,9 +478,9 @@ function FilterDropdown({ group }: { group: Group }) {
           type="button"
           variant="outline"
           className={cn('h-10 gap-1.5', active && 'border-primary')}
-          aria-label={active ? `${group.label}, ${group.count} selected` : group.label}
           data-filter={group.id}
         >
+          {/* The accessible name is the visible text (WCAG 2.5.3), e.g. "Key: D" or "Energy 2 selected". */}
           {shown ? (
             <span>
               {group.label}: <span className="font-semibold">{shown}</span>
@@ -488,7 +488,9 @@ function FilterDropdown({ group }: { group: Group }) {
           ) : (
             <>
               <span>{group.label}</span>
+              {active && ' '}
               <CountBadge count={group.count} />
+              {active && <span className="sr-only"> selected</span>}
             </>
           )}
           <ChevronDownIcon aria-hidden="true" className="opacity-60" />
@@ -546,7 +548,12 @@ function Chips({
 
 function LoadingRow() {
   return (
-    <div aria-busy="true" aria-label="Loading filters" className="flex flex-wrap gap-2">
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label="Loading filters"
+      className="flex flex-wrap gap-2"
+    >
       {[20, 14, 18, 24].map((w) => (
         <Skeleton key={w} className="h-10" style={{ width: `${w * 0.25}rem` }} />
       ))}
@@ -598,15 +605,13 @@ export function FilterBar({
     controls = (
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-10 gap-2 self-start"
-            aria-label={total > 0 ? `Filters, ${total} active` : 'Filters'}
-          >
+          <Button type="button" variant="outline" className="h-10 gap-2 self-start">
+            {/* The name is the visible text plus " active" (WCAG 2.5.3), e.g. "Filters 2 active". */}
             <SlidersHorizontalIcon aria-hidden="true" />
             Filters
+            {total > 0 && ' '}
             <CountBadge count={total} />
+            {total > 0 && <span className="sr-only"> active</span>}
           </Button>
         </SheetTrigger>
         <SheetContent

@@ -27,6 +27,15 @@ const requiredUrl = z.preprocess(
 );
 const optional = z.preprocess(emptyToUndefined, z.string().trim().optional());
 
+const port = z.preprocess(
+  (v) => emptyToUndefined(v) ?? '465',
+  z.coerce
+    .number({ error: 'must be a port number' })
+    .int({ error: 'must be a port number' })
+    .min(1, { error: 'must be a port number' })
+    .max(65535, { error: 'must be a port number' }),
+);
+
 const booleanFlag = z.preprocess(
   (v) => emptyToUndefined(v) ?? 'false',
   z
@@ -57,7 +66,13 @@ export const clientEnvSchema = z.object({
 export const serverEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: required,
   DATABASE_URL: requiredUrl,
-  RESEND_API_KEY: optional,
+  // Outgoing email over SMTP (CR OWNER-gmail-smtp-email). All optional: without
+  // SMTP_USER/SMTP_PASSWORD, lib/email logs messages instead of sending them.
+  SMTP_HOST: z.preprocess((v) => emptyToUndefined(v) ?? 'smtp.gmail.com', z.string().trim()),
+  SMTP_PORT: port,
+  SMTP_USER: optional,
+  SMTP_PASSWORD: optional,
+  EMAIL_FROM: optional,
   SENTRY_DSN: optional,
   APP_URL: requiredUrl,
   CRON_SECRET: required,

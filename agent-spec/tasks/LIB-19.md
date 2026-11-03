@@ -5,12 +5,12 @@ phase: 1
 wave: 9
 stream: frontend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["LIB-18", "DB-06"]
 blocks: []
-owns: ["features/audit/"]
-touches: ["features/songs/ui/SongPage.tsx"]
+owns: ["features/audit/", "app/dev/song-history/"]
+touches: ["features/songs/ui/SongPage.tsx", "features/songs/ui/SongPage.test.tsx", "features/songs/server/keys.ts"]
 requirements: ["REQ-LIB-12"]
 ---
 
@@ -31,14 +31,14 @@ requirements: ["REQ-LIB-12"]
 - `REQ-LIB-12` — Edits are recorded in an audit log (who, when, what changed) viewable on the song.
 
 ## Deliverables
-- [ ] `getAuditTrail` read helper
-- [ ] History tab: timeline of entries with field diffs
+- [x] `getAuditTrail` read helper
+- [x] History tab: timeline of entries with field diffs
 
 ## Acceptance criteria
-- [ ] Visible to contributor+; hidden for members
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Visible to contributor+; hidden for members
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `features/audit/`
-- **May touch** (minimal integration edits only, described in PR): `features/songs/ui/SongPage.tsx`
+- **Owns** (create/modify freely): `features/audit/`, `app/dev/song-history/`
+- **May touch** (minimal integration edits only, described in PR): `features/songs/ui/SongPage.tsx`, `features/songs/ui/SongPage.test.tsx`, `features/songs/server/keys.ts`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

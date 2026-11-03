@@ -27,7 +27,11 @@ describe('parseServerEnv', () => {
   it('parses valid input with defaults', () => {
     expect(parseServerEnv(validServer)).toEqual({
       ...validServer,
-      RESEND_API_KEY: undefined,
+      SMTP_HOST: 'smtp.gmail.com',
+      SMTP_PORT: 465,
+      SMTP_USER: undefined,
+      SMTP_PASSWORD: undefined,
+      EMAIL_FROM: undefined,
       SENTRY_DSN: undefined,
       FEATURE_SAML: false,
       SSO_PROVIDERS: [],
@@ -82,9 +86,27 @@ describe('parseServerEnv', () => {
   });
 
   it('keeps optional vars when set', () => {
-    const parsed = parseServerEnv({ ...validServer, RESEND_API_KEY: 're_1', SENTRY_DSN: 'dsn' });
-    expect(parsed.RESEND_API_KEY).toBe('re_1');
+    const parsed = parseServerEnv({
+      ...validServer,
+      SMTP_HOST: 'smtp.example.test',
+      SMTP_PORT: '587',
+      SMTP_USER: 'sender@example.test',
+      SMTP_PASSWORD: 'app-password',
+      EMAIL_FROM: 'Worship Library <sender@example.test>',
+      SENTRY_DSN: 'dsn',
+    });
+    expect(parsed.SMTP_HOST).toBe('smtp.example.test');
+    expect(parsed.SMTP_PORT).toBe(587);
+    expect(parsed.SMTP_USER).toBe('sender@example.test');
+    expect(parsed.SMTP_PASSWORD).toBe('app-password');
+    expect(parsed.EMAIL_FROM).toBe('Worship Library <sender@example.test>');
     expect(parsed.SENTRY_DSN).toBe('dsn');
+  });
+
+  it.each(['abc', '0', '70000', '46.5'])('rejects SMTP_PORT=%s', (value) => {
+    const error = catchEnvError(() => parseServerEnv({ ...validServer, SMTP_PORT: value }));
+    expect(error.variables).toEqual(['SMTP_PORT']);
+    expect(error.message).toContain('SMTP_PORT: must be a port number');
   });
 });
 

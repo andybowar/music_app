@@ -178,7 +178,7 @@ describe('FilterBar on desktop', () => {
 
   it('combines filters: picking a key keeps the other params and resets the page', async () => {
     const { user, onChange } = setup({ q: 'grace', energy: ['mid_worship'], key: ['G'], page: 2 });
-    await user.click(screen.getByRole('button', { name: 'Key, 1 selected' }));
+    await user.click(screen.getByRole('button', { name: /^Key: / }));
     await user.click(screen.getByRole('checkbox', { name: 'D' }));
     expect(lastDefined(onChange)).toEqual({ q: 'grace', energy: ['mid_worship'], key: ['D', 'G'] });
     expect(onChange.mock.lastCall?.[0]).toHaveProperty('page', undefined);
@@ -186,7 +186,7 @@ describe('FilterBar on desktop', () => {
 
   it('unchecking the last value removes the filter', async () => {
     const { user, onChange } = setup({ decade: [1990] });
-    await user.click(screen.getByRole('button', { name: 'Decade, 1 selected' }));
+    await user.click(screen.getByRole('button', { name: /^Decade: / }));
     expect(screen.getByRole('checkbox', { name: '1990s' })).toBeChecked();
     await user.click(screen.getByRole('checkbox', { name: '1990s' }));
     expect(onChange.mock.lastCall?.[0]).toHaveProperty('decade', undefined);
@@ -194,10 +194,12 @@ describe('FilterBar on desktop', () => {
 
   it('shows the single selected value on the trigger', () => {
     setup({ key: ['D'], chordVerse: ['D', 'A'] });
-    expect(screen.getByRole('button', { name: 'Key, 1 selected' })).toHaveTextContent('Key: D');
+    // The accessible name is the visible text (WCAG 2.5.3 label in name). jsdom drops the space
+    // before the visually hidden " selected" that browsers keep.
+    expect(screen.getByRole('button', { name: 'Key: D' })).toHaveTextContent('Key: D');
     expect(
-      screen.getByRole('button', { name: 'First chord: verse, 2 selected' }),
-    ).toHaveTextContent('First chord: verse2');
+      screen.getByRole('button', { name: /^First chord: verse 2 ?selected$/ }),
+    ).toHaveTextContent('First chord: verse 2');
   });
 
   it('filters by first chord of the chorus', async () => {
@@ -217,7 +219,7 @@ describe('FilterBar on desktop', () => {
     cleanup();
 
     const second = setup({ branch: 'OR', usage: ['high'] });
-    await second.user.click(screen.getByRole('button', { name: 'Branch use, 1 selected' }));
+    await second.user.click(screen.getByRole('button', { name: /^Branch use: / }));
     const levels = screen.getByRole('group', { name: 'Usage level' });
     expect(within(levels).getByRole('checkbox', { name: 'High' })).toBeChecked();
     expect(within(levels).getByRole('checkbox', { name: 'Low' })).not.toBeChecked();
@@ -230,7 +232,7 @@ describe('FilterBar on desktop', () => {
 
   it('branch use: "Any branch" removes branch and usage', async () => {
     const { user, onChange } = setup({ branch: 'OR', usage: ['high'] });
-    await user.click(screen.getByRole('button', { name: 'Branch use, 1 selected' }));
+    await user.click(screen.getByRole('button', { name: /^Branch use: / }));
     expect(screen.getByRole('group', { name: 'Usage level' })).toBeInTheDocument();
     await user.click(screen.getByRole('combobox', { name: 'Branch' }));
     await user.click(screen.getByRole('option', { name: 'Any branch' }));
@@ -241,7 +243,7 @@ describe('FilterBar on desktop', () => {
 
   it('defaults usage checkboxes to high/low/rare when only a branch is set', async () => {
     const { user } = setup({ branch: 'SV' });
-    await user.click(screen.getByRole('button', { name: 'Branch use, 1 selected' }));
+    await user.click(screen.getByRole('button', { name: /^Branch use: / }));
     const levels = screen.getByRole('group', { name: 'Usage level' });
     const checked = within(levels)
       .getAllByRole('checkbox')
@@ -252,7 +254,7 @@ describe('FilterBar on desktop', () => {
 
   it('keeps a selected value that is no longer a facet so it can be unchecked', async () => {
     const { user, onChange } = setup({ key: ['F#'] });
-    await user.click(screen.getByRole('button', { name: 'Key, 1 selected' }));
+    await user.click(screen.getByRole('button', { name: /^Key: / }));
     await user.click(screen.getByRole('checkbox', { name: 'F#' }));
     expect(onChange.mock.lastCall?.[0]).toHaveProperty('key', undefined);
   });
@@ -296,7 +298,7 @@ describe('FilterBar on mobile', () => {
   it('collapses the dropdowns into a sheet', async () => {
     const { user, onChange } = setup({ key: ['D'] }, 360);
     expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
-    const trigger = screen.getByRole('button', { name: 'Filters, 1 active' });
+    const trigger = screen.getByRole('button', { name: /^Filters 1 ?active$/ });
     await user.click(trigger);
     const sheet = screen.getByRole('dialog', { name: 'Filters' });
     for (const heading of ['Energy', 'Key', 'Decade', 'Branch use', 'First chord: bridge']) {
@@ -324,7 +326,10 @@ describe('loading, empty and error states', () => {
     mockViewport(1024);
     const onChange = vi.fn();
     render(<FilterBar params={{ key: ['C'] }} facets={facets} onChange={onChange} loading />);
-    expect(screen.getByLabelText('Loading filters')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('status', { name: 'Loading filters' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
     expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Remove key filter C' }));
     expect(onChange).toHaveBeenCalled();

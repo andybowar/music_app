@@ -29,7 +29,13 @@
     "import": "tsx --conditions=react-server scripts/import.ts"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.2.0",
     "@sentry/nextjs": "^11.10.0",
+    "@serwist/next": "^9.5.13",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "class-variance-authority": "^0.7.1",
@@ -39,6 +45,7 @@
     "lucide-react": "^1.63.0",
     "next": "^15.5.28",
     "next-themes": "^0.4.6",
+    "nodemailer": "^10.3.1",
     "pdfjs-dist": "6.3.289",
     "postgres": "^3.4.9",
     "radix-ui": "^1.8.1",
@@ -51,6 +58,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/eslintrc": "^3.3.7",
     "@next/eslint-plugin-next": "^15.5.28",
     "@playwright/test": "^1.64.1",
@@ -76,6 +84,7 @@
     "postcss": "^8.5.32",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "serwist": "^9.5.13",
     "supabase": "^2.122.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",

@@ -30,10 +30,17 @@ beforeEach(() => {
 
 afterEach(cleanup);
 
-function setup(currentList = null as typeof list | null) {
+function setup(currentList = null as typeof list | null, canAddSong?: boolean) {
   const onCreate = vi.fn();
   const onShare = vi.fn();
-  render(<NavBar currentList={currentList} onCreate={onCreate} onShare={onShare} />);
+  render(
+    <NavBar
+      currentList={currentList}
+      onCreate={onCreate}
+      onShare={onShare}
+      canAddSong={canAddSong}
+    />,
+  );
   return {
     onCreate,
     onShare,
@@ -103,10 +110,38 @@ describe('NavBar links', () => {
     expect(desktop.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
   });
 
-  it('hides the desktop More menu while there are no overflow links', () => {
-    expect(NAV_OVERFLOW_LINKS).toHaveLength(0);
+  it('desktop More menu holds the overflow links (BR-04 quick theme lookup, BR-02 other branches)', async () => {
+    expect(NAV_OVERFLOW_LINKS.length).toBeGreaterThan(0);
+    const user = userEvent.setup();
     const { desktop } = setup();
-    expect(desktop.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
+    await user.click(desktop.getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Quick theme lookup' })).toHaveAttribute(
+      'href',
+      '/quick',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Other branches' })).toHaveAttribute(
+      'href',
+      '/branches',
+    );
+  });
+
+  it('desktop More menu offers "Add song" only with canAddSong (LIB-20)', async () => {
+    const user = userEvent.setup();
+    const { desktop } = setup(null, true);
+    await user.click(desktop.getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Add song' })).toHaveAttribute(
+      'href',
+      NAV_HREFS.addSong,
+    );
+    expect(NAV_HREFS.addSong).toBe('/songs/new');
+  });
+
+  it('hides "Add song" by default (members cannot add songs)', async () => {
+    const user = userEvent.setup();
+    const { desktop } = setup();
+    await user.click(desktop.getByRole('button', { name: 'More' }));
+    await screen.findByRole('menuitem', { name: 'Quick theme lookup' });
+    expect(screen.queryByRole('menuitem', { name: 'Add song' })).not.toBeInTheDocument();
   });
 
   it('server-renders without throwing', () => {
@@ -193,6 +228,16 @@ describe('NavBar overflow menu (mobile)', () => {
     expect(onShare).not.toHaveBeenCalled();
   });
 
+  it('offers "Add song" with canAddSong (LIB-20)', async () => {
+    const user = userEvent.setup();
+    const { mobile } = setup(null, true);
+    await user.click(mobile.getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Add song' })).toHaveAttribute(
+      'href',
+      '/songs/new',
+    );
+  });
+
   it('Share shows the current list name and calls onShare', async () => {
     const user = userEvent.setup();
     const { mobile, onShare } = setup(list);
@@ -227,6 +272,23 @@ describe('UserMenu', () => {
     await user.click(within(menu).getByRole('menuitem', { name: 'Sign out' }));
     expect(submit).toHaveBeenCalledTimes(1);
     submit.mockRestore();
+  });
+
+  it('offers "Admin" only when adminHref is set (ADM-05)', async () => {
+    const user = userEvent.setup();
+    const props = { name: 'Jordan Ellis', email: 'j@example.com', branchName: null };
+    const { unmount } = render(<UserMenu {...props} signOut={vi.fn(async () => {})} />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    await screen.findByRole('menu');
+    expect(screen.queryByRole('menuitem', { name: 'Admin' })).not.toBeInTheDocument();
+    unmount();
+
+    render(<UserMenu {...props} signOut={vi.fn(async () => {})} adminHref="/admin" />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    expect(await screen.findByRole('menuitem', { name: 'Admin' })).toHaveAttribute(
+      'href',
+      '/admin',
+    );
   });
 
   it('shows "No branch" when the user has none', async () => {

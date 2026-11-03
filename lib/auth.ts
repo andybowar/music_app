@@ -37,6 +37,7 @@ import { cache } from 'react';
 import { users } from '@/db/schema';
 import { ActionError } from '@/lib/action';
 import { getDb } from '@/lib/db';
+import { roleAtLeast } from '@/lib/permissions';
 import { createServerSupabase } from '@/lib/supabase/server';
 import type { AppUser, AuthProvider, Role } from '@/types/domain';
 
@@ -48,10 +49,6 @@ const ROLE_DENIED_MSG = 'You do not have the role required for that action.';
 
 const LOGIN_PATH = '/login';
 const ACCOUNT_STATUS_PATH = '/account-status';
-
-/** Mirrors the Postgres `role` enum order: member < contributor < music_leader < admin. */
-// TODO(CR): share rank with lib/permissions.ts (agent-spec/change-requests/AUTH-04-role-at-least.md)
-const ROLE_RANK: Record<Role, number> = { member: 0, contributor: 1, music_leader: 2, admin: 3 };
 
 // ----- AppUser hydration & access decisions ----------------------------------------------
 
@@ -132,17 +129,13 @@ export async function requireUser(): Promise<AppUser> {
 
 /**
  * An approved `AppUser` whose role is at least `role`. `admin` satisfies every request.
- * Mirrors the minimum-role checks in `lib/permissions.ts`; redeclared here because this guard
- * owns the "may enter the app" decision, independent of the per-action matrix.
+ * The role order comes from `roleAtLeast` in `lib/permissions.ts`, so this guard and the
+ * per-action matrix can't disagree.
  */
 export async function requireRole(role: Role): Promise<AppUser> {
   const user = await requireUser();
-  if (!hasRole(user, role)) throw new ActionError('FORBIDDEN', ROLE_DENIED_MSG);
+  if (!roleAtLeast(user.role, role)) throw new ActionError('FORBIDDEN', ROLE_DENIED_MSG);
   return user;
-}
-
-function hasRole(user: AppUser, role: Role): boolean {
-  return ROLE_RANK[user.role] >= ROLE_RANK[role];
 }
 
 // ----- Page guards -----------------------------------------------------------------------
@@ -173,7 +166,7 @@ export async function requirePageUser(next?: string): Promise<AppUser> {
  */
 export async function requirePageRole(role: Role, next?: string): Promise<AppUser> {
   const user = await requirePageUser(next);
-  if (!hasRole(user, role)) notFound();
+  if (!roleAtLeast(user.role, role)) notFound();
   return user;
 }
 

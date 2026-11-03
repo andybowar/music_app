@@ -8,7 +8,7 @@ size: S
 status: done
 human_required: false
 depends_on: ["ADM-01"]
-blocks: []
+blocks: ["ADM-05"]
 owns: ["app/(app)/admin/branches/", "features/admin/ui/branches/", "app/dev/admin-branches/"]
 touches: ["features/admin/server.ts"]
 requirements: []

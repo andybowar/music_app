@@ -2,7 +2,7 @@
 id: DOC-01
 title: "User guide"
 phase: 5
-wave: 12
+wave: 13
 stream: content
 size: S
 status: todo

@@ -43,7 +43,10 @@ function chordColumns(input: SongKeyInput): ChordColumns {
   };
 }
 
-/** The audited, user-visible fields of a row (no ids). */
+/**
+ * The audited, user-visible fields of a row (no ids). Create and delete snapshots also
+ * carry `songId` so the song's history keeps keys that were later removed.
+ */
 function auditFields(row: Pick<SongKeyRow, 'key' | 'isPrimary'> & ChordColumns) {
   return {
     key: row.key,
@@ -207,7 +210,9 @@ async function replaceSongKeys(
         entity: 'song_key',
         entityId: row.id,
         action: 'delete',
-        before: auditFields(row),
+        // songId links the entry to the song after the row is gone (getAuditTrail
+        // matches song_key rows on diff.songId). CR LIB-19-history-gallery-and-key-audit.
+        before: { songId: row.songId, ...auditFields(row) },
       });
     }
 
@@ -255,7 +260,7 @@ async function replaceSongKeys(
         entity: 'song_key',
         entityId: row!.id,
         action: 'create',
-        after: auditFields(row!),
+        after: { songId: row!.songId, ...auditFields(row!) },
       });
     }
 

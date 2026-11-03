@@ -19,7 +19,9 @@ import { z } from 'zod';
 
 import { safeNext } from '@/app/(auth)/login/safeNext';
 import { users } from '@/db/schema';
+import { notifyAccessRequested } from '@/features/admin/notifications';
 import { OIDC_PROVIDERS, type OidcProvider } from '@/features/auth/provision';
+import { startSamlSignIn } from '@/features/auth/saml';
 import { ActionError, withAction } from '@/lib/action';
 import { getDb } from '@/lib/db';
 import { env } from '@/lib/env';
@@ -239,6 +241,18 @@ export const signInWithOidc = withAction(
 );
 
 /**
+ * Start SAML sign-in for the organization that owns the email's domain
+ * (REQ-AUTH-01, AUTH-03; logic in `features/auth/saml.ts`). Returns the IdP URL;
+ * the IdP comes back through Supabase to `/auth/callback?next=…`. Refuses with
+ * `FORBIDDEN` while `FEATURE_SAML` is off; `NOT_FOUND` when no IdP is set up for
+ * the domain.
+ */
+export const signInWithSaml = withAction(
+  async (emailOrDomain: string, next?: string): Promise<{ url: string }> =>
+    startSamlSignIn(emailOrDomain, next),
+);
+
+/**
  * Request an account with email + password (REQ-AUTH-03, AUTH-07). Creates the
  * Supabase auth user and a `pending` `users` row; an admin approves it later.
  *
@@ -279,10 +293,22 @@ export const signUpWithPassword = withAction(
     if (!authUser || !authUser.identities?.length) return;
 
     // The DATABASE_URL role bypasses RLS: the new user has no access yet.
-    await getDb()
+    const inserted = await getDb()
       .insert(users)
       .values({ id: authUser.id, email, name, authProvider: 'password', accessStatus: 'pending' })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
+      .returning({ id: users.id });
+
+    // ADM-04: tell the admins. Never throws, so a failed email can't fail the sign-up.
+    if (inserted.length > 0) {
+      await notifyAccessRequested({
+        id: authUser.id,
+        email,
+        name,
+        authProvider: 'password',
+        branchId: null,
+      });
+    }
 
     // With email confirmation off Supabase signs the new user in; don't keep that
     // session, so the outcome looks the same as for an existing email.

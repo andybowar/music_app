@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { CHORD_SLOTS, MISSING_CHORD, type ChordSlot, type SongKey } from '@/types/domain';
@@ -46,6 +46,7 @@ interface KeyOption {
  * chord "X" and a prompt to upload files for it (REQ-LIST-04).
  */
 export function KeyPanel({ keys, highlightKey }: KeyPanelProps) {
+  const headingId = useId();
   const [selected, setSelected] = useState<string | null>(() => initialKey(keys, highlightKey));
   const missingHighlight =
     highlightKey !== undefined && highlightKey !== '' && !keys.some((k) => k.key === highlightKey);
@@ -102,7 +103,11 @@ export function KeyPanel({ keys, highlightKey }: KeyPanelProps) {
         })}
       </ToggleGroup>
 
-      <section aria-label={`First chords in ${spokenKey(current.key)}`} aria-live="polite">
+      <section aria-labelledby={headingId} aria-live="polite">
+        <h3 id={headingId} className="mb-2 text-sm font-medium">
+          First chords in <span aria-hidden="true">{displayKey(current.key)}</span>
+          <span className="sr-only">{spokenKey(current.key)}</span>
+        </h3>
         <dl className="grid grid-cols-4 gap-2 text-center">
           {CHORD_SLOTS.map((slot) => {
             const text = chordText(current.firstChords[slot]);

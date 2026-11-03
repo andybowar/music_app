@@ -8,7 +8,8 @@
  *   fields with `ts_filter` on their weights: title + alt titles A, themes B, composer C,
  *   lyrics D. Titles, themes and lyrics are indexed with the `english` config, composers with
  *   `simple`, so the composer field is matched with a `simple` query too. The query text is
- *   unaccented the same way the vector is.
+ *   unaccented the same way the vector is. When themes are searched, theme synonyms expand the
+ *   `english` query to their theme names (H-02, `./synonyms.ts`).
  * - Filters (all optional, combined with AND; values within one filter are OR'd):
  *   energy, key (any `song_keys` row, not only the primary), decade (1990 → 1990..1999),
  *   branch + usage (a missing `branch_usage` row counts as 'none'; usage defaults to
@@ -40,6 +41,8 @@ import type {
   UUID,
 } from '@/types/domain';
 import { SEARCH_FIELDS } from '@/types/domain';
+
+import { expandThemeSynonyms } from './synonyms';
 
 /** One result row. Mirrors `SongSummary`, plus `total` (the match count across all pages). */
 export interface SearchRow {
@@ -158,8 +161,11 @@ export function buildSearchQuery(params: SearchParams, ctx: SearchQueryContext =
   let rank: SQL = sql`0::real`;
   const where: SQL[] = [sql`s.deleted_at is null`];
   if (hasText) {
+    // Themes searched: theme synonyms widen the query to their theme names (H-02).
+    const parsed = sql`websearch_to_tsquery('english', extensions.unaccent(${q}))`;
+    const en = fields.includes('themes') ? expandThemeSynonyms(parsed) : parsed;
     from.push(
-      sql`cross join (select websearch_to_tsquery('english', extensions.unaccent(${q})) as en,
+      sql`cross join (select ${en} as en,
                              websearch_to_tsquery('simple', extensions.unaccent(${q})) as si) tq`,
     );
     if (withComposer) {

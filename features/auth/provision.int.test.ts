@@ -49,7 +49,8 @@ function asMicrosoftLogin(user: User, subject = `sub-${user.id}`): User {
         identity_id: randomUUID(),
         user_id: user.id,
         provider: 'azure',
-        identity_data: { sub: subject, email: user.email },
+        // Supabase links only IdP-verified emails (AUTH-06 checks this claim).
+        identity_data: { sub: subject, email: user.email, email_verified: true },
         last_sign_in_at: new Date().toISOString(),
       },
     ],

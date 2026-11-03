@@ -231,8 +231,17 @@ describe('ResourcesPanel', () => {
 });
 
 describe('ResourcesPanelSkeleton', () => {
+  it('stays silent inside a page skeleton that announces itself', () => {
+    const { container } = render(<ResourcesPanelSkeleton announce={false} />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(container.firstElementChild).not.toHaveAttribute('aria-label');
+  });
+
   it('announces loading', () => {
     render(<ResourcesPanelSkeleton />);
-    expect(screen.getByLabelText('Loading files')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('status', { name: 'Loading files' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
   });
 });

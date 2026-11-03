@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Building2,
   CalendarPlus,
   CircleUser,
   Ellipsis,
@@ -9,8 +10,11 @@ import {
   ListMusic,
   ListPlus,
   LogOut,
+  Plus,
   Search,
+  Shield,
   Share2,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -48,6 +52,11 @@ export interface NavBarProps {
   onCreate(type: ListType): void;
   /** Share the current list. Only called when `currentList` is set. */
   onShare(): void;
+  /**
+   * Show "Add song" (→ `NAV_HREFS.addSong`) in the More menu. Pass `can(user, 'song:write')`;
+   * the form itself still checks (LIB-20).
+   */
+  canAddSong?: boolean;
 }
 
 /** Link targets. Home carries no params, which clears any search (REQ-NAV-03). */
@@ -57,6 +66,8 @@ export const NAV_HREFS = {
   search: '/library#search',
   openSetlist: '/lists?type=setlist',
   openPlaylist: '/lists?type=playlist',
+  /** The new-song form (LIB-17). Only offered to users with `song:write`. */
+  addSong: '/songs/new',
 } as const;
 
 export interface NavOverflowLink {
@@ -69,7 +80,10 @@ export interface NavOverflowLink {
  * Extra destinations shown in the overflow ("More") menu on every screen size.
  * Later tasks append here (BR-02 "Other branches", BR-04 quick theme lookup).
  */
-export const NAV_OVERFLOW_LINKS: readonly NavOverflowLink[] = [];
+export const NAV_OVERFLOW_LINKS: readonly NavOverflowLink[] = [
+  { href: '/quick', label: 'Quick theme lookup', icon: Sparkles },
+  { href: '/branches', label: 'Other branches', icon: Building2 },
+];
 
 const CREATE_ITEMS: ReadonlyArray<{ type: ListType; label: string; icon: LucideIcon }> = [
   { type: 'setlist', label: 'Create event setlist', icon: CalendarPlus },
@@ -83,7 +97,7 @@ function shareTitle(currentList: List | null): string {
   return currentList ? `Share “${currentList.name}”` : 'Choose or create a list to share';
 }
 
-export function NavBar({ currentList, onCreate, onShare }: NavBarProps) {
+export function NavBar({ currentList, onCreate, onShare, canAddSong = false }: NavBarProps) {
   const pathname = usePathname();
   const onLibrary = pathname === NAV_HREFS.home;
 
@@ -94,12 +108,14 @@ export function NavBar({ currentList, onCreate, onShare }: NavBarProps) {
         onCreate={onCreate}
         onShare={onShare}
         onLibrary={onLibrary}
+        canAddSong={canAddSong}
       />
       <MobileNav
         currentList={currentList}
         onCreate={onCreate}
         onShare={onShare}
         onLibrary={onLibrary}
+        canAddSong={canAddSong}
       />
     </>
   );
@@ -114,7 +130,7 @@ const desktopItem = cn(
   focusRing,
 );
 
-function DesktopNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProps) {
+function DesktopNav({ currentList, onCreate, onShare, onLibrary, canAddSong }: NavVariantProps) {
   return (
     <nav aria-label="Main" className="hidden min-w-0 flex-1 xl:block" data-testid="nav-desktop">
       <ul className="flex flex-wrap items-center gap-1">
@@ -171,7 +187,7 @@ function DesktopNav({ currentList, onCreate, onShare, onLibrary }: NavVariantPro
             </span>
           </button>
         </li>
-        {NAV_OVERFLOW_LINKS.length > 0 ? (
+        {canAddSong || NAV_OVERFLOW_LINKS.length > 0 ? (
           <li>
             <DropdownMenu>
               <DropdownMenuTrigger className={desktopItem}>
@@ -179,7 +195,7 @@ function DesktopNav({ currentList, onCreate, onShare, onLibrary }: NavVariantPro
                 More
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <OverflowLinks />
+                <OverflowLinks canAddSong={canAddSong} />
               </DropdownMenuContent>
             </DropdownMenu>
           </li>
@@ -194,7 +210,7 @@ const tabItem = cn(
   focusRing,
 );
 
-function MobileNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProps) {
+function MobileNav({ currentList, onCreate, onShare, onLibrary, canAddSong }: NavVariantProps) {
   return (
     <nav
       aria-label="Main"
@@ -261,10 +277,10 @@ function MobileNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProp
                   </span>
                 </span>
               </DropdownMenuItem>
-              {NAV_OVERFLOW_LINKS.length > 0 ? (
+              {canAddSong || NAV_OVERFLOW_LINKS.length > 0 ? (
                 <>
                   <DropdownMenuSeparator />
-                  <OverflowLinks />
+                  <OverflowLinks canAddSong={canAddSong} />
                 </>
               ) : null}
             </DropdownMenuContent>
@@ -275,9 +291,17 @@ function MobileNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProp
   );
 }
 
-function OverflowLinks() {
+function OverflowLinks({ canAddSong }: { canAddSong?: boolean }) {
   return (
     <DropdownMenuGroup>
+      {canAddSong ? (
+        <DropdownMenuItem asChild className="min-h-10">
+          <Link href={NAV_HREFS.addSong}>
+            <Plus aria-hidden />
+            Add song
+          </Link>
+        </DropdownMenuItem>
+      ) : null}
       {NAV_OVERFLOW_LINKS.map(({ href, label, icon: Icon }) => (
         <DropdownMenuItem key={href} asChild className="min-h-10">
           <Link href={href}>
@@ -297,10 +321,12 @@ export interface UserMenuProps {
   branchName: string | null;
   /** Server action that ends the session and redirects to `/login`. */
   signOut(): Promise<void>;
+  /** Link to the admin dashboard (ADM-05), or omitted/null to hide it. Pass `canSeeAdmin(user)`. */
+  adminHref?: string | null;
 }
 
 /** Account menu in the app header: who is signed in, their branch, and Sign out. */
-export function UserMenu({ name, email, branchName, signOut }: UserMenuProps) {
+export function UserMenu({ name, email, branchName, signOut, adminHref = null }: UserMenuProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
@@ -321,6 +347,17 @@ export function UserMenu({ name, email, branchName, signOut }: UserMenuProps) {
             </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {adminHref ? (
+            <>
+              <DropdownMenuItem asChild className="min-h-10">
+                <Link href={adminHref}>
+                  <Shield aria-hidden />
+                  Admin
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
           <DropdownMenuItem className="min-h-10" onSelect={() => formRef.current?.requestSubmit()}>
             <LogOut aria-hidden />
             Sign out

@@ -19,6 +19,7 @@
 | `/branches` | Other branches activity | BR-02 |
 | `/quick` | Quick theme lookup | BR-04 |
 | `/share/[token]` | Public read-only list | SHR-02 |
+| `/admin` | Admin dashboard: a card per admin area the user may open (from the account menu) | ADM-05 |
 | `/admin/users`, `/admin/branches` | Admin | ADM-01, ADM-02 |
 | `/dev/[component]` | Component gallery with fixtures; 404 on the production deployment via `if (!isDevGalleryEnabled()) notFound()` (`lib/devGallery.ts`), served on previews | each UI task adds its own page |
 
@@ -56,7 +57,7 @@ All components are client components unless noted, props-only (no data fetching 
 | Component | Path | Props | Task |
 |---|---|---|---|
 | `ResponsivePanel` | `components/ResponsivePanel.tsx` | `{ trigger?: ReactNode; anchor?: ReactNode; open?: boolean; onOpenChange?(open: boolean): void; title: string; children: ReactNode }` — pass `trigger` (uncontrolled, as before) or `open` + `onOpenChange` (controlled, optional `anchor`) | UI-01 |
-| `NavBar` | `components/NavBar.tsx` | `{ currentList: List \| null; onCreate(type: ListType): void; onShare(): void }` | UI-02 |
+| `NavBar` | `components/NavBar.tsx` | `{ currentList: List \| null; onCreate(type: ListType): void; onShare(): void; canAddSong?: boolean }` (`canAddSong`: show "Add song" → `/songs/new` in the More menu; LIB-20) | UI-02 |
 | `EnergyChip` | `components/song/EnergyChip.tsx` | `{ energy: EnergyLevel \| null; bpm: number \| null; overridden?: boolean }` | UI-04 |
 | `KeyBadge` | `components/song/KeyBadge.tsx` | `{ value: string \| null; overridden?: boolean }` | UI-04 |
 | `TimeSigBadge` | `components/song/TimeSigBadge.tsx` | `{ value: string \| null }` | UI-04 |
@@ -80,10 +81,10 @@ All components are client components unless noted, props-only (no data fetching 
 | `CreateListDialog` | `features/lists/ui/CreateListDialog.tsx` | `{ type: ListType; open; onOpenChange; onSubmit(input): Promise<ActionResult<List>> }` | LIST-05 |
 | `AddToListMenu` | `features/lists/ui/AddToListMenu.tsx` | `{ songId; current: List \| null; lists: List[]; onAdd(listId): Promise<ActionResult<unknown>>; onCreate(input): Promise<ActionResult<List>>; onUndo?(listId, added: unknown): Promise<ActionResult<unknown>>; songTitle?: string }` | LIST-06 |
 | `ItemOverrideEditor` | `features/lists/ui/ItemOverrideEditor.tsx` | `{ resolved: ResolvedItem; keys: SongKey[]; onChange(patch): void }` | LIST-07 |
-| `SetlistView` | `features/lists/ui/SetlistView.tsx` | `{ list: ListDetail; canEdit: boolean }` | LIST-07 |
+| `SetlistView` | `features/lists/ui/SetlistView.tsx` | `{ list: ListDetail; canEdit: boolean; songs?: SongDetail[] }` (`songs`: details of the list's songs, from `getSongs`, for row panels and override keys; CR LIST-07) | LIST-07 |
 | `PlayerBar` | `features/player/ui/PlayerBar.tsx` | `{ state: PlayerState; dispatch(e: PlayerEvent): void }` | PLAY-04 |
 | `AudioPicker` | `features/player/ui/AudioPicker.tsx` | `{ resources: Resource[]; value: UUID \| null; onChange(id: UUID \| null): void; label?: string; className?: string }` (`null` = recording cleared) | PLAY-06 |
-| `PlaylistView` | `features/player/ui/PlaylistView.tsx` | `{ list: ListDetail; canEdit: boolean }` | PLAY-05 |
+| `PlaylistView` | `features/player/ui/PlaylistView.tsx` | `{ list: ListDetail; canEdit: boolean; songs?: SongDetail[]; adapters?: PlayerAdapterFactories; actions?: Partial<PlaylistActions> }` (`songs`: details of the list's songs, so each row offers every audio/video resource of the song, not only the primary key's; falls back to `resolved.resources`. `adapters` / `actions`: test and gallery seams, defaulting to the real MP3 and YouTube players and the real list server actions. CR PLAY-05) | PLAY-05 |
 | `ShareDialog` | `features/sharing/ui/ShareDialog.tsx` | `{ list: List; open; onOpenChange }` | SHR-04 |
 | Song form sections | `features/songs/ui/form/*.tsx` | each `{ value: Partial<SongFormValue>; onChange(v): void; errors?: Record<string,string[]> }` | LIB-10…15 |
 | `ResourcesSection` (extra props) | `features/songs/ui/form/ResourcesSection.tsx` | form-section props plus `{ songId: UUID \| null; initialResources: Resource[]; onResourcesChange?(r: Resource[]): void; requestUpload, finalizeUpload, deleteResource, getSignedResourceUrl, addLink, updateLink` (api.md signatures)`; putFile?(uploadUrl, file, onProgress): Promise<void> }`. Resources save immediately via their own actions and are not part of `SongFormValue`; the section never calls `onChange`. | LIB-14 |

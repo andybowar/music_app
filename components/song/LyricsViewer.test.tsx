@@ -130,8 +130,17 @@ describe('LyricsViewer', () => {
 });
 
 describe('LyricsViewerSkeleton', () => {
+  it('stays silent inside a page skeleton that announces itself', () => {
+    const { container } = render(<LyricsViewerSkeleton announce={false} />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(container.firstElementChild).not.toHaveAttribute('aria-label');
+  });
+
   it('announces loading', () => {
     render(<LyricsViewerSkeleton />);
-    expect(screen.getByLabelText('Loading lyrics')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('status', { name: 'Loading lyrics' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
   });
 });

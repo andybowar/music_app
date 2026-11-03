@@ -39,7 +39,7 @@ Shared files with special rules:
 |---|---|
 | `package.json` / `pnpm-lock.yaml` | Anyone may **add** dependencies. Never upgrade or remove others' deps. On lockfile conflict: rebase, run `pnpm install`, commit the result. |
 | `.gitkeep` placeholders | Delete the one in your owned folder when you add real files. |
-| `db/migrations/` | Only DB-01, DB-02, DB-03 (and later CR-approved tasks) add migrations. Never edit a merged migration. |
+| `db/migrations/` | Only DB tasks and CR-approved tasks add migrations. Never edit a merged migration. Vercel applies pending migrations on every deploy (`scripts/vercel-build.sh`): staging on a PR's preview build, production on merge. So a migration must be safe for the code that is still live while the new build runs (add before you remove), and a failing migration fails the deploy. |
 | `types/` | Only F-03 writes here. Need a new shared type? Change request. Feature-local types go in your own `features/<x>/types.ts`. |
 | `app/dev/<name>/` | Each UI task adds its own gallery page; never edit another task's. |
 
@@ -107,10 +107,20 @@ Never "just fix" a contract or another task's file inside your PR.
 - DB access only through `lib/db.ts` (Drizzle) inside server code; client code never imports `lib/db`, `lib/supabase/server`, or the service-role client.
 - Dates: store UTC; display in the user's locale; event dates are plain `date` (no time zone).
 - Naming: files `PascalCase.tsx` for components, `camelCase.ts` for modules; DB `snake_case`; TS `camelCase`.
-- Tests: Vitest for unit/integration (local Supabase via `supabase start`, reset with `pnpm db:reset`), Playwright for e2e. Use `fixtures/` rather than inventing data.
+- Tests: Vitest for unit/integration, Playwright for e2e. Use `fixtures/` rather than inventing data.
 - UI text: sentence case; energy labels exactly as `ENERGY_META`.
 - Keep PRs small: one task per PR; split large tasks into stacked PRs if over ~600 changed lines.
 
-## 8. When you're unsure
+## 8. Local environment notes
+
+- **Git remote:** check `git remote -v`. The owner's main checkout uses `origin` (older notes said `music_app`). Fetch, branch from, and push to that remote's `main`.
+- **Fresh worktree:** run `pnpm install`, and copy `.env.local` from the main checkout (it is gitignored, so a new worktree has none). Integration tests and `pnpm dev` need it.
+- **Docker:** the Supabase CLI needs Docker on `PATH`. On the owner's Mac it lives in `~/.docker/bin`: `export PATH="$HOME/.docker/bin:$PATH"`.
+- **One shared local database.** Start it with `pnpm db:start` if it isn't running; never run `pnpm db:stop`. `pnpm db:reset` wipes it **without** applying this repo's migrations (they are Drizzle migrations, not Supabase ones), so always follow it with `pnpm db:migrate && pnpm db:seed`. When several agents run at once, wrap reset/migrate/seed/`pnpm test:int` in a lock: `until mkdir /tmp/music-app-db.lock 2>/dev/null; do sleep 5; done; …; rmdir /tmp/music-app-db.lock`.
+- **Dev server:** use a free port other than 3000 (`pnpm dev -p <port>`) and stop it when done.
+- **Hosted environments are off-limits** unless your task says otherwise: don't run commands against the staging or production Supabase projects, and don't change Vercel settings or environment variables. Runtime logs on the Vercel Hobby plan are kept for about an hour only.
+- **`vercel.json`** is owned by BR-03. It holds the `buildCommand` (migrations on deploy) and `crons`; keep both when editing it, and keep it valid JSON (a missing comma breaks every deploy).
+
+## 9. When you're unsure
 
 Use the default in `SPEC.md` §6, write the assumption in your PR description, and move on. If the question changes a contract, open a change request (§6).

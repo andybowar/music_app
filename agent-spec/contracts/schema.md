@@ -193,7 +193,8 @@ create table list_items (
 create table shares (
   id          uuid primary key default gen_random_uuid(),
   list_id     uuid not null references lists(id) on delete cascade,
-  token       text not null unique,                 -- 32 random bytes, base64url
+  token_hash  bytea not null unique,                -- sha256 of the token (32 random bytes, base64url); the token itself is never stored (CR SHR-01, SHR-05)
+  token_prefix text not null,                       -- first 6 chars, for display only
   created_by  uuid not null references users(id),
   expires_at  timestamptz,
   revoked_at  timestamptz,

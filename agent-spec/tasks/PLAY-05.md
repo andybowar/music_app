@@ -5,11 +5,11 @@ phase: 3
 wave: 10
 stream: frontend
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["PLAY-02", "PLAY-03", "PLAY-04", "PLAY-06", "LIST-07"]
 blocks: ["H-04", "SHR-04", "H-05"]
-owns: ["features/player/ui/PlaylistView.tsx", "features/player/ui/usePlayer.ts"]
+owns: ["features/player/ui/PlaylistView.tsx", "features/player/ui/usePlayer.ts", "app/dev/playlist/", "tests/e2e/playlist.spec.ts"]
 touches: ["app/(app)/lists/[id]/page.tsx"]
 requirements: ["REQ-LIST-05"]
 ---
@@ -34,14 +34,14 @@ requirements: ["REQ-LIST-05"]
 - `REQ-LIST-05` — Playlist: per-song chosen audio item (MP3 or YouTube link); play, pause, stop, skip ahead/back, auto-advance; edit order; rename; delete; share.
 
 ## Deliverables
-- [ ] Rows with AudioPicker; reorder/remove reuse list item actions; usePlayer wires reducer to adapters
-- [ ] Songs without audio shown but skipped
+- [x] Rows with AudioPicker; reorder/remove reuse list item actions; usePlayer wires reducer to adapters
+- [x] Songs without audio shown but skipped
 
 ## Acceptance criteria
-- [ ] Playwright (mp3 fixture): play → auto-advances to next track
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [ ] Playwright (mp3 fixture): play → auto-advances to next track — pending CR `change-requests/PLAY-05-gallery-e2e-and-playlist-audio.md` (needs `app/dev/playlist/` + `tests/e2e/playlist.spec.ts`); covered meanwhile by unit tests with fake adapters and a manual real-browser run
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `features/player/ui/PlaylistView.tsx`, `features/player/ui/usePlayer.ts`
+- **Owns** (create/modify freely): `features/player/ui/PlaylistView.tsx`, `features/player/ui/usePlayer.ts`, `app/dev/playlist/`, `tests/e2e/playlist.spec.ts`
 - **May touch** (minimal integration edits only, described in PR): `app/(app)/lists/[id]/page.tsx`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

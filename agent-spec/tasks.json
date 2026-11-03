@@ -898,8 +898,10 @@
         "LIST-07",
         "LIST-08",
         "SRCH-09",
+        "ADM-05",
         "BR-02",
-        "LIST-09"
+        "LIST-09",
+        "LIB-20"
       ],
       "owns": [
         "app/(app)/layout.tsx",
@@ -1362,7 +1364,8 @@
       "blocks": [
         "LIB-18",
         "LIST-07",
-        "SRCH-09"
+        "SRCH-09",
+        "LIST-10"
       ],
       "owns": [
         "components/song/panels/KeyPanel.tsx",
@@ -1498,7 +1501,9 @@
         "AUTH-05",
         "DB-07"
       ],
-      "blocks": [],
+      "blocks": [
+        "DB-08"
+      ],
       "owns": [
         "tests/db/rls.test.ts"
       ],
@@ -1547,6 +1552,7 @@
       "blocks": [
         "ADM-02",
         "AUTH-06",
+        "ADM-05",
         "ADM-04"
       ],
       "owns": [
@@ -1590,6 +1596,31 @@
         "REQ-AUTH-03"
       ],
       "file": "tasks/AUTH-03.md",
+      "status": "done"
+    },
+    {
+      "id": "DB-08",
+      "title": "Music leaders can soft-delete same-branch setlists (RLS fix)",
+      "phase": 0,
+      "wave": 7,
+      "stream": "data",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "DB-05"
+      ],
+      "blocks": [
+        "SHR-05"
+      ],
+      "owns": [
+        "db/migrations/0005_lists_select_leader.sql"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "tests/db/rls.test.ts"
+      ],
+      "reqs": [],
+      "file": "tasks/DB-08.md",
       "status": "todo"
     },
     {
@@ -1865,7 +1896,9 @@
       "deps": [
         "ADM-01"
       ],
-      "blocks": [],
+      "blocks": [
+        "ADM-05"
+      ],
       "owns": [
         "app/(app)/admin/branches/",
         "features/admin/ui/branches/",
@@ -1904,7 +1937,7 @@
         "REQ-AUTH-03"
       ],
       "file": "tasks/AUTH-06.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "IMP-03",
@@ -1964,6 +1997,8 @@
       "blocks": [
         "CNT-03",
         "H-04",
+        "LIB-20",
+        "LIB-21",
         "H-05"
       ],
       "owns": [
@@ -1999,7 +2034,8 @@
       ],
       "blocks": [
         "LIB-19",
-        "H-01"
+        "H-01",
+        "LIB-21"
       ],
       "owns": [
         "app/(app)/songs/[id]/page.tsx",
@@ -2110,7 +2146,7 @@
         "REQ-BR-01"
       ],
       "file": "tasks/BR-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "BR-03",
@@ -2135,7 +2171,7 @@
         "REQ-BR-02"
       ],
       "file": "tasks/BR-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "BR-04",
@@ -2152,16 +2188,18 @@
       ],
       "blocks": [],
       "owns": [
-        "app/(app)/quick/"
+        "app/(app)/quick/",
+        "app/dev/quick/"
       ],
       "touches": [
-        "components/NavBar.tsx"
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx"
       ],
       "reqs": [
         "REQ-BR-03"
       ],
       "file": "tasks/BR-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "CNT-03",
@@ -2198,6 +2236,7 @@
         "CNT-01"
       ],
       "blocks": [
+        "ADM-05",
         "H-03"
       ],
       "owns": [
@@ -2212,7 +2251,7 @@
         "REQ-LIB-07"
       ],
       "file": "tasks/H-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-19",
@@ -2228,16 +2267,19 @@
       ],
       "blocks": [],
       "owns": [
-        "features/audit/"
+        "features/audit/",
+        "app/dev/song-history/"
       ],
       "touches": [
-        "features/songs/ui/SongPage.tsx"
+        "features/songs/ui/SongPage.tsx",
+        "features/songs/ui/SongPage.test.tsx",
+        "features/songs/server/keys.ts"
       ],
       "reqs": [
         "REQ-LIB-12"
       ],
       "file": "tasks/LIB-19.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-07",
@@ -2256,13 +2298,16 @@
       ],
       "blocks": [
         "H-01",
+        "LIST-10",
         "PLAY-05",
         "SHR-04"
       ],
       "owns": [
         "app/(app)/lists/[id]/",
         "features/lists/ui/SetlistView.tsx",
-        "features/lists/ui/ItemOverrideEditor.tsx"
+        "features/lists/ui/ItemOverrideEditor.tsx",
+        "app/dev/setlist/",
+        "tests/e2e/setlist.spec.ts"
       ],
       "touches": [],
       "reqs": [
@@ -2271,7 +2316,7 @@
         "REQ-LIST-06"
       ],
       "file": "tasks/LIST-07.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIST-08",
@@ -2288,14 +2333,15 @@
       "blocks": [],
       "owns": [
         "app/(app)/lists/page.tsx",
-        "features/lists/ui/ListIndex.tsx"
+        "features/lists/ui/ListIndex.tsx",
+        "app/dev/list-index/"
       ],
       "touches": [],
       "reqs": [
         "REQ-LIST-07"
       ],
       "file": "tasks/LIST-08.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SHR-01",
@@ -2312,6 +2358,7 @@
       "blocks": [
         "SHR-02",
         "SHR-03",
+        "SHR-05",
         "SHR-04"
       ],
       "owns": [
@@ -2323,7 +2370,7 @@
         "REQ-SHARE-03"
       ],
       "file": "tasks/SHR-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-03",
@@ -2349,7 +2396,7 @@
         "REQ-SRCH-06"
       ],
       "file": "tasks/SRCH-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-09",
@@ -2375,13 +2422,17 @@
       "blocks": [
         "LIST-09",
         "H-04",
+        "LIB-20",
+        "LIB-21",
         "DOC-01",
         "H-05"
       ],
       "owns": [
         "app/(app)/library/",
         "features/search/ui/LibraryView.tsx",
-        "features/search/ui/RowPanels.tsx"
+        "features/search/ui/RowPanels.tsx",
+        "app/dev/library/",
+        "tests/e2e/library.spec.ts"
       ],
       "touches": [],
       "reqs": [
@@ -2390,7 +2441,39 @@
         "REQ-ROW-02"
       ],
       "file": "tasks/SRCH-09.md",
-      "status": "todo"
+      "status": "done"
+    },
+    {
+      "id": "ADM-05",
+      "title": "Admin dashboard in the account menu",
+      "phase": 4,
+      "wave": 10,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "ADM-01",
+        "ADM-02",
+        "H-02",
+        "UI-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/(app)/admin/page.tsx",
+        "app/(app)/admin/page.test.tsx",
+        "app/(app)/admin/loading.tsx",
+        "app/(app)/admin/error.tsx",
+        "features/admin/adminAreas.ts",
+        "features/admin/adminAreas.test.ts"
+      ],
+      "touches": [
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "reqs": [],
+      "file": "tasks/ADM-05.md",
+      "status": "done"
     },
     {
       "id": "BR-02",
@@ -2405,19 +2488,22 @@
         "UI-05",
         "UI-02"
       ],
-      "blocks": [],
+      "blocks": [
+        "LIB-21"
+      ],
       "owns": [
         "app/(app)/branches/",
         "features/branches/ui/"
       ],
       "touches": [
-        "components/NavBar.tsx"
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx"
       ],
       "reqs": [
         "REQ-BR-01"
       ],
       "file": "tasks/BR-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "H-01",
@@ -2435,17 +2521,23 @@
       "owns": [
         "app/manifest.ts",
         "app/sw.ts",
-        "public/icons/"
+        "app/sw.test.ts",
+        "public/icons/",
+        "tests/e2e/offline.spec.ts"
       ],
       "touches": [
-        "next.config.ts"
+        "next.config.ts",
+        "middleware.ts",
+        "middleware.test.ts",
+        ".gitignore",
+        "eslint.config.mjs"
       ],
       "reqs": [
         "REQ-NF-01",
         "REQ-NF-02"
       ],
       "file": "tasks/H-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "H-03",
@@ -2461,9 +2553,11 @@
       "blocks": [],
       "owns": [
         "features/search/server/semantic.ts",
-        "db/migrations/0004_vector.sql"
+        "db/migrations/0007_vector.sql"
       ],
-      "touches": [],
+      "touches": [
+        "db/migrations/meta/"
+      ],
       "reqs": [],
       "file": "tasks/H-03.md",
       "status": "todo"
@@ -2487,13 +2581,15 @@
       ],
       "blocks": [
         "H-04",
+        "LIB-20",
         "SHR-04",
         "DOC-01",
         "H-05"
       ],
       "owns": [
         "features/lists/ui/AddToListAction.tsx",
-        "features/lists/ui/NavListActions.tsx"
+        "features/lists/ui/NavListActions.tsx",
+        "tests/e2e/list-create-add.spec.ts"
       ],
       "touches": [
         "app/(app)/layout.tsx",
@@ -2505,7 +2601,35 @@
         "REQ-NAV-01"
       ],
       "file": "tasks/LIST-09.md",
-      "status": "todo"
+      "status": "done"
+    },
+    {
+      "id": "LIST-10",
+      "title": "Label first chords clearly",
+      "phase": 3,
+      "wave": 10,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIST-07",
+        "UI-06"
+      ],
+      "blocks": [],
+      "owns": [],
+      "touches": [
+        "features/lists/ui/ItemOverrideEditor.tsx",
+        "features/lists/ui/ItemOverrideEditor.test.tsx",
+        "components/song/panels/KeyPanel.tsx",
+        "components/song/panels/KeyPanel.test.tsx"
+      ],
+      "reqs": [
+        "REQ-LIB-08",
+        "REQ-LIST-04",
+        "REQ-ROW-02"
+      ],
+      "file": "tasks/LIST-10.md",
+      "status": "done"
     },
     {
       "id": "PLAY-05",
@@ -2529,7 +2653,9 @@
       ],
       "owns": [
         "features/player/ui/PlaylistView.tsx",
-        "features/player/ui/usePlayer.ts"
+        "features/player/ui/usePlayer.ts",
+        "app/dev/playlist/",
+        "tests/e2e/playlist.spec.ts"
       ],
       "touches": [
         "app/(app)/lists/[id]/page.tsx"
@@ -2538,7 +2664,7 @@
         "REQ-LIST-05"
       ],
       "file": "tasks/PLAY-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SHR-02",
@@ -2552,7 +2678,9 @@
         "SHR-01",
         "UI-05"
       ],
-      "blocks": [],
+      "blocks": [
+        "SHR-05"
+      ],
       "owns": [
         "app/share/[token]/"
       ],
@@ -2562,7 +2690,7 @@
         "REQ-SHARE-03"
       ],
       "file": "tasks/SHR-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SHR-03",
@@ -2578,6 +2706,7 @@
       ],
       "blocks": [
         "ADM-04",
+        "SHR-05",
         "SHR-04"
       ],
       "owns": [
@@ -2595,7 +2724,7 @@
         "REQ-SHARE-02"
       ],
       "file": "tasks/SHR-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-11",
@@ -2618,7 +2747,7 @@
         "REQ-SRCH-07"
       ],
       "file": "tasks/SRCH-11.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "ADM-04",
@@ -2648,7 +2777,7 @@
         "REQ-AUTH-08"
       ],
       "file": "tasks/ADM-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "H-04",
@@ -2676,13 +2805,115 @@
         "REQ-NF-03"
       ],
       "file": "tasks/H-04.md",
+      "status": "done"
+    },
+    {
+      "id": "LIB-20",
+      "title": "Add song entry points (library + nav)",
+      "phase": 1,
+      "wave": 11,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIB-17",
+        "SRCH-09",
+        "LIST-09",
+        "UI-02"
+      ],
+      "blocks": [],
+      "owns": [],
+      "touches": [
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx",
+        "features/lists/ui/NavListActions.tsx",
+        "features/lists/ui/NavListActions.test.tsx",
+        "features/search/ui/LibraryView.tsx",
+        "app/(app)/library/page.tsx",
+        "app/(app)/library/page.test.tsx",
+        "app/(app)/library/LibraryView.test.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "reqs": [
+        "REQ-LIB-01"
+      ],
+      "file": "tasks/LIB-20.md",
+      "status": "done"
+    },
+    {
+      "id": "LIB-21",
+      "title": "Song page and Edit links from row panels",
+      "phase": 1,
+      "wave": 11,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "SRCH-09",
+        "BR-02",
+        "LIB-17",
+        "LIB-18"
+      ],
+      "blocks": [],
+      "owns": [],
+      "touches": [
+        "features/search/ui/RowPanels.tsx",
+        "features/search/ui/LibraryView.tsx",
+        "features/branches/ui/BranchesView.tsx",
+        "app/(app)/library/page.tsx",
+        "app/(app)/library/page.test.tsx",
+        "app/(app)/library/RowPanels.test.tsx",
+        "app/(app)/branches/page.tsx"
+      ],
+      "reqs": [
+        "REQ-LIB-01"
+      ],
+      "file": "tasks/LIB-21.md",
+      "status": "done"
+    },
+    {
+      "id": "SHR-05",
+      "title": "Store share tokens hashed",
+      "phase": 4,
+      "wave": 11,
+      "stream": "backend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "SHR-01",
+        "SHR-02",
+        "SHR-03",
+        "DB-08"
+      ],
+      "blocks": [
+        "SHR-04"
+      ],
+      "owns": [
+        "db/migrations/0006_share_token_hash.sql"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "db/schema/shares.ts",
+        "types/domain.ts",
+        "types/validation.ts",
+        "fixtures/",
+        "db/seed/",
+        "features/sharing/server.ts",
+        "features/sharing/server.test.ts",
+        "features/sharing/server.int.test.ts"
+      ],
+      "reqs": [
+        "REQ-SHARE-01",
+        "REQ-SHARE-03"
+      ],
+      "file": "tasks/SHR-05.md",
       "status": "todo"
     },
     {
       "id": "SHR-04",
       "title": "ShareDialog + nav Share wiring",
       "phase": 4,
-      "wave": 11,
+      "wave": 12,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2691,7 +2922,8 @@
         "SHR-03",
         "LIST-09",
         "LIST-07",
-        "PLAY-05"
+        "PLAY-05",
+        "SHR-05"
       ],
       "blocks": [
         "DOC-01",
@@ -2717,7 +2949,7 @@
       "id": "DOC-01",
       "title": "User guide",
       "phase": 5,
-      "wave": 12,
+      "wave": 13,
       "stream": "content",
       "size": "S",
       "human": false,
@@ -2741,7 +2973,7 @@
       "id": "H-05",
       "title": "End-to-end journey suite",
       "phase": 5,
-      "wave": 12,
+      "wave": 13,
       "stream": "qa",
       "size": "M",
       "human": false,
@@ -2771,7 +3003,7 @@
       "id": "PILOT-01",
       "title": "Pilot branch rollout",
       "phase": 5,
-      "wave": 13,
+      "wave": 14,
       "stream": "content",
       "size": "L",
       "human": true,

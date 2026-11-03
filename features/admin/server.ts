@@ -10,7 +10,8 @@
  *                    disabled, and an admin can't disable themselves.
  * - `approveUser` / `rejectUser` decide an access request, recording who decided and when.
  *                    An admin can't decide their own request; rejected users can be approved
- *                    later.
+ *                    later. Approval emails the user (ADM-04, `./notifications`); rejection
+ *                    sends nothing.
  *
  * Every function needs `admin:users`. Mutations write an audit entry (entity `user`).
  *
@@ -25,6 +26,7 @@ import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 
 import { branchUsage, branches, lists, songs, users } from '@/db/schema';
+import { notifyAccessApproved } from '@/features/admin/notifications';
 import { ActionError, withAction } from '@/lib/action';
 import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
@@ -337,7 +339,7 @@ async function decide(
   id: string,
   decision: 'approved' | 'rejected',
   input?: unknown,
-): Promise<void> {
+): Promise<typeof users.$inferSelect> {
   const admin = await requireAdmin();
   const userId = uuid.parse(id);
   const fields: { role?: Role; branchId?: string | null } =
@@ -346,7 +348,7 @@ async function decide(
     throw new ActionError('FORBIDDEN', "You can't approve or reject your own account.");
   }
 
-  await withTx(async (tx) => {
+  return withTx(async (tx) => {
     const before = await lockUser(tx, userId);
     if (decision === 'approved' && before.accessStatus === 'approved') {
       throw new ActionError('CONFLICT', 'That account is already approved.');
@@ -382,17 +384,25 @@ async function decide(
       before: auditSnapshot(before),
       after: auditSnapshot(after),
     });
+    return after;
   });
 }
 
-/** Approve a pending (or previously rejected) account with a role and branch. */
+/**
+ * Approve a pending (or previously rejected) account with a role and branch, then email the
+ * user that they can sign in (ADM-04; never throws, so a failed email can't fail approval).
+ */
 export const approveUser = withAction(
   async (id: string, input: { role?: Role; branchId: string | null }): Promise<void> => {
-    await decide(id, 'approved', input);
+    const approved = await decide(id, 'approved', input);
+    await notifyAccessApproved(approved);
   },
 );
 
-/** Reject a pending access request. The user only sees `/account-status` until approved. */
+/**
+ * Reject a pending access request. No email (ADM-04): the user only sees `/account-status`
+ * until approved.
+ */
 export const rejectUser = withAction(async (id: string): Promise<void> => {
   await decide(id, 'rejected');
 });

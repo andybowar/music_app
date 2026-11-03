@@ -5,11 +5,11 @@ phase: 3
 wave: 10
 stream: frontend
 size: M
-status: todo
+status: done
 human_required: false
 depends_on: ["LIST-04", "LIST-05", "LIST-06", "LIST-01", "LIST-02", "SRCH-09", "UI-02"]
-blocks: ["H-04", "SHR-04", "DOC-01", "H-05"]
-owns: ["features/lists/ui/AddToListAction.tsx", "features/lists/ui/NavListActions.tsx"]
+blocks: ["H-04", "SHR-04", "DOC-01", "H-05", "LIB-20"]
+owns: ["features/lists/ui/AddToListAction.tsx", "features/lists/ui/NavListActions.tsx", "tests/e2e/list-create-add.spec.ts"]
 touches: ["app/(app)/layout.tsx", "features/search/ui/LibraryView.tsx"]
 requirements: ["REQ-LIST-01", "REQ-LIST-02", "REQ-NAV-01"]
 ---
@@ -38,16 +38,16 @@ requirements: ["REQ-LIST-01", "REQ-LIST-02", "REQ-NAV-01"]
 - `REQ-NAV-01` — Omnipresent navigation: Search Library, Create Event Setlist, Create Listening Playlist, Open Setlist, Open Playlist, Home, Share.
 
 ## Deliverables
-- [ ] Layout wraps app in CurrentListProvider and passes real handlers to NavBar
-- [ ] Create → dialog → set current → `/library`
-- [ ] LibraryView rowAddSlot renders AddToListAction; after add, stays on results with params
-- [ ] AddToListAction passes `songTitle` and an `onUndo` that calls `removeListItem` on the added item (CR LIST-06-undo-and-label)
+- [x] Layout wraps app in CurrentListProvider and passes real handlers to NavBar
+- [x] Create → dialog → set current → `/library`
+- [x] LibraryView rowAddSlot renders AddToListAction; after add, stays on results with params
+- [x] AddToListAction passes `songTitle` and an `onUndo` that calls `removeListItem` on the added item (CR LIST-06-undo-and-label)
 
 ## Acceptance criteria
-- [ ] Playwright: Create Event Setlist → search → add 3 songs → open setlist shows 3 in order
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Playwright: Create Event Setlist → search → add 3 songs → open setlist shows 3 in order
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `features/lists/ui/AddToListAction.tsx`, `features/lists/ui/NavListActions.tsx`
+- **Owns** (create/modify freely): `features/lists/ui/AddToListAction.tsx`, `features/lists/ui/NavListActions.tsx`, `tests/e2e/list-create-add.spec.ts`
 - **May touch** (minimal integration edits only, described in PR): `app/(app)/layout.tsx`, `features/search/ui/LibraryView.tsx`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

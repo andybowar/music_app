@@ -33,6 +33,7 @@ export default async function LibraryPage({ searchParams }: Props) {
         loadSong={loadSongDetail}
         getSignedResourceUrl={getSignedResourceUrl}
         canAddSong={can(user, 'song:write')}
+        canEditSongs={can(user, 'song:write')}
       />
       <Toaster />
     </>

@@ -84,12 +84,14 @@ describe('library route', () => {
     expect(el?.props.getSignedResourceUrl).toBe(getSignedResourceUrl);
     // A member can't add songs, so no "Add song" link (LIB-20).
     expect(el?.props.canAddSong).toBe(false);
+    expect(el?.props.canEditSongs).toBe(false);
   });
 
   it('offers "Add song" to contributors and up (LIB-20)', async () => {
     requirePageUser.mockResolvedValue({ ...user, role: 'contributor' });
     const el = findElement<LibraryViewProps>(await page({}), LibraryView);
     expect(el?.props.canAddSong).toBe(true);
+    expect(el?.props.canEditSongs).toBe(true);
   });
 
   it('passes the URL search to searchSongs and the login `next`', async () => {

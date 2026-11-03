@@ -1,6 +1,6 @@
 # Task index
 
-100 tasks · 14 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
+101 tasks · 14 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
 
 **How to use.** A task is *ready* when every task in `depends_on` is merged. All ready tasks in a wave can run at the same time — their `owns` paths never overlap (checked by `scripts/check_tasks.py`). Start a task by setting `status: in_progress` in its file; see `AGENTS.md` for the full protocol.
 
@@ -154,13 +154,14 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → LIST-01 �
 | [SHR-03](tasks/SHR-03.md) | Share by email | 4 Sharing | backend | S | SHR-01, F-05 |
 | [SRCH-11](tasks/SRCH-11.md) | Search performance test | 2 Search | backend | S | SRCH-03 |
 
-### Wave 11 — 4 tasks in parallel
+### Wave 11 — 5 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
 | [ADM-04](tasks/ADM-04.md) | Access request emails | 4 Sharing | backend | S | SHR-03, AUTH-07, ADM-01 |
 | [H-04](tasks/H-04.md) | Accessibility audit + fixes | 5 Hardening | qa | M | SRCH-09, LIST-09, PLAY-05, LIB-17 |
 | [LIB-20](tasks/LIB-20.md) | Add song entry points (library + nav) | 1 Library | frontend | S | LIB-17, SRCH-09, LIST-09, UI-02 |
+| [LIB-21](tasks/LIB-21.md) | Song page and Edit links from row panels | 1 Library | frontend | S | SRCH-09, BR-02, LIB-17, LIB-18 |
 | [SHR-05](tasks/SHR-05.md) | Store share tokens hashed | 4 Sharing | backend | M | SHR-01, SHR-02, SHR-03, DB-08 |
 
 ### Wave 12 — 1 tasks in parallel
@@ -192,7 +193,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → LIST-01 �
 | backend | ADM-04, BR-01, BR-03, H-02, H-03, LIB-01, LIB-02, LIB-03, LIB-04, LIB-05, LIB-06, LIB-07, LIB-16, LIST-01, LIST-02, LIST-03, SHR-01, SHR-03, SHR-05, SRCH-01, SRCH-02, SRCH-03, SRCH-10, SRCH-11 |
 | content | CNT-01, CNT-02, CNT-03, DOC-01, PILOT-01 |
 | data | DB-01, DB-02, DB-04, DB-07, DB-08, IMP-01, IMP-02, IMP-03 |
-| frontend | ADM-01, ADM-02, ADM-05, BR-02, BR-04, H-01, LIB-10, LIB-11, LIB-12, LIB-13, LIB-14, LIB-15, LIB-17, LIB-18, LIB-19, LIB-20, LIST-04, LIST-05, LIST-06, LIST-07, LIST-08, LIST-09, PLAY-01, PLAY-02, PLAY-03, PLAY-04, PLAY-05, PLAY-06, SHR-02, SHR-04, SRCH-04, SRCH-05, SRCH-06, SRCH-07, SRCH-08, SRCH-09, UI-01, UI-02, UI-04, UI-05, UI-06, UI-07, UI-08 |
+| frontend | ADM-01, ADM-02, ADM-05, BR-02, BR-04, H-01, LIB-10, LIB-11, LIB-12, LIB-13, LIB-14, LIB-15, LIB-17, LIB-18, LIB-19, LIB-20, LIB-21, LIST-04, LIST-05, LIST-06, LIST-07, LIST-08, LIST-09, PLAY-01, PLAY-02, PLAY-03, PLAY-04, PLAY-05, PLAY-06, SHR-02, SHR-04, SRCH-04, SRCH-05, SRCH-06, SRCH-07, SRCH-08, SRCH-09, UI-01, UI-02, UI-04, UI-05, UI-06, UI-07, UI-08 |
 | ops | OPS-01, OPS-02, OPS-03 |
 | platform | DB-06, F-01, F-02, F-03, F-04, F-05 |
 | qa | H-04, H-05 |
@@ -213,7 +214,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → LIST-01 �
 | REQ-BR-01 | BR-01, BR-02 |
 | REQ-BR-02 | BR-03 |
 | REQ-BR-03 | BR-04 |
-| REQ-LIB-01 | LIB-01, LIB-17, LIB-20 |
+| REQ-LIB-01 | LIB-01, LIB-17, LIB-20, LIB-21 |
 | REQ-LIB-02 | F-03, DB-01, LIB-10, LIB-01, LIB-03 |
 | REQ-LIB-03 | DB-01, LIB-10, UI-04, LIB-03 |
 | REQ-LIB-04 | LIB-01 |

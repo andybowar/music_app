@@ -1,14 +1,16 @@
 import '@testing-library/jest-dom/vitest';
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ROW_PANEL_TITLE,
+  RowPanelBody,
+  SongPanelLinks,
   useResourceOpener,
   useSongDetailCache,
   type SignedUrlResult,
 } from '@/features/search/ui/RowPanels';
-import { SONG_IDS, getSong } from '@/fixtures';
+import { SONG_IDS, getSong, songSummaries } from '@/fixtures';
 import type { ActionResult, Resource, SongDetail } from '@/types/domain';
 
 const toastError = vi.hoisted(() => vi.fn());
@@ -177,5 +179,51 @@ describe('useResourceOpener', () => {
     await act(() => result.current.open(songRef, resource({ storagePath: null, url: null })));
     expect(getUrl).not.toHaveBeenCalled();
     expect(open).not.toHaveBeenCalled();
+  });
+});
+
+describe('SongPanelLinks (LIB-21)', () => {
+  it('links to the song page, and to the edit form only with canEdit', () => {
+    render(<SongPanelLinks songId={song.id} />);
+    expect(screen.getByRole('link', { name: 'Open song page' })).toHaveAttribute(
+      'href',
+      `/songs/${song.id}`,
+    );
+    expect(screen.queryByRole('link', { name: 'Edit song' })).not.toBeInTheDocument();
+    cleanup();
+    render(<SongPanelLinks songId={song.id} canEdit />);
+    expect(screen.getByRole('link', { name: 'Edit song' })).toHaveAttribute(
+      'href',
+      `/songs/${song.id}/edit`,
+    );
+  });
+
+  it('appears under every row panel, even while the song loads', () => {
+    const summary = songSummaries.find((s) => s.id === song.id)!;
+    const opener = { open: vi.fn(), pending: null, audio: null, closeAudio: vi.fn() };
+    for (const kind of ['key', 'title', 'composer', 'resources', 'usage'] as const) {
+      render(
+        <RowPanelBody
+          kind={kind}
+          summary={summary}
+          state={{ status: 'ready', song }}
+          onRetry={vi.fn()}
+          opener={opener}
+          canEdit
+        />,
+      );
+      expect(screen.getByRole('link', { name: 'Edit song' })).toBeInTheDocument();
+      cleanup();
+    }
+    render(
+      <RowPanelBody
+        kind="title"
+        summary={summary}
+        state={undefined}
+        onRetry={vi.fn()}
+        opener={opener}
+      />,
+    );
+    expect(screen.getByRole('link', { name: 'Open song page' })).toBeInTheDocument();
   });
 });

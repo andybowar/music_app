@@ -28,6 +28,7 @@ Disabled users (`disabled_at` not null) can do nothing. Users whose `access_stat
 | `share:create` / `share:revoke` | if `list:write` | ← | ← | ✓ | |
 | `audit:read` | | ✓ | ✓ | ✓ | |
 | `admin:users` / `admin:branches` / `admin:import` | | | | ✓ | |
+| `admin:backlog` (to-dos, enhancement/change requests and their images) | | | | ✓ | ADM-06; RLS `app_role_at_least('admin')` on `admin_todos`, `feature_requests`, `feature_request_images` and bucket `admin-attachments` |
 
 ## `can()` signature
 

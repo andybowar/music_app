@@ -8,7 +8,7 @@ size: S
 status: done
 human_required: false
 depends_on: ["ADM-01", "ADM-02", "H-02", "UI-02"]
-blocks: []
+blocks: ["ADM-06"]
 owns: ["app/(app)/admin/page.tsx", "app/(app)/admin/page.test.tsx", "app/(app)/admin/loading.tsx", "app/(app)/admin/error.tsx", "features/admin/adminAreas.ts", "features/admin/adminAreas.test.ts"]
 touches: ["components/NavBar.tsx", "components/NavBar.test.tsx", "app/(app)/layout.tsx"]
 requirements: []

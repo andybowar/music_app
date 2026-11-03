@@ -24,6 +24,8 @@ create type resource_format as enum ('pdf','mp3','m4a','pro','mdb','ppt','pptx',
 create type list_type      as enum ('setlist','playlist');
 create type audit_action   as enum ('create','update','delete');
 create type access_status  as enum ('pending','approved','rejected');   -- DB-07, REQ-AUTH-03/08
+create type feature_request_kind   as enum ('enhancement','change');                              -- ADM-06
+create type feature_request_status as enum ('new','planned','in_progress','done','declined');      -- ADM-06
 ```
 
 ## Tables
@@ -210,6 +212,40 @@ create table audit_log (
   diff        jsonb not null default '{}',
   created_at  timestamptz not null default now()
 );
+
+-- ADM-06 (REQ-ADM-01/02): admin-only backlog. RLS: all operations require app_role_at_least('admin').
+create table admin_todos (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null check (char_length(title) between 1 and 200),
+  notes       text check (char_length(notes) <= 2000),
+  done_at     timestamptz,
+  done_by     uuid references users(id),
+  created_by  uuid not null references users(id),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create table feature_requests (
+  id          uuid primary key default gen_random_uuid(),
+  kind        feature_request_kind not null default 'enhancement',
+  title       text not null check (char_length(title) between 1 and 200),
+  description text not null default '' check (char_length(description) <= 10000),
+  status      feature_request_status not null default 'new',
+  created_by  uuid not null references users(id),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create table feature_request_images (               -- wireframes; at most 5 per request (enforced server-side)
+  id           uuid primary key default gen_random_uuid(),
+  request_id   uuid not null references feature_requests(id) on delete cascade,
+  storage_path text not null unique,                -- requests/{request_id}/{id}.{ext} in bucket admin-attachments
+  file_name    text not null,
+  mime_type    text not null check (mime_type in ('image/png','image/jpeg','image/webp','image/gif')),
+  size_bytes   integer not null check (size_bytes between 1 and 10485760),
+  created_by   uuid not null references users(id),
+  created_at   timestamptz not null default now()
+);
 ```
 
 ## Indexes (DB-02)
@@ -264,3 +300,4 @@ new.search_vector :=
 - Path: `songs/{song_id}/{song_key_id or 'common'}/{resource_id}.{ext}`.
 - Upload flow: server issues signed upload URL → client PUTs file → server finalizes `resources` row (verifies object exists and size).
 - Read: server issues signed URL, TTL `SIGNED_URL_TTL_SECONDS`.
+- Bucket `admin-attachments`, **private**, admin-only storage policies (ADM-06). Path: `requests/{request_id}/{image_id}.{ext}`; PNG/JPEG/WebP/GIF, ≤ 10 MiB each. Same signed-upload → finalize flow; deleting a request removes its objects.

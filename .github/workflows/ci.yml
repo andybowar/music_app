@@ -33,7 +33,9 @@ env:
   SSO_PROVIDERS: google
   FEATURE_SAML: false
   SAML_PROVIDER_ID: 00000000-0000-0000-0000-000000000000
-  RESEND_API_KEY: re_ci_placeholder
+  # No SMTP_USER/SMTP_PASSWORD: lib/email logs messages instead of sending them.
+  SMTP_HOST: smtp.example.org
+  SMTP_PORT: 465
   EMAIL_FROM: Worship Library <no-reply@example.org>
   SENTRY_DSN: https://examplePublicKey@o0.ingest.sentry.io/0
   NEXT_PUBLIC_SENTRY_DSN: https://examplePublicKey@o0.ingest.sentry.io/0

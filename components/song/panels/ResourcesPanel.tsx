@@ -197,13 +197,18 @@ function ResourceItem({ resource, onOpen }: { resource: Resource; onOpen(r: Reso
         type="button"
         className={itemClass}
         disabled={action === 'unavailable'}
-        aria-label={`${resource.label}, ${detail}, ${hint}`}
+        aria-label={
+          action === 'unavailable'
+            ? `${resource.label}, ${hint}`
+            : `${resource.label}, ${detail}, ${hint}`
+        }
         data-action={action}
         onClick={() => onOpen(resource)}
       >
         <Icon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-medium">{resource.label}</span>
+          <span className="truncate text-sm font-medium">{resource.label}</span>{' '}
+          {/* The space keeps the visible text "Label Detail", so it matches the name (WCAG 2.5.3). */}
           <span className="truncate text-xs text-muted-foreground">
             {action === 'unavailable' ? 'File unavailable' : detail}
           </span>
@@ -293,10 +298,18 @@ export function ResourcesPanel({
   );
 }
 
-/** Loading state while a song's files are fetched. */
-export function ResourcesPanelSkeleton() {
+/**
+ * Loading state while a song's files are fetched.
+ * `announce={false}` drops the status role and label, for a page skeleton that announces
+ * itself once (an `aria-label` needs a role: axe `aria-prohibited-attr`).
+ */
+export function ResourcesPanelSkeleton({ announce = true }: { announce?: boolean } = {}) {
   return (
-    <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading files">
+    <div
+      className="flex flex-col gap-4"
+      aria-busy="true"
+      {...(announce ? { role: 'status', 'aria-label': 'Loading files' } : {})}
+    >
       {[0, 1, 2].map((i) => (
         <div key={i} className="flex flex-col gap-2 px-2">
           <Skeleton className="h-3 w-20" />

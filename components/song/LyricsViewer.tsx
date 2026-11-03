@@ -61,7 +61,7 @@ function Block({ block, idBase, index }: { block: LyricsBlock; idBase: string; i
       <h3 id={headingId} className="flex items-baseline gap-2 text-sm font-semibold">
         {SECTION_LABEL[block.section]}
         {repeat ? (
-          <span className="rounded-chip bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+          <span className="rounded-chip bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
             <span className="sr-only">, </span>repeat
           </span>
         ) : null}
@@ -144,10 +144,18 @@ export function LyricsViewer({ lyrics, arrangement, mode = 'arrangement' }: Lyri
   );
 }
 
-/** Loading state while lyrics are fetched. */
-export function LyricsViewerSkeleton() {
+/**
+ * Loading state while lyrics are fetched.
+ * `announce={false}` drops the status role and label, for a page skeleton that announces
+ * itself once (an `aria-label` needs a role: axe `aria-prohibited-attr`).
+ */
+export function LyricsViewerSkeleton({ announce = true }: { announce?: boolean } = {}) {
   return (
-    <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading lyrics">
+    <div
+      className="flex flex-col gap-4"
+      aria-busy="true"
+      {...(announce ? { role: 'status', 'aria-label': 'Loading lyrics' } : {})}
+    >
       {[0, 1, 2].map((i) => (
         <div key={i} className="flex flex-col gap-2">
           <Skeleton className="h-4 w-16" />

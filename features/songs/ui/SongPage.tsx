@@ -453,10 +453,10 @@ export function SongPageSkeleton() {
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="rounded-lg border p-4">
-          <LyricsViewerSkeleton />
+          <LyricsViewerSkeleton announce={false} />
         </div>
         <div className="rounded-lg border p-4">
-          <ResourcesPanelSkeleton />
+          <ResourcesPanelSkeleton announce={false} />
         </div>
       </div>
     </div>

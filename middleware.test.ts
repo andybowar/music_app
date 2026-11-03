@@ -51,8 +51,14 @@ vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://localhost:54321');
 vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
 
 const { createServerClient } = await import('@supabase/ssr');
-const { config, isPublicRoute, isTransientAuthError, middleware, normalisePath } =
-  await import('./middleware');
+const {
+  canonicalHostRedirect,
+  config,
+  isPublicRoute,
+  isTransientAuthError,
+  middleware,
+  normalisePath,
+} = await import('./middleware');
 
 function request(path: string): NextRequest {
   return new NextRequest(new URL(path, 'http://localhost:3000'));
@@ -334,5 +340,70 @@ describe('middleware: Supabase not configured (unprovisioned preview)', () => {
   it('fails loudly on protected routes rather than serving them unguarded', async () => {
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
     await expect(middleware(request('/library'))).rejects.toThrow(/NEXT_PUBLIC_SUPABASE/);
+  });
+});
+
+describe('canonicalHostRedirect', () => {
+  const APP = 'https://music-app-one-plum.vercel.app';
+  const req = (url: string, method = 'GET') => ({ method, nextUrl: new URL(url) });
+
+  it('sends a production page load on another alias to the same path on APP_URL', () => {
+    const to = canonicalHostRedirect(
+      req('https://music-app-git-main-andybowars-projects.vercel.app/login?next=%2Flists'),
+      APP,
+      'production',
+    );
+    expect(to?.toString()).toBe(`${APP}/login?next=%2Flists`);
+  });
+
+  it('leaves the canonical host alone (case-insensitive)', () => {
+    expect(canonicalHostRedirect(req(`${APP}/library`), APP, 'production')).toBeNull();
+    expect(
+      canonicalHostRedirect(req('https://MUSIC-APP-ONE-PLUM.vercel.app/'), APP, 'production'),
+    ).toBeNull();
+  });
+
+  it('does nothing outside production, or without APP_URL', () => {
+    const other = req('https://music-app-git-feature-andybowars-projects.vercel.app/login');
+    expect(canonicalHostRedirect(other, APP, 'preview')).toBeNull();
+    expect(canonicalHostRedirect(other, APP, undefined)).toBeNull();
+    expect(canonicalHostRedirect(other, undefined, 'production')).toBeNull();
+    expect(canonicalHostRedirect(other, 'not a url', 'production')).toBeNull();
+  });
+
+  it('never redirects writes or /api', () => {
+    const host = 'https://music-app-andybowars-projects.vercel.app';
+    expect(canonicalHostRedirect(req(`${host}/library`, 'POST'), APP, 'production')).toBeNull();
+    expect(canonicalHostRedirect(req(`${host}/api/cron/usage`), APP, 'production')).toBeNull();
+    expect(canonicalHostRedirect(req(`${host}/api`), APP, 'production')).toBeNull();
+    expect(canonicalHostRedirect(req(`${host}/library`, 'HEAD'), APP, 'production')).not.toBeNull();
+  });
+});
+
+describe('middleware: canonical host', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://localhost:54321');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
+  });
+
+  it('308s to APP_URL in production before touching the session', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('APP_URL', 'https://music-app-one-plum.vercel.app');
+    vi.mocked(createServerClient).mockClear();
+    const res = await middleware(
+      new NextRequest('https://music-app-andybowars-projects.vercel.app/login?error=x'),
+    );
+    expect(res.status).toBe(308);
+    expect(res.headers.get('location')).toBe('https://music-app-one-plum.vercel.app/login?error=x');
+    expect(res.headers.get('cache-control')).toBe('private, no-store');
+    expect(createServerClient).not.toHaveBeenCalled();
+  });
+
+  it('is a no-op on the canonical host', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('APP_URL', 'https://music-app-one-plum.vercel.app');
+    const res = await middleware(new NextRequest('https://music-app-one-plum.vercel.app/login'));
+    expect(res.status).toBe(200);
   });
 });

@@ -21,6 +21,12 @@
  * - pending / rejected → `/account-status` (REQ-AUTH-08);
  * - approved → through. Pages still call `requirePageUser` and actions `requireUser`.
  *
+ * **Canonical host (production only).** Production answers on several Vercel aliases, but sign-in
+ * always returns to `APP_URL`. Starting on another alias stores Supabase's PKCE code-verifier
+ * cookie for that host, so `/auth/callback` on `APP_URL`'s host can't read it and sign-in fails
+ * once. So page loads (GET/HEAD, not `/api`) on any other host are first redirected (308) to the
+ * same path on `APP_URL`. Previews and local dev are left alone: they have many legitimate hosts.
+ *
  * Everything runs on the user's own anon-key session. This file must not import `lib/db` or
  * other server-only modules: they would be bundled into the edge runtime.
  */
@@ -95,7 +101,38 @@ export function isTransientAuthError(error: { name?: string; status?: number }):
   return status >= 500;
 }
 
+/**
+ * Where to send a request that arrived on a non-canonical host, or `null` to carry on. Only in
+ * production (`VERCEL_ENV`), only for GET/HEAD (server-action POSTs and other writes must not be
+ * redirected), and never for `/api` (cron and webhooks call whichever host they were given).
+ */
+export function canonicalHostRedirect(
+  req: { method: string; nextUrl: URL },
+  appUrl: string | undefined,
+  vercelEnv: string | undefined,
+): URL | null {
+  if (vercelEnv !== 'production' || !appUrl) return null;
+  if (req.method !== 'GET' && req.method !== 'HEAD') return null;
+  let canonical: URL;
+  try {
+    canonical = new URL(appUrl);
+  } catch {
+    return null;
+  }
+  if (req.nextUrl.host.toLowerCase() === canonical.host.toLowerCase()) return null;
+  const path = normalisePath(req.nextUrl.pathname);
+  if (path === '/api' || path?.startsWith('/api/')) return null;
+  return new URL(req.nextUrl.pathname + req.nextUrl.search, canonical.origin);
+}
+
 export async function middleware(req: NextRequest): Promise<NextResponse> {
+  const canonical = canonicalHostRedirect(req, process.env.APP_URL, process.env.VERCEL_ENV);
+  if (canonical) {
+    const res = NextResponse.redirect(canonical, 308);
+    res.headers.set('Cache-Control', 'private, no-store');
+    return res;
+  }
+
   const protectedRoute = !isPublicRoute(req.nextUrl.pathname);
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

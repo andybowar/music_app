@@ -31,9 +31,6 @@ const sql = postgres(process.env.DATABASE_URL!, { max: 1, onnotice: () => {} });
 
 const tag = randomUUID().slice(0, 8);
 
-/** CR documenting that RLS blocks a music leader's soft delete of a same-branch setlist they don't own. */
-const CR_LEADER_SOFT_DELETE = 'agent-spec/change-requests/DB-05-leader-soft-delete-setlist.md';
-
 function branchCode(): string {
   return [...randomBytes(3)].map((b) => String.fromCharCode(65 + (b % 26))).join('');
 }
@@ -41,7 +38,7 @@ function branchCode(): string {
 const STATUSES = ['approved', 'pending', 'rejected'] as const satisfies readonly AccessStatus[];
 
 // Branch and owner ids are fixed up front so every `can()` input is known when tests are
-// collected (needed to pick `test.fails` for the known mismatch).
+// collected.
 const ids = {
   branchA: randomUUID(),
   branchB: randomUUID(),
@@ -529,23 +526,6 @@ afterAll(async () => {
 // Parity
 // ---------------------------------------------------------------------------------------
 
-/**
- * Known mismatch (see CR_LEADER_SOFT_DELETE): `lists_select` hides soft-deleted setlists from
- * non-owners, so the leader's `set deleted_at = now()` fails the SELECT check on the new row.
- * `can()` matches the contract. Remove once the migration in that CR lands.
- */
-function knownLeaderSoftDeleteMismatch(s: Subject, action: Action, ctx: PermCtx): boolean {
-  const list = ctx.list;
-  return (
-    action === 'list:write' &&
-    s.user.accessStatus === 'approved' &&
-    s.user.role === 'music_leader' &&
-    list?.type === 'setlist' &&
-    list.ownerId !== s.user.id &&
-    list.branchId === s.user.branchId
-  );
-}
-
 async function checkParity(
   s: Subject,
   action: Action,
@@ -580,10 +560,7 @@ for (const s of SUBJECTS) {
     ][]) {
       for (const scenario of SCENARIOS) {
         const ctx: PermCtx = { list: scenario.ctx(s) };
-        const known = knownLeaderSoftDeleteMismatch(s, action, ctx);
-        const t = known ? test.fails : test;
-        const suffix = known ? ` [known mismatch: ${CR_LEADER_SOFT_DELETE}]` : '';
-        t(`${action} on ${scenario.name}${suffix}`, () => {
+        test(`${action} on ${scenario.name}`, () => {
           const id = scenario.id(s); // fixture ids exist only once beforeAll has run
           return checkParity(
             s,

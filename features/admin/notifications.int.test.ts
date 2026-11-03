@@ -83,8 +83,8 @@ process.env.SMTP_USER = 'adm04-test@example.test';
 process.env.SMTP_PASSWORD = 'not-a-real-password';
 process.env.EMAIL_FROM = 'Worship Library <adm04-test@example.test>';
 
-const { eq } = await import('drizzle-orm');
-const { users } = await import('@/db/schema');
+const { eq, inArray } = await import('drizzle-orm');
+const { auditLog, users } = await import('@/db/schema');
 const { getDb } = await import('@/lib/db');
 const { createServiceSupabase } = await import('@/lib/supabase/server');
 const { signUpWithPassword } = await import('@/features/auth/actions');
@@ -167,8 +167,17 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  const db = getDb();
+  if (actor) await db.delete(auditLog).where(eq(auditLog.actorId, actor.id));
+  // Decisions reference the deciding admin, so clear them before deleting anyone.
+  if (created.length > 0) {
+    await db.update(users).set({ accessDecidedBy: null }).where(inArray(users.id, created));
+  }
   const admin = createServiceSupabase();
-  for (const id of created) await admin.auth.admin.deleteUser(id); // cascades to public.users
+  for (const id of created) {
+    const { error } = await admin.auth.admin.deleteUser(id); // cascades to public.users
+    if (error) throw error;
+  }
   await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(run)}`, { method: 'DELETE' });
   await getDb().$client.end();
 });

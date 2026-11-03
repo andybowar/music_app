@@ -5,7 +5,7 @@ phase: 4
 wave: 10
 stream: frontend
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["SHR-01", "UI-05"]
 blocks: ["SHR-05"]
@@ -32,12 +32,12 @@ requirements: ["REQ-SHARE-01", "REQ-SHARE-03"]
 - `REQ-SHARE-03` — The public share page shows list content and overrides; opening files still requires sign-in.
 
 ## Deliverables
-- [ ] List header (name, date, branch), SongRows with overrides, "Sign in to open files" CTA
-- [ ] `noindex` meta
+- [x] List header (name, date, branch), SongRows with overrides, "Sign in to open files" CTA
+- [x] `noindex` meta
 
 ## Acceptance criteria
-- [ ] Works logged out; invalid token → friendly 404
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Works logged out; invalid token → friendly 404
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `app/share/[token]/`

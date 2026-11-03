@@ -22,7 +22,17 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useId, useMemo, useState, type FormEvent } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import { toast } from 'sonner';
 
 import { PdfViewer } from '@/components/media/PdfViewer';
@@ -100,6 +110,42 @@ const NAME_MAX = 120;
 export const SETLISTS_HREF = listIndexHref('setlist');
 
 export const songHref = (songId: UUID) => `/songs/${encodeURIComponent(songId)}`;
+
+/** The server actions the view calls. */
+export interface SetlistActions {
+  renameList: typeof renameList;
+  deleteList: typeof deleteList;
+  reorderList: typeof reorderList;
+  removeListItem: typeof removeListItem;
+  updateListItem: typeof updateListItem;
+  getSignedResourceUrl: typeof getSignedResourceUrl;
+}
+
+const SetlistActionsContext = createContext<SetlistActions>({
+  renameList,
+  deleteList,
+  reorderList,
+  removeListItem,
+  updateListItem,
+  getSignedResourceUrl,
+});
+
+/**
+ * Swaps the list server actions for stand-ins, e.g. fixture-backed fakes in the `/dev/setlist`
+ * gallery (agent-spec/change-requests/LIST-07-setlist-extras.md). The app never mounts it, so
+ * `SetlistView` calls the real actions.
+ */
+export function SetlistActionsProvider({
+  actions,
+  children,
+}: {
+  actions: SetlistActions;
+  children: ReactNode;
+}) {
+  return (
+    <SetlistActionsContext.Provider value={actions}>{children}</SetlistActionsContext.Provider>
+  );
+}
 
 /** Run an action and turn a thrown error (e.g. network) into an `ActionResult`. */
 async function settle<T>(run: () => Promise<ActionResult<T>>): Promise<ActionResult<T>> {
@@ -181,6 +227,10 @@ function ItemRow({ resolved, index, total, canEdit, onPanel, onMove, onRemove }:
     transition,
     isDragging,
   } = useSortable({ id: item.id, disabled: !canEdit });
+  // A panel picked from the menu opens once the menu has closed and given focus back to its
+  // trigger. Opened any earlier, the menu's focus return lands outside the new popover and
+  // closes it again; opened after, the panel returns focus to the trigger when it closes.
+  const panelAfterMenu = useRef<PanelKind | null>(null);
 
   const handle = canEdit ? (
     <button
@@ -206,8 +256,20 @@ function ItemRow({ resolved, index, total, canEdit, onPanel, onMove, onRemove }:
           <MoreVertical aria-hidden="true" className="size-4" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem className="min-h-tap" onSelect={() => onPanel('edit')}>
+      <DropdownMenuContent
+        align="end"
+        onCloseAutoFocus={() => {
+          const kind = panelAfterMenu.current;
+          panelAfterMenu.current = null;
+          if (kind) onPanel(kind);
+        }}
+      >
+        <DropdownMenuItem
+          className="min-h-tap"
+          onSelect={() => {
+            panelAfterMenu.current = 'edit';
+          }}
+        >
           Change key, BPM or energy
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -277,6 +339,7 @@ function RenameDialog({
   const [name, setName] = useState(list.name);
   const [date, setDate] = useState(list.eventDate ?? '');
   const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const actions = useContext(SetlistActionsContext);
   const [pending, setPending] = useState(false);
   const needsDate = list.type === 'setlist';
 
@@ -299,7 +362,7 @@ function RenameDialog({
     }
     setPending(true);
     const eventDate = date || null;
-    const result = await settle(() => renameList(list.id, trimmed, eventDate));
+    const result = await settle(() => actions.renameList(list.id, trimmed, eventDate));
     setPending(false);
     if (!result.ok) {
       setErrors(result.error.fieldErrors ?? {});
@@ -381,11 +444,12 @@ function DeleteDialog({
   onOpenChange(open: boolean): void;
   onDeleted(): void;
 }) {
+  const actions = useContext(SetlistActionsContext);
   const [pending, setPending] = useState(false);
 
   async function confirm() {
     setPending(true);
-    const result = await settle(() => deleteList(list.id));
+    const result = await settle(() => actions.deleteList(list.id));
     setPending(false);
     if (!result.ok) {
       toast.error("Couldn't delete the setlist", { description: result.error.message });
@@ -429,6 +493,7 @@ function DeleteDialog({
  */
 export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   const router = useRouter();
+  const actions = useContext(SetlistActionsContext);
   const [items, setItems] = useState(list.items);
   const [header, setHeader] = useState({ name: list.name, eventDate: list.eventDate });
   const [panel, setPanel] = useState<{ kind: PanelKind; itemId: UUID } | null>(null);
@@ -444,6 +509,8 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
     [list.name, list.eventDate],
   );
 
+  // A stable id keeps dnd-kit's generated aria-describedby the same on server and client.
+  const dndId = useId();
   const details = useMemo(() => new Map((songs ?? []).map((s) => [s.id, s])), [songs]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -470,7 +537,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
     const title = before[from]?.song.title ?? 'song';
     setStatus(movedMessage(title, to, next.length));
     const result = await settle(() =>
-      reorderList(
+      actions.reorderList(
         list.id,
         next.map((i) => i.item.id),
       ),
@@ -492,7 +559,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   async function remove(resolved: ResolvedItem) {
     const before = items;
     setItems(items.filter((i) => i.item.id !== resolved.item.id));
-    const result = await settle(() => removeListItem(resolved.item.id));
+    const result = await settle(() => actions.removeListItem(resolved.item.id));
     if (!result.ok) {
       setItems(before);
       toast.error(`Couldn't remove “${resolved.song.title}”`, {
@@ -511,7 +578,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
       setItems((prev) => prev.map((i) => (i.item.id === next.item.id ? next : i)));
     if (detail) replace(resolveItemDisplay(detail, { ...resolved.item, ...patch }));
 
-    const result = await settle(() => updateListItem(resolved.item.id, patch));
+    const result = await settle(() => actions.updateListItem(resolved.item.id, patch));
     if (!result.ok) {
       setItems(before);
       toast.error(`Couldn't update “${resolved.song.title}”`, {
@@ -531,7 +598,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
       window.open(plan.url, '_blank', 'noopener,noreferrer');
       return;
     }
-    const result = await settle(() => getSignedResourceUrl(r.id));
+    const result = await settle(() => actions.getSignedResourceUrl(r.id));
     if (!result.ok) {
       toast.error(`Couldn't open ${r.label}`, { description: result.error.message });
       return;
@@ -653,6 +720,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
         </div>
       ) : (
         <DndContext
+          id={dndId}
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={onDragEnd}

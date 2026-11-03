@@ -30,3 +30,4 @@ supabase/.branches/
 .DS_Store
 *.log
 .vercel
+.env*

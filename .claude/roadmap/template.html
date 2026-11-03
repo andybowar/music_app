@@ -1,0 +1,280 @@
+<title>Music App Roadmap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column; a wave "running order" for prod features, then remaining tasks grouped by wave. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --fg: #1b2129;
+  --muted: #5b6573;
+  --line: #dde1e6;
+  --accent: #1f5f99;
+  --accent-soft: #e4eef8;
+  --review: #7b4fa0;
+  --review-soft: #f1eaf7;
+  --ready: #2e7d32;
+  --ready-soft: #e6f2e6;
+  --wait: #6b7380;
+  --wait-soft: #eceef1;
+  --human: #a8580c;
+  --human-soft: #fbeedd;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161b; --surface: #1a2027; --fg: #e6e9ed; --muted: #9aa4b1; --line: #2c343e;
+    --accent: #7db4e6; --accent-soft: #1d2d3e;
+    --review: #c3a2e0; --review-soft: #2c2236;
+    --ready: #86c98a; --ready-soft: #1d2e1f;
+    --wait: #a3abb6; --wait-soft: #252b33;
+    --human: #f0b06a; --human-soft: #36281a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161b; --surface: #1a2027; --fg: #e6e9ed; --muted: #9aa4b1; --line: #2c343e;
+  --accent: #7db4e6; --accent-soft: #1d2d3e;
+  --review: #c3a2e0; --review-soft: #2c2236;
+  --ready: #86c98a; --ready-soft: #1d2e1f;
+  --wait: #a3abb6; --wait-soft: #252b33;
+  --human: #f0b06a; --human-soft: #36281a;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+}
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+  display: grid; gap: 40px;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: 2rem; font-weight: 700; }
+h2 { font-size: 1.4rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 500; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 65ch; }
+.mono { font-family: var(--font-mono); font-size: 0.82rem; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header { display: grid; gap: 12px; }
+.eyebrow { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+.stats { display: flex; flex-wrap: wrap; gap: 8px 24px; font-variant-numeric: tabular-nums; }
+.stat { display: grid; }
+.stat b { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
+.stat span { color: var(--muted); font-size: 0.85rem; }
+.bar { height: 8px; border-radius: 4px; background: var(--wait-soft); overflow: hidden; display: flex; max-width: 520px; }
+.bar i { display: block; height: 100%; }
+
+.notice {
+  border: 1px solid var(--human); background: var(--human-soft);
+  border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; max-width: 75ch;
+}
+.notice strong { color: var(--human); }
+
+section { display: grid; gap: 16px; }
+.section-head { display: grid; gap: 6px; }
+
+/* Prod timeline */
+.timeline { display: grid; gap: 0; }
+.tl-wave { display: grid; grid-template-columns: 88px 1fr; gap: 16px; padding-block: 14px; border-top: 1px solid var(--line); }
+.tl-wave:first-child { border-top: 0; }
+.tl-label { display: grid; align-content: start; gap: 2px; }
+.tl-label b { font-family: var(--font-display); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.tl-label span { font-size: 0.78rem; color: var(--muted); }
+.tl-label.current b { color: var(--accent); }
+.features { display: grid; gap: 10px; min-width: 0; }
+.feature { display: grid; gap: 2px; }
+.feature-title { font-weight: 600; }
+.feature-title .phase { font-weight: 500; font-size: 0.75rem; color: var(--muted); margin-left: 6px; letter-spacing: 0.04em; }
+.feature p { color: var(--muted); font-size: 0.9rem; }
+.feature .via { font-size: 0.8rem; color: var(--muted); }
+
+/* Filters */
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controls input, .controls select {
+  font: inherit; font-size: 0.9rem; color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; min-height: 38px;
+}
+.controls input { flex: 1 1 220px; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: inherit; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; min-height: 32px;
+}
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.count { color: var(--muted); font-size: 0.85rem; }
+
+/* Task list */
+.wave-group { display: grid; gap: 8px; }
+.wave-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding-top: 8px; }
+.wave-head .count { margin-left: auto; }
+.tasks { display: grid; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.task { display: grid; grid-template-columns: 92px 1fr auto; gap: 4px 14px; padding: 12px 14px; border-top: 1px solid var(--line); align-items: start; }
+.task:first-child { border-top: 0; }
+.task .id { padding-top: 2px; }
+.task .body { display: grid; gap: 2px; min-width: 0; }
+.task .t { font-weight: 600; }
+.task .goal { color: var(--muted); font-size: 0.9rem; }
+.task .meta { color: var(--muted); font-size: 0.78rem; }
+.pill { font-size: 0.75rem; font-weight: 600; border-radius: 999px; padding: 3px 10px; white-space: nowrap; justify-self: end; }
+.pill.review { color: var(--review); background: var(--review-soft); }
+.pill.ready { color: var(--ready); background: var(--ready-soft); }
+.pill.waiting { color: var(--wait); background: var(--wait-soft); }
+.pill.human { color: var(--human); background: var(--human-soft); }
+.empty { padding: 24px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.85rem; color: var(--muted); align-items: center; }
+footer { color: var(--muted); font-size: 0.82rem; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 1.6rem; }
+  .tl-wave { grid-template-columns: 1fr; gap: 8px; }
+  .tl-label { grid-auto-flow: column; justify-content: start; gap: 10px; align-items: baseline; }
+  .task { grid-template-columns: 1fr auto; }
+  .task .body { grid-column: 1 / -1; grid-row: 2; }
+  .pill { grid-row: 1; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">People of Praise Music App · snapshot __DATE__</div>
+    <h1>What's left to build, and when it reaches production</h1>
+    <p class="lede">Tasks run in waves. Every task in a wave can be built at the same time, and a wave can start once the waves before it are merged. A feature shows up on production when the task that wires it into the app merges into main.</p>
+    <div class="stats" id="stats"></div>
+    <div class="bar" id="bar" role="img"></div>
+    <div class="legend">
+      <span class="pill review">In review</span> PR open
+      <span class="pill ready">Ready</span> can start now
+      <span class="pill waiting">Waiting</span> on earlier tasks
+      <span class="pill human">Needs you</span> owner-only
+    </div>
+  </header>
+
+  <div class="notice">
+    <strong>Production isn't set up yet.</strong>
+    <p>The production Supabase project and its Vercel settings are part of OPS-01, which only you can do (see <span class="mono">agent-spec/HUMAN-TASKS.md</span>). Until then nothing that needs a database works on production. The waves below say when a feature's code will be on main; it appears on production at that point or as soon as OPS-01 is done, whichever is later.</p>
+  </div>
+
+  <section aria-labelledby="prod-h">
+    <div class="section-head">
+      <h2 id="prod-h">When features reach production</h2>
+      <p class="lede">Grouped by the wave whose merge makes each feature usable. Work currently in progress is wave __CURRENT__.</p>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section aria-labelledby="tasks-h">
+    <div class="section-head">
+      <h2 id="tasks-h">Remaining tasks</h2>
+      <p class="lede">Everything not yet merged into main, by wave.</p>
+    </div>
+    <div class="controls">
+      <label class="sr" for="q" hidden>Search tasks</label>
+      <input id="q" type="search" placeholder="Search by ID, title or purpose" aria-label="Search tasks">
+      <select id="stream" aria-label="Filter by area"></select>
+    </div>
+    <div class="chips" id="status-chips" role="group" aria-label="Filter by status"></div>
+    <div id="task-list" style="display:grid;gap:20px"></div>
+  </section>
+
+  <footer>Built from the task files in <span class="mono">agent-spec/tasks/</span> and open pull requests on __DATE__. It doesn't update itself; ask Claude to refresh it after merges.</footer>
+</div>
+
+<script>
+const DATA = /*DATA*/;
+const STATUS = {
+  review: { label: "In review", cls: "review" },
+  ready: { label: "Ready", cls: "ready" },
+  waiting: { label: "Waiting", cls: "waiting" },
+  human: { label: "Needs you", cls: "human" },
+};
+const PHASES = ["Foundations", "Library", "Search", "Lists", "Sharing", "Hardening"];
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const md = (s) => esc(s).replace(/`([^`]+)`/g, '<span class="mono">$1</span>');
+
+// Summary
+const remaining = DATA.tasks;
+const counts = { review: 0, ready: 0, waiting: 0, human: 0 };
+remaining.forEach((t) => counts[t.state]++);
+const total = DATA.total, done = DATA.done;
+document.getElementById("stats").innerHTML = [
+  [done + " / " + total, "tasks merged"],
+  [counts.review, "in review"],
+  [counts.ready, "ready to start"],
+  [counts.waiting, "waiting"],
+  [counts.human, "need you"],
+].map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+const bar = document.getElementById("bar");
+bar.setAttribute("aria-label", `${done} of ${total} tasks merged, ${counts.review} in review`);
+bar.innerHTML = `<i style="width:${(done / total) * 100}%;background:var(--accent)"></i><i style="width:${(counts.review / total) * 100}%;background:var(--review)"></i>`;
+
+// Timeline
+const byWave = {};
+DATA.features.forEach((f) => (byWave[f.wave] ??= []).push(f));
+document.getElementById("timeline").innerHTML = Object.keys(byWave).map(Number).sort((a, b) => a - b).map((w) => `
+  <div class="tl-wave">
+    <div class="tl-label${w === DATA.current ? " current" : ""}"><b>Wave ${w}</b><span>${w === DATA.current ? "in progress" : w - DATA.current + " after this one"}</span></div>
+    <div class="features">${byWave[w].map((f) => `
+      <div class="feature">
+        <div class="feature-title">${esc(f.name)}<span class="phase">${PHASES[f.phase]}</span></div>
+        <p>${md(f.desc)}</p>
+        <div class="via">Ships with <span class="mono">${f.via.join(", ")}</span></div>
+      </div>`).join("")}
+    </div>
+  </div>`).join("");
+
+// Task list
+const streams = [...new Set(remaining.map((t) => t.stream))].sort();
+const streamSel = document.getElementById("stream");
+streamSel.innerHTML = `<option value="">All areas</option>` + streams.map((s) => `<option value="${s}">${s}</option>`).join("");
+let activeStatus = "";
+const chipBox = document.getElementById("status-chips");
+function renderChips() {
+  chipBox.innerHTML = [["", "All"], ...Object.entries(STATUS).map(([k, v]) => [k, v.label])]
+    .map(([k, l]) => `<button type="button" class="chip" data-s="${k}" aria-pressed="${activeStatus === k}">${l}${k ? " · " + counts[k] : ""}</button>`).join("");
+}
+chipBox.addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  activeStatus = b.dataset.s; renderChips(); renderTasks();
+});
+function renderTasks() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const s = streamSel.value;
+  const list = remaining.filter((t) =>
+    (!activeStatus || t.state === activeStatus) && (!s || t.stream === s) &&
+    (!q || (t.id + " " + t.title + " " + t.goal).toLowerCase().includes(q)));
+  const groups = {};
+  list.forEach((t) => (groups[t.wave] ??= []).push(t));
+  const el = document.getElementById("task-list");
+  if (!list.length) { el.innerHTML = `<div class="empty">No tasks match. Clear the search or pick another filter.</div>`; return; }
+  el.innerHTML = Object.keys(groups).map(Number).sort((a, b) => a - b).map((w) => `
+    <div class="wave-group">
+      <div class="wave-head"><h3>Wave ${w}${w === DATA.current ? " · in progress" : ""}</h3><span class="count">${groups[w].length} task${groups[w].length > 1 ? "s" : ""}</span></div>
+      <div class="tasks">${groups[w].map((t) => `
+        <div class="task">
+          <span class="id mono">${t.id}</span>
+          <div class="body">
+            <span class="t">${esc(t.title)}</span>
+            <span class="goal">${md(t.goal)}</span>
+            <span class="meta">${PHASES[t.phase]} · ${t.stream} · size ${t.size}${t.pr ? ` · <a href="https://github.com/andybowar/music_app/pull/${t.pr}" target="_blank" rel="noopener">PR #${t.pr}</a>` : ""}${t.blockedBy.length ? ` · waiting on <span class="mono">${t.blockedBy.join(", ")}</span>` : ""}</span>
+          </div>
+          <span class="pill ${STATUS[t.state].cls}">${STATUS[t.state].label}</span>
+        </div>`).join("")}
+      </div>
+    </div>`).join("");
+}
+document.getElementById("q").addEventListener("input", renderTasks);
+streamSel.addEventListener("change", renderTasks);
+renderChips(); renderTasks();
+</script>

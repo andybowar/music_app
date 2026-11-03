@@ -75,6 +75,10 @@ const PUBLIC_TABLES = [
   'audit_log',
 ] as const;
 
+/** ADM-06's admin-only tables (0006_admin_backlog.sql); their policies are tested in
+ *  tests/db/backlog.int.test.ts. CR ADM-06-rls-test-touches. */
+const BACKLOG_TABLES = ['admin_todos', 'feature_requests', 'feature_request_images'] as const;
+
 const ROLLBACK = Symbol('rollback');
 
 /** Run `fn` as `who` inside a transaction that is always rolled back. */
@@ -241,7 +245,9 @@ describe('coverage', () => {
              (select count(*)::int from pg_policies p
               where p.schemaname = 'public' and p.tablename = t.tablename) as policies
       from pg_tables t where t.schemaname = 'public'`;
-    expect(rows.map((r) => r.tablename).sort()).toEqual([...PUBLIC_TABLES].sort());
+    expect(rows.map((r) => r.tablename).sort()).toEqual(
+      [...PUBLIC_TABLES, ...BACKLOG_TABLES].sort(),
+    );
     for (const row of rows) {
       expect(row, row.tablename).toMatchObject({ rowsecurity: true });
       expect(row.policies, row.tablename).toBeGreaterThan(0);

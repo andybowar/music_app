@@ -305,6 +305,24 @@ const ROLE_PROBES: Record<RoleAction, Probe[]> = {
         tx`insert into songs (title, added_by_branch_id) values (${`Import ${tag}`}, ${ids.branchB})`,
     ),
   ],
+  // ADM-06 (CR ADM-06-rls-test-touches): admin-only backlog tables and bucket.
+  'admin:backlog': [
+    p(
+      'insert to-do',
+      (tx, s) => tx`insert into admin_todos (title, created_by) values ('To-do', ${s.user.id})`,
+    ),
+    p(
+      'insert request',
+      (tx, s) =>
+        tx`insert into feature_requests (title, created_by) values ('Request', ${s.user.id})`,
+    ),
+    p(
+      'upload wireframe object',
+      (tx) =>
+        tx`insert into storage.objects (bucket_id, name)
+           values ('admin-attachments', ${`requests/${tag}/${uniq()}.png`})`,
+    ),
+  ],
 };
 
 // ---------------------------------------------------------------------------------------
@@ -627,6 +645,6 @@ describe('coverage', () => {
     // guards against an action being given an empty probe list.
     for (const [action, probes] of [...Object.entries(ROLE_PROBES), ...Object.entries(LIST_PROBES)])
       expect(probes.length, action).toBeGreaterThan(0);
-    expect(Object.keys(ROLE_PROBES).length + Object.keys(LIST_PROBES).length).toBe(21);
+    expect(Object.keys(ROLE_PROBES).length + Object.keys(LIST_PROBES).length).toBe(22);
   });
 });

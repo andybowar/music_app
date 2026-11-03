@@ -281,7 +281,8 @@ export function ListIndex({
                           variant="outline"
                           className="min-h-10"
                           disabled={pendingId !== null}
-                          aria-label={`Set “${list.name}” as current ${noun}`}
+                          // Starts with the visible text (WCAG 2.5.3 label in name).
+                          aria-label={`Set as current ${noun}: “${list.name}”`}
                           onClick={() => void setCurrent(list)}
                         >
                           Set as current
@@ -319,7 +320,8 @@ export function ListIndex({
                       'flex min-h-10 items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
                       active
                         ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground',
+                        : // muted-foreground on bg-muted is under 4.5:1.
+                          'text-foreground/80 hover:text-foreground',
                     )}
                   >
                     {tab.label}

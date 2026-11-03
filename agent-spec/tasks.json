@@ -2805,7 +2805,7 @@
         "REQ-NF-03"
       ],
       "file": "tasks/H-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-20",

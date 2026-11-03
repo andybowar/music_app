@@ -328,10 +328,7 @@ export function UsageSection({
         </p>
       )}
       {!editability.editable && branches.length > 0 && (
-        <p
-          id={reasonId}
-          className="flex gap-1.5 rounded-md bg-muted p-2 text-sm text-muted-foreground"
-        >
+        <p id={reasonId} className="flex gap-1.5 rounded-md bg-muted p-2 text-sm text-foreground">
           <LockIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
           <span>{editability.reason}</span>
         </p>

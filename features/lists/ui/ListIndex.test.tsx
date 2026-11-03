@@ -153,7 +153,7 @@ describe('ListIndex', () => {
   it('sets a list as current, then toasts and refreshes', async () => {
     const { props, user } = setup({ currentListId: past.id });
     await user.click(
-      screen.getByRole('button', { name: `Set “${upcoming.name}” as current setlist` }),
+      screen.getByRole('button', { name: `Set as current setlist: “${upcoming.name}”` }),
     );
     expect(props.onSetCurrent).toHaveBeenCalledWith(upcoming);
     await waitFor(() =>
@@ -165,7 +165,7 @@ describe('ListIndex', () => {
     const upcomingSection = screen.getByRole('region', { name: 'Upcoming' });
     expect(within(upcomingSection).getByText('Current')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: `Set “${past.name}” as current setlist` }),
+      screen.getByRole('button', { name: `Set as current setlist: “${past.name}”` }),
     ).toBeInTheDocument();
   });
 
@@ -176,7 +176,7 @@ describe('ListIndex', () => {
     }));
     const { user } = setup({ currentListId: past.id, onSetCurrent });
     await user.click(
-      screen.getByRole('button', { name: `Set “${upcoming.name}” as current setlist` }),
+      screen.getByRole('button', { name: `Set as current setlist: “${upcoming.name}”` }),
     );
     await waitFor(() =>
       expect(toastMock.error).toHaveBeenCalledWith(
@@ -193,7 +193,7 @@ describe('ListIndex', () => {
     });
     const { user } = setup({ onSetCurrent });
     await user.click(
-      screen.getByRole('button', { name: `Set “${upcoming.name}” as current setlist` }),
+      screen.getByRole('button', { name: `Set as current setlist: “${upcoming.name}”` }),
     );
     await waitFor(() => expect(toastMock.error).toHaveBeenCalled());
     expect(screen.queryByText('Current')).not.toBeInTheDocument();
@@ -281,7 +281,7 @@ describe('ListIndex', () => {
     );
     expect(within(screen.getByRole('region', { name: 'Past' })).getByText('Current')).toBeVisible();
     await user.click(
-      screen.getByRole('button', { name: `Set “${upcoming.name}” as current setlist` }),
+      screen.getByRole('button', { name: `Set as current setlist: “${upcoming.name}”` }),
     );
     await waitFor(() =>
       expect(screen.getByLabelText('provider current')).toHaveTextContent(upcoming.id),

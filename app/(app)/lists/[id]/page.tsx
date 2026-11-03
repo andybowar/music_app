@@ -57,22 +57,23 @@ export default async function ListRoute({ params }: Props) {
 
   const canEdit = can(user, 'list:write', { list });
 
-  if (list.type === 'playlist') {
-    return (
-      <>
-        <PlaylistView list={list} canEdit={canEdit} />
-        <Toaster />
-      </>
-    );
-  }
-
-  // Song details feed the row panels; the setlist still works without them.
+  // Song details feed the setlist's row panels and every recording a playlist row can offer;
+  // either view still works without them.
   let songs: SongDetail[] | undefined;
   try {
     songs = await getSongs(list.items.map((i) => i.song.id));
   } catch (error) {
     unstable_rethrow(error);
     reportError(error, { handler: 'ListRoute.getSongs', listId: id });
+  }
+
+  if (list.type === 'playlist') {
+    return (
+      <>
+        <PlaylistView list={list} canEdit={canEdit} songs={songs} />
+        <Toaster />
+      </>
+    );
   }
 
   return (

@@ -37,8 +37,14 @@ vi.mock('@/features/resources/server/files', () => ({
   getSignedResourceUrl: actions.getSignedResourceUrl,
 }));
 
-const { PLAYLISTS_HREF, PlaylistView, PlaylistViewSkeleton, playlistTracks, trackFor } =
-  await import('./PlaylistView');
+const {
+  PLAYLISTS_HREF,
+  PlaylistView,
+  PlaylistViewSkeleton,
+  playlistTracks,
+  trackFor,
+  withSongRecordings,
+} = await import('./PlaylistView');
 
 const ok = <T,>(data: T): Promise<ActionResult<T>> => Promise.resolve({ ok: true, data });
 const fail = (message: string): Promise<ActionResult<never>> =>
@@ -286,6 +292,81 @@ describe('PlaylistView', () => {
     );
     expect(screen.getByText('No songs in this playlist yet.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Play all' })).toBeDisabled();
+  });
+
+  describe('with song details (CR PLAY-05)', () => {
+    // "YouTube link 4" belongs to A Thousand Hallelujahs' E key, not its primary key D.
+    const otherKeyLink = '60000000-0000-4000-8000-000001000012';
+    const onOtherKey: ListDetail = {
+      ...detail,
+      items: detail.items.map((i, n) =>
+        n === 1 ? { ...i, item: { ...i.item, resourceId: otherKeyLink } } : i,
+      ),
+    };
+    const songs = [getSong(SONG_IDS.lordYouAreWorthy), getSong(SONG_IDS.thousandHallelujahs)];
+    const options = (row: HTMLElement) =>
+      within(row)
+        .getAllByRole('option')
+        .map((o) => o.textContent);
+
+    it('offers recordings of every key and plays a saved non-primary-key one', async () => {
+      const user = userEvent.setup();
+      render(<PlaylistView list={onOtherKey} canEdit songs={songs} adapters={adapters} />);
+      expect(options(rows()[2]!)).toContain('YouTube link 4');
+      expect(within(rows()[1]!).getByRole('combobox')).toHaveDisplayValue('YouTube link 4');
+
+      await user.click(within(rows()[1]!).getByRole('button', { name: /^Play / }));
+      await waitFor(() => expect(player()).toHaveAttribute('data-status', 'playing'));
+      expect(made.youtube!.loads[0]!.source).toEqual({ type: 'youtube', videoId: 'fixture0004' });
+    });
+
+    it('saves a non-primary-key recording picked in the row', async () => {
+      const user = userEvent.setup();
+      render(<PlaylistView list={detail} canEdit songs={songs} adapters={adapters} />);
+      await user.selectOptions(within(rows()[2]!).getByRole('combobox'), 'YouTube link 4');
+      expect(actions.updateListItem).toHaveBeenCalledWith(detail.items[2]!.item.id, {
+        resourceId: otherKeyLink,
+      });
+    });
+
+    it('falls back to the primary-key recordings without song details', () => {
+      render(<PlaylistView list={onOtherKey} canEdit adapters={adapters} />);
+      expect(options(rows()[2]!)).not.toContain('YouTube link 4');
+      expect(within(rows()[1]!).getByText('Choose a recording to include this song')).toBeVisible();
+      expect(playlistTracks(onOtherKey.items)).toHaveLength(2);
+    });
+
+    it('keeps the resolved resources of a song missing from the details', () => {
+      render(
+        <PlaylistView
+          list={detail}
+          canEdit
+          songs={[getSong(SONG_IDS.lordYouAreWorthy)]}
+          adapters={adapters}
+        />,
+      );
+      expect(options(rows()[1]!)).not.toContain('YouTube link 4');
+      expect(within(rows()[1]!).getByRole('combobox')).toHaveDisplayValue(
+        'YouTube: Hillsong 7/5/22',
+      );
+    });
+
+    it('withSongRecordings swaps in all of the song resources', () => {
+      const song = getSong(SONG_IDS.thousandHallelujahs);
+      expect(withSongRecordings(hallelujahs1!, song).resources).toBe(song.resources);
+      expect(withSongRecordings(hallelujahs1!, undefined)).toBe(hallelujahs1);
+    });
+  });
+
+  it('uses overridden actions when given', async () => {
+    const renameList = vi.fn(() => ok(undefined));
+    const user = userEvent.setup();
+    render(<PlaylistView list={detail} canEdit adapters={adapters} actions={{ renameList }} />);
+    await user.click(screen.getByRole('button', { name: 'Rename' }));
+    await user.type(screen.getByLabelText('Name'), '!');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(renameList).toHaveBeenCalledWith(listId, `${detail.name}!`, null);
+    expect(actions.renameList).not.toHaveBeenCalled();
   });
 
   it('has a loading skeleton', () => {

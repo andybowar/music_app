@@ -102,15 +102,31 @@ describe('list route', () => {
     expect(reportError).toHaveBeenCalled();
   });
 
-  it('dispatches a playlist to the playlist view', async () => {
+  it('dispatches a playlist to the playlist view, with its song details', async () => {
     getList.mockResolvedValue(playlist);
+    const playlistSongs = playlist.items.map((i) => getSong(i.song.id));
+    getSongs.mockResolvedValue(playlistSongs);
     requirePageUser.mockResolvedValue(userWith('member', playlist.ownerId));
     const page = await ListRoute(params(playlist.id));
     expect(findElement<ViewProps>(page, PlaylistView)?.props).toMatchObject({
       list: playlist,
       canEdit: true,
+      songs: playlistSongs,
     });
-    expect(getSongs).not.toHaveBeenCalled();
+    expect(getSongs).toHaveBeenCalledWith(playlist.items.map((i) => i.song.id));
+  });
+
+  it('still shows the playlist when song details fail to load', async () => {
+    getList.mockResolvedValue(playlist);
+    getSongs.mockRejectedValue(new Error('db down'));
+    const page = await ListRoute(params(playlist.id));
+    const el = findElement<ViewProps>(page, PlaylistView);
+    expect(el?.props.list).toBe(playlist);
+    expect(el?.props.songs).toBeUndefined();
+    expect(reportError).toHaveBeenCalledWith(expect.any(Error), {
+      handler: 'ListRoute.getSongs',
+      listId: playlist.id,
+    });
   });
 
   it('shows an error state when the list fails to load', async () => {

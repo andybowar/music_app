@@ -103,7 +103,7 @@ describe('NavBar links', () => {
     expect(desktop.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
   });
 
-  it('desktop More menu holds the overflow links (BR-04 quick theme lookup)', async () => {
+  it('desktop More menu holds the overflow links (BR-04 quick theme lookup, BR-02 other branches)', async () => {
     expect(NAV_OVERFLOW_LINKS.length).toBeGreaterThan(0);
     const user = userEvent.setup();
     const { desktop } = setup();
@@ -111,6 +111,10 @@ describe('NavBar links', () => {
     expect(await screen.findByRole('menuitem', { name: 'Quick theme lookup' })).toHaveAttribute(
       'href',
       '/quick',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Other branches' })).toHaveAttribute(
+      'href',
+      '/branches',
     );
   });
 

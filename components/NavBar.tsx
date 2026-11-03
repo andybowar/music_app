@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Building2,
   CalendarPlus,
   CircleUser,
   Ellipsis,
@@ -72,6 +73,7 @@ export interface NavOverflowLink {
  */
 export const NAV_OVERFLOW_LINKS: readonly NavOverflowLink[] = [
   { href: '/quick', label: 'Quick theme lookup', icon: Sparkles },
+  { href: '/branches', label: 'Other branches', icon: Building2 },
 ];
 
 const CREATE_ITEMS: ReadonlyArray<{ type: ListType; label: string; icon: LucideIcon }> = [

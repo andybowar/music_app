@@ -1364,7 +1364,8 @@
       "blocks": [
         "LIB-18",
         "LIST-07",
-        "SRCH-09"
+        "SRCH-09",
+        "LIST-10"
       ],
       "owns": [
         "components/song/panels/KeyPanel.tsx",
@@ -2297,6 +2298,7 @@
       ],
       "blocks": [
         "H-01",
+        "LIST-10",
         "PLAY-05",
         "SHR-04"
       ],
@@ -2592,6 +2594,34 @@
         "REQ-NAV-01"
       ],
       "file": "tasks/LIST-09.md",
+      "status": "done"
+    },
+    {
+      "id": "LIST-10",
+      "title": "Label first chords clearly",
+      "phase": 3,
+      "wave": 10,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIST-07",
+        "UI-06"
+      ],
+      "blocks": [],
+      "owns": [],
+      "touches": [
+        "features/lists/ui/ItemOverrideEditor.tsx",
+        "features/lists/ui/ItemOverrideEditor.test.tsx",
+        "components/song/panels/KeyPanel.tsx",
+        "components/song/panels/KeyPanel.test.tsx"
+      ],
+      "reqs": [
+        "REQ-LIB-08",
+        "REQ-LIST-04",
+        "REQ-ROW-02"
+      ],
+      "file": "tasks/LIST-10.md",
       "status": "done"
     },
     {

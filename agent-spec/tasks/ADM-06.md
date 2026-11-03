@@ -5,7 +5,7 @@ phase: 4
 wave: 11
 stream: fullstack
 size: L
-status: todo
+status: in_progress
 human_required: false
 depends_on: ["ADM-05", "DB-08"]
 blocks: ["SHR-05"]

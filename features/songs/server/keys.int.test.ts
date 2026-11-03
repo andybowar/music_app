@@ -30,6 +30,7 @@ const { and, eq, inArray, sql } = await import('drizzle-orm');
 const { auditLog, resources, songKeys, songs, users } = await import('@/db/schema');
 const { getDb } = await import('@/lib/db');
 const { setSongKeys } = await import('./keys');
+const { getAuditTrail } = await import('@/features/audit/server');
 
 const songIds: string[] = [];
 
@@ -216,6 +217,21 @@ describe('setSongKeys', () => {
     const saved = await save([k('G', true)]);
     expect(saved.map((s) => s.key)).toEqual(['G']);
     expect(await keyRows()).toHaveLength(1);
+  });
+
+  test('create and delete audits carry songId, so a deleted key stays in the song history', async () => {
+    const first = await save([k('G', true), k('D')]);
+    const dId = first.find((s) => s.key === 'D')!.id;
+    await save([k('G', true)]);
+
+    const audits = await getDb().select().from(auditLog).where(eq(auditLog.entityId, dId));
+    const byAction = Object.fromEntries(audits.map((a) => [a.action, a.diff]));
+    expect(byAction.create).toMatchObject({ songId: { from: null, to: songId } });
+    expect(byAction.delete).toMatchObject({ songId: { from: songId, to: null } });
+
+    const trail = await getAuditTrail('song', songId);
+    const dEntries = trail.filter((e) => e.entity === 'song_key' && e.entityId === dId);
+    expect(dEntries.map((e) => e.action).sort()).toEqual(['create', 'delete']);
   });
 
   test('a soft-deleted or unknown song is NOT_FOUND', async () => {

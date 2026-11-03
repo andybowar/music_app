@@ -8,7 +8,7 @@ size: L
 status: done
 human_required: false
 depends_on: ["AUTH-04", "AUTH-05", "UI-02", "DB-07"]
-blocks: ["ADM-02", "AUTH-06", "ADM-04"]
+blocks: ["ADM-02", "AUTH-06", "ADM-04", "ADM-05"]
 owns: ["app/(app)/admin/users/", "features/admin/server.ts", "features/admin/ui/users/", "app/dev/admin-users/"]
 touches: []
 requirements: ["REQ-AUTH-03", "REQ-AUTH-07", "REQ-AUTH-08"]

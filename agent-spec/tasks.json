@@ -898,6 +898,7 @@
         "LIST-07",
         "LIST-08",
         "SRCH-09",
+        "ADM-05",
         "BR-02",
         "LIST-09",
         "LIB-20"
@@ -1550,6 +1551,7 @@
       "blocks": [
         "ADM-02",
         "AUTH-06",
+        "ADM-05",
         "ADM-04"
       ],
       "owns": [
@@ -1893,7 +1895,9 @@
       "deps": [
         "ADM-01"
       ],
-      "blocks": [],
+      "blocks": [
+        "ADM-05"
+      ],
       "owns": [
         "app/(app)/admin/branches/",
         "features/admin/ui/branches/",
@@ -2229,6 +2233,7 @@
         "CNT-01"
       ],
       "blocks": [
+        "ADM-05",
         "H-03"
       ],
       "owns": [
@@ -2431,6 +2436,38 @@
         "REQ-ROW-02"
       ],
       "file": "tasks/SRCH-09.md",
+      "status": "done"
+    },
+    {
+      "id": "ADM-05",
+      "title": "Admin dashboard in the account menu",
+      "phase": 4,
+      "wave": 10,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "ADM-01",
+        "ADM-02",
+        "H-02",
+        "UI-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "app/(app)/admin/page.tsx",
+        "app/(app)/admin/page.test.tsx",
+        "app/(app)/admin/loading.tsx",
+        "app/(app)/admin/error.tsx",
+        "features/admin/adminAreas.ts",
+        "features/admin/adminAreas.test.ts"
+      ],
+      "touches": [
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "reqs": [],
+      "file": "tasks/ADM-05.md",
       "status": "done"
     },
     {

@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { UserMenu } from '@/components/NavBar';
 import { branches } from '@/db/schema';
+import { ADMIN_HREF, canSeeAdmin } from '@/features/admin/adminAreas';
 import { readCurrentListId } from '@/features/lists/server/currentList';
 import { addListItem, removeListItem } from '@/features/lists/server/items';
 import { createList, getList, listLists } from '@/features/lists/server/lists';
@@ -112,6 +113,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
                 email={user.email}
                 branchName={branchName}
                 signOut={signOut}
+                adminHref={canSeeAdmin(user) ? ADMIN_HREF : null}
               />
             </div>
           </header>

@@ -12,6 +12,7 @@ import {
   LogOut,
   Plus,
   Search,
+  Shield,
   Share2,
   Sparkles,
   type LucideIcon,
@@ -320,10 +321,12 @@ export interface UserMenuProps {
   branchName: string | null;
   /** Server action that ends the session and redirects to `/login`. */
   signOut(): Promise<void>;
+  /** Link to the admin dashboard (ADM-05), or omitted/null to hide it. Pass `canSeeAdmin(user)`. */
+  adminHref?: string | null;
 }
 
 /** Account menu in the app header: who is signed in, their branch, and Sign out. */
-export function UserMenu({ name, email, branchName, signOut }: UserMenuProps) {
+export function UserMenu({ name, email, branchName, signOut, adminHref = null }: UserMenuProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
@@ -344,6 +347,17 @@ export function UserMenu({ name, email, branchName, signOut }: UserMenuProps) {
             </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {adminHref ? (
+            <>
+              <DropdownMenuItem asChild className="min-h-10">
+                <Link href={adminHref}>
+                  <Shield aria-hidden />
+                  Admin
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
           <DropdownMenuItem className="min-h-10" onSelect={() => formRef.current?.requestSubmit()}>
             <LogOut aria-hidden />
             Sign out

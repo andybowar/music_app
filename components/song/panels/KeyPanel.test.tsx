@@ -46,6 +46,11 @@ describe('KeyPanel', () => {
     expect(chords()).toEqual(['D', 'D', 'G', 'D']);
   });
 
+  it('labels the grid "First chords in <key>" visibly (LIST-10)', () => {
+    render(<KeyPanel keys={keys} />);
+    expect(screen.getByRole('heading', { name: 'First chords in D' })).toBeVisible();
+  });
+
   it('shows the chosen key’s four first chords, with X for a missing one', async () => {
     const user = userEvent.setup();
     render(<KeyPanel keys={keys} />);

@@ -84,7 +84,10 @@ const selectClass =
   'h-10 w-full min-w-0 rounded-md border border-input bg-background px-3 text-base outline-none ' +
   'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm';
 
-/** First chords for one key, "X" where unknown (REQ-LIST-04). */
+/**
+ * First chords for one key, "X" where unknown (REQ-LIST-04). Led by a visible "First chords"
+ * label so the slots don't read as a key per section (LIST-10).
+ */
 export function FirstChords({
   chords,
   className,
@@ -93,19 +96,24 @@ export function FirstChords({
   className?: string;
 }) {
   return (
-    <dl className={cn('flex flex-wrap gap-x-3 gap-y-1 text-sm', className)}>
-      {CHORD_SLOTS.map((slot) => (
-        <div key={slot} className="flex gap-1">
-          <dt className="text-muted-foreground">{CHORD_SLOT_LABEL[slot]}</dt>
-          <dd
-            className={cn('font-semibold', chords[slot] === MISSING_CHORD && 'text-destructive')}
-            aria-label={chords[slot] === MISSING_CHORD ? 'X, not known' : undefined}
-          >
-            {chords[slot] === MISSING_CHORD ? MISSING_CHORD : displayKey(chords[slot])}
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <div className={cn('flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm', className)}>
+      <span aria-hidden="true" className="font-medium">
+        First chords
+      </span>
+      <dl aria-label="First chords" className="contents">
+        {CHORD_SLOTS.map((slot) => (
+          <div key={slot} className="flex gap-1">
+            <dt className="text-muted-foreground">{CHORD_SLOT_LABEL[slot]}</dt>
+            <dd
+              className={cn('font-semibold', chords[slot] === MISSING_CHORD && 'text-destructive')}
+              aria-label={chords[slot] === MISSING_CHORD ? 'X, not known' : undefined}
+            >
+              {chords[slot] === MISSING_CHORD ? MISSING_CHORD : displayKey(chords[slot])}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 

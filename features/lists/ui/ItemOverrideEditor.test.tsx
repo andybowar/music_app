@@ -9,6 +9,7 @@ import { ENERGY_LEVELS, ENERGY_META, MISSING_CHORD, type ListItem } from '@/type
 
 import {
   ALL_KEYS,
+  FirstChords,
   ItemOverrideEditor,
   UploadPrompt,
   parseBpm,
@@ -187,5 +188,21 @@ describe('UploadPrompt', () => {
     render(<UploadPrompt songId={song.id} songKey="Bb" linked={false} />);
     expect(screen.getByText('No chords or files for B♭ yet.')).toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+});
+
+describe('FirstChords (LIST-10)', () => {
+  it('leads with a visible "First chords" label so slots don’t read as section keys', () => {
+    const { container } = render(
+      <FirstChords chords={{ intro: 'D', verse: 'D', chorus: 'G', bridge: MISSING_CHORD }} />,
+    );
+    expect(screen.getByText('First chords')).toBeVisible();
+    const list = container.querySelector<HTMLElement>('dl[aria-label="First chords"]')!;
+    expect(
+      within(list)
+        .getAllByRole('term')
+        .map((t) => t.textContent),
+    ).toEqual(['Intro', 'Verse', 'Chorus', 'Bridge']);
+    expect(within(list).getByLabelText('X, not known')).toBeInTheDocument();
   });
 });

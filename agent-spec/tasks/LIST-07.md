@@ -8,7 +8,7 @@ size: L
 status: done
 human_required: false
 depends_on: ["LIST-01", "LIST-02", "UI-05", "UI-02", "UI-06"]
-blocks: ["H-01", "PLAY-05", "SHR-04", "LIST-10"]
+blocks: ["H-01", "PLAY-05", "SHR-04", "LIST-10", "LIST-11"]
 owns: ["app/(app)/lists/[id]/", "features/lists/ui/SetlistView.tsx", "features/lists/ui/ItemOverrideEditor.tsx", "app/dev/setlist/", "tests/e2e/setlist.spec.ts"]
 touches: []
 requirements: ["REQ-LIST-03", "REQ-LIST-04", "REQ-LIST-06"]

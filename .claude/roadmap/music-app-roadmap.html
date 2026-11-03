@@ -1,0 +1,279 @@
+<title>Music App Roadmap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column; a wave "running order" for prod features, then remaining tasks grouped by wave. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --fg: #1b2129;
+  --muted: #5b6573;
+  --line: #dde1e6;
+  --accent: #1f5f99;
+  --accent-soft: #e4eef8;
+  --review: #7b4fa0;
+  --review-soft: #f1eaf7;
+  --ready: #2e7d32;
+  --ready-soft: #e6f2e6;
+  --wait: #6b7380;
+  --wait-soft: #eceef1;
+  --human: #a8580c;
+  --human-soft: #fbeedd;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161b; --surface: #1a2027; --fg: #e6e9ed; --muted: #9aa4b1; --line: #2c343e;
+    --accent: #7db4e6; --accent-soft: #1d2d3e;
+    --review: #c3a2e0; --review-soft: #2c2236;
+    --ready: #86c98a; --ready-soft: #1d2e1f;
+    --wait: #a3abb6; --wait-soft: #252b33;
+    --human: #f0b06a; --human-soft: #36281a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161b; --surface: #1a2027; --fg: #e6e9ed; --muted: #9aa4b1; --line: #2c343e;
+  --accent: #7db4e6; --accent-soft: #1d2d3e;
+  --review: #c3a2e0; --review-soft: #2c2236;
+  --ready: #86c98a; --ready-soft: #1d2e1f;
+  --wait: #a3abb6; --wait-soft: #252b33;
+  --human: #f0b06a; --human-soft: #36281a;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+}
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+  display: grid; gap: 40px;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: 2rem; font-weight: 700; }
+h2 { font-size: 1.4rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 500; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 65ch; }
+.mono { font-family: var(--font-mono); font-size: 0.82rem; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header { display: grid; gap: 12px; }
+.eyebrow { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+.stats { display: flex; flex-wrap: wrap; gap: 8px 24px; font-variant-numeric: tabular-nums; }
+.stat { display: grid; }
+.stat b { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
+.stat span { color: var(--muted); font-size: 0.85rem; }
+.bar { height: 8px; border-radius: 4px; background: var(--wait-soft); overflow: hidden; display: flex; max-width: 520px; }
+.bar i { display: block; height: 100%; }
+
+.notice {
+  border: 1px solid var(--human); background: var(--human-soft);
+  border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; max-width: 75ch;
+}
+.notice strong { color: var(--human); }
+
+section { display: grid; gap: 16px; }
+.section-head { display: grid; gap: 6px; }
+
+/* Prod timeline */
+.timeline { display: grid; gap: 0; }
+.tl-wave { display: grid; grid-template-columns: 88px 1fr; gap: 16px; padding-block: 14px; border-top: 1px solid var(--line); }
+.tl-wave:first-child { border-top: 0; }
+.tl-label { display: grid; align-content: start; gap: 2px; }
+.tl-label b { font-family: var(--font-display); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.tl-label span { font-size: 0.78rem; color: var(--muted); }
+.tl-label.current b { color: var(--accent); }
+.features { display: grid; gap: 10px; min-width: 0; }
+.feature { display: grid; gap: 2px; }
+.feature-title { font-weight: 600; }
+.feature-title .phase { font-weight: 500; font-size: 0.75rem; color: var(--muted); margin-left: 6px; letter-spacing: 0.04em; }
+.feature p { color: var(--muted); font-size: 0.9rem; }
+.feature .via { font-size: 0.8rem; color: var(--muted); }
+
+/* Filters */
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controls input, .controls select {
+  font: inherit; font-size: 0.9rem; color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; min-height: 38px;
+}
+.controls input { flex: 1 1 220px; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: inherit; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; min-height: 32px;
+}
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.count { color: var(--muted); font-size: 0.85rem; }
+
+/* Task list */
+.wave-group { display: grid; gap: 8px; }
+.wave-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding-top: 8px; }
+.wave-head .count { margin-left: auto; }
+.tasks { display: grid; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.task { display: grid; grid-template-columns: 92px 1fr auto; gap: 4px 14px; padding: 12px 14px; border-top: 1px solid var(--line); align-items: start; }
+.task:first-child { border-top: 0; }
+.task .id { padding-top: 2px; }
+.task .body { display: grid; gap: 2px; min-width: 0; }
+.task .t { font-weight: 600; }
+.task .goal { color: var(--muted); font-size: 0.9rem; }
+.task .meta { color: var(--muted); font-size: 0.78rem; }
+.pill { font-size: 0.75rem; font-weight: 600; border-radius: 999px; padding: 3px 10px; white-space: nowrap; justify-self: end; }
+.pill.review { color: var(--review); background: var(--review-soft); }
+.pill.ready { color: var(--ready); background: var(--ready-soft); }
+.pill.waiting { color: var(--wait); background: var(--wait-soft); }
+.pill.human { color: var(--human); background: var(--human-soft); }
+.empty { padding: 24px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.85rem; color: var(--muted); align-items: center; }
+footer { color: var(--muted); font-size: 0.82rem; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 1.6rem; }
+  .tl-wave { grid-template-columns: 1fr; gap: 8px; }
+  .tl-label { grid-auto-flow: column; justify-content: start; gap: 10px; align-items: baseline; }
+  .task { grid-template-columns: 1fr auto; }
+  .task .body { grid-column: 1 / -1; grid-row: 2; }
+  .pill { grid-row: 1; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">People of Praise Music App · snapshot 30 Oct 2026</div>
+    <h1>What's left to build, and when it reaches production</h1>
+    <p class="lede">Tasks run in waves. Every task in a wave can be built at the same time, and a wave can start once the waves before it are merged. A feature shows up on production when the task that wires it into the app merges into main.</p>
+    <div class="stats" id="stats"></div>
+    <div class="bar" id="bar" role="img"></div>
+    <div class="legend">
+      <span class="pill review">In review</span> PR open
+      <span class="pill ready">Ready</span> can start now
+      <span class="pill waiting">Waiting</span> on earlier tasks
+      <span class="pill human">Needs you</span> owner-only
+    </div>
+  </header>
+
+  <div class="notice">
+    <strong>Production isn't set up yet.</strong>
+    <p>The production Supabase project and its Vercel settings are part of OPS-01, which only you can do (see <span class="mono">agent-spec/HUMAN-TASKS.md</span>). Until then nothing that needs a database works on production. The waves below say when a feature's code will be on main; it appears on production at that point or as soon as OPS-01 is done, whichever is later.</p>
+  </div>
+
+  <section aria-labelledby="prod-h">
+    <div class="section-head">
+      <h2 id="prod-h">When features reach production</h2>
+      <p class="lede">Grouped by the wave whose merge makes each feature usable. Work currently in progress is wave 5.</p>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section aria-labelledby="tasks-h">
+    <div class="section-head">
+      <h2 id="tasks-h">Remaining tasks</h2>
+      <p class="lede">Everything not yet merged into main, by wave.</p>
+    </div>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Search by ID, title or purpose" aria-label="Search tasks">
+      <select id="stream" aria-label="Filter by area"></select>
+    </div>
+    <div class="chips" id="status-chips" role="group" aria-label="Filter by status"></div>
+    <div id="task-list" style="display:grid;gap:20px"></div>
+  </section>
+
+  <footer>Built from the task files in <span class="mono">agent-spec/tasks/</span> and open pull requests on 30 Oct 2026. It doesn't update itself; ask Claude to refresh it after merges.</footer>
+</div>
+
+<script>
+const DATA = {"tasks": [{"id": "OPS-01", "title": "Provision cloud environments", "goal": "Staging + production Supabase projects and Vercel project.", "wave": 1, "phase": 0, "stream": "ops", "size": "S", "state": "human", "pr": null, "blockedBy": []}, {"id": "OPS-03", "title": "Backups, restore drill, quota alerts", "goal": "Recoverability.", "wave": 2, "phase": 5, "stream": "ops", "size": "S", "state": "human", "pr": null, "blockedBy": []}, {"id": "DB-07", "title": "User access status (approval) migration", "goal": "Every account has an access status, and only approved accounts can reach any data.", "wave": 5, "phase": 0, "stream": "data", "size": "M", "state": "review", "pr": 56, "blockedBy": []}, {"id": "OPS-02", "title": "Sentry + structured logging", "goal": "See production errors.", "wave": 5, "phase": 5, "stream": "ops", "size": "S", "state": "review", "pr": 59, "blockedBy": []}, {"id": "SRCH-01", "title": "Search query builder", "goal": "One SQL query implementing text + all filters + sorts.", "wave": 5, "phase": 2, "stream": "backend", "size": "L", "state": "review", "pr": 57, "blockedBy": []}, {"id": "SRCH-06", "title": "FilterBar (concurrent dropdowns)", "goal": "All Diagram II filters, combinable.", "wave": 5, "phase": 2, "stream": "frontend", "size": "M", "state": "review", "pr": 53, "blockedBy": []}, {"id": "UI-05", "title": "SongRow", "goal": "The row from Diagram III, with every region a tap target.", "wave": 5, "phase": 1, "stream": "frontend", "size": "M", "state": "review", "pr": 54, "blockedBy": []}, {"id": "UI-06", "title": "Detail panels: Key, Composer, Usage, Reminder", "goal": "Panel contents opened from the song row.", "wave": 5, "phase": 1, "stream": "frontend", "size": "M", "state": "review", "pr": 52, "blockedBy": []}, {"id": "UI-07", "title": "ResourcesPanel + LyricsViewer", "goal": "Access to lyrics, sheet music, audio, projection files.", "wave": 5, "phase": 1, "stream": "frontend", "size": "M", "state": "review", "pr": 55, "blockedBy": []}, {"id": "AUTH-04", "title": "Session guard + requireUser", "goal": "Every protected route and action knows the current AppUser.", "wave": 6, "phase": 0, "stream": "auth", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["DB-07"]}, {"id": "AUTH-07", "title": "Self sign-up + account-status page", "goal": "Anyone can request an account (password or SSO). New accounts wait for an admin, and their owners can see where their request stands.", "wave": 6, "phase": 0, "stream": "auth", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["DB-07"]}, {"id": "DB-05", "title": "RLS + permission parity tests", "goal": "Prove RLS and `can()` agree for every role \u00d7 action.", "wave": 6, "phase": 0, "stream": "security", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["DB-07"]}, {"id": "SRCH-08", "title": "ResultsList", "goal": "Render result rows with infinite scroll.", "wave": 6, "phase": 2, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["UI-05"]}, {"id": "ADM-01", "title": "Admin: users", "goal": "Invite, approve or reject access requests, change role/branch, disable.", "wave": 7, "phase": 1, "stream": "frontend", "size": "L", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04", "DB-07"]}, {"id": "AUTH-03", "title": "SAML SSO", "goal": "SAML 2.0 login for the organization IdP, behind a feature flag.", "wave": 7, "phase": 0, "stream": "auth", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["AUTH-07"]}, {"id": "LIB-01", "title": "Song server actions (create/update/delete/get)", "goal": "Core song persistence and the SongDetail assembler.", "wave": 7, "phase": 1, "stream": "backend", "size": "L", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "LIB-02", "title": "Song keys action", "goal": "Replace-all save of keys and first chords.", "wave": 7, "phase": 1, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "LIB-03", "title": "Composers actions", "goal": "Composer lookup, create, ordering, POP flag, merge.", "wave": 7, "phase": 1, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "LIB-04", "title": "Themes actions", "goal": "Shared normalized theme vocabulary with per-section tagging.", "wave": 7, "phase": 1, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "LIB-05", "title": "Branch usage action", "goal": "Manual per-branch usage levels.", "wave": 7, "phase": 1, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "LIB-06", "title": "File uploads + signed URLs", "goal": "Private file storage per song/key.", "wave": 7, "phase": 1, "stream": "backend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "LIB-07", "title": "External links + YouTube parsing", "goal": "Attach YouTube/instruction links to keys.", "wave": 7, "phase": 1, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "LIST-02", "title": "List items server", "goal": "Add, remove, reorder, override.", "wave": 7, "phase": 3, "stream": "backend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "SRCH-10", "title": "Facet options", "goal": "Populate filter dropdowns from real data.", "wave": 7, "phase": 2, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["AUTH-04"]}, {"id": "ADM-02", "title": "Admin: branches", "goal": "Manage branches, codes, SSO group mapping.", "wave": 8, "phase": 1, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["ADM-01"]}, {"id": "AUTH-06", "title": "Account linking + deprovisioning", "goal": "Same person, one account; removed people lose access.", "wave": 8, "phase": 4, "stream": "auth", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["ADM-01", "AUTH-07"]}, {"id": "IMP-03", "title": "Import runner CLI", "goal": "`pnpm import --csv songs.csv --files ./folder [--dry-run]`.", "wave": 8, "phase": 1, "stream": "data", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["LIB-01", "LIB-02", "LIB-03", "LIB-04", "LIB-05", "LIB-06", "LIB-07"]}, {"id": "LIB-17", "title": "Song create/edit pages", "goal": "Wire the form sections to the server actions.", "wave": 8, "phase": 1, "stream": "frontend", "size": "L", "state": "waiting", "pr": null, "blockedBy": ["LIB-01", "LIB-02", "LIB-03", "LIB-04", "LIB-05", "LIB-06", "LIB-07"]}, {"id": "LIB-18", "title": "Song page", "goal": "Full view of one song.", "wave": 8, "phase": 1, "stream": "frontend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["LIB-01", "LIB-06", "UI-06", "UI-07"]}, {"id": "LIST-01", "title": "Lists server (create/get/list/rename/delete)", "goal": "List persistence and ListDetail assembly.", "wave": 8, "phase": 3, "stream": "backend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["LIB-01"]}, {"id": "SRCH-02", "title": "searchSongs action + default view", "goal": "Public entry point returning SearchResult.", "wave": 8, "phase": 2, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SRCH-01", "LIB-01", "AUTH-04"]}, {"id": "BR-01", "title": "Branch activity server", "goal": "What other branches are using / have added lately.", "wave": 9, "phase": 4, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["LIST-01", "SRCH-02"]}, {"id": "BR-03", "title": "Derived branch usage job", "goal": "Nightly usage levels from setlist history.", "wave": 9, "phase": 4, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["LIST-01", "LIB-05"]}, {"id": "BR-04", "title": "Quick theme lookup", "goal": "Meeting leader types a theme and shows results to the music leader.", "wave": 9, "phase": 4, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SRCH-02", "UI-05"]}, {"id": "CNT-03", "title": "Pilot data entry: first 50 songs", "goal": "Real songs in staging to validate the model.", "wave": 9, "phase": 1, "stream": "content", "size": "L", "state": "human", "pr": null, "blockedBy": []}, {"id": "H-02", "title": "Theme synonyms in search", "goal": "\"honor\" also finds \"glory\" songs.", "wave": 9, "phase": 5, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SRCH-02", "LIB-04"]}, {"id": "LIB-19", "title": "Song change history", "goal": "Show who changed what.", "wave": 9, "phase": 1, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["LIB-18"]}, {"id": "LIST-07", "title": "Setlist view + route", "goal": "View and edit a setlist.", "wave": 9, "phase": 3, "stream": "frontend", "size": "L", "state": "waiting", "pr": null, "blockedBy": ["LIST-01", "LIST-02", "UI-05", "UI-06"]}, {"id": "LIST-08", "title": "Open Setlist / Open Playlist index", "goal": "Find saved lists.", "wave": 9, "phase": 3, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["LIST-01"]}, {"id": "SHR-01", "title": "Share tokens server", "goal": "Read-only links to lists.", "wave": 9, "phase": 4, "stream": "backend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["LIST-01"]}, {"id": "SRCH-03", "title": "Fuzzy title fallback + did-you-mean", "goal": "Typo tolerance on titles.", "wave": 9, "phase": 2, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SRCH-02"]}, {"id": "SRCH-09", "title": "Library page (integration)", "goal": "The Worship Library screen.", "wave": 9, "phase": 2, "stream": "frontend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["SRCH-02", "SRCH-06", "SRCH-08", "SRCH-10", "UI-06", "UI-07", "LIB-06"]}, {"id": "BR-02", "title": "Branches page", "goal": "Browse other branches.", "wave": 10, "phase": 4, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["BR-01", "UI-05"]}, {"id": "H-01", "title": "PWA + offline setlists", "goal": "Installable; opened setlists work offline.", "wave": 10, "phase": 5, "stream": "frontend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["LIST-07", "LIB-18"]}, {"id": "H-03", "title": "Semantic theme search (optional)", "goal": "Find songs by meaning, e.g. a phrase from a prophetic word.", "wave": 10, "phase": 5, "stream": "backend", "size": "L", "state": "waiting", "pr": null, "blockedBy": ["H-02"]}, {"id": "LIST-09", "title": "Wire list creation + Add-to-List into app", "goal": "Create Event Setlist / Listening Playlist from nav; ADD on every row.", "wave": 10, "phase": 3, "stream": "frontend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["LIST-01", "LIST-02", "SRCH-09"]}, {"id": "PLAY-05", "title": "PlaylistView", "goal": "Playable listening playlist.", "wave": 10, "phase": 3, "stream": "frontend", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["LIST-07"]}, {"id": "SHR-02", "title": "Public share page", "goal": "What a recipient sees.", "wave": 10, "phase": 4, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SHR-01", "UI-05"]}, {"id": "SHR-03", "title": "Share by email", "goal": "Email a list to the ministry team.", "wave": 10, "phase": 4, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SHR-01"]}, {"id": "SRCH-11", "title": "Search performance test", "goal": "Prove search is fast at 5,000 songs.", "wave": 10, "phase": 2, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SRCH-03"]}, {"id": "ADM-04", "title": "Access request emails", "goal": "Admins hear about new access requests without checking the admin page, and people hear when they've been let in.", "wave": 11, "phase": 4, "stream": "backend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SHR-03", "AUTH-07", "ADM-01"]}, {"id": "H-04", "title": "Accessibility audit + fixes", "goal": "WCAG 2.1 AA on core screens.", "wave": 11, "phase": 5, "stream": "qa", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["SRCH-09", "LIST-09", "PLAY-05", "LIB-17"]}, {"id": "SHR-04", "title": "ShareDialog + nav Share wiring", "goal": "Share from nav and from list views.", "wave": 11, "phase": 4, "stream": "frontend", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SHR-01", "SHR-03", "LIST-09", "LIST-07", "PLAY-05"]}, {"id": "DOC-01", "title": "User guide", "goal": "How members and music leaders use the app.", "wave": 12, "phase": 5, "stream": "content", "size": "S", "state": "waiting", "pr": null, "blockedBy": ["SRCH-09", "LIST-09", "SHR-04"]}, {"id": "H-05", "title": "End-to-end journey suite", "goal": "Guard the main flows.", "wave": 12, "phase": 5, "stream": "qa", "size": "M", "state": "waiting", "pr": null, "blockedBy": ["SRCH-09", "LIST-09", "SHR-04", "PLAY-05", "LIB-17"]}, {"id": "PILOT-01", "title": "Pilot branch rollout", "goal": "One branch uses the app for 4 weeks.", "wave": 13, "phase": 5, "stream": "content", "size": "L", "state": "human", "pr": null, "blockedBy": []}], "features": [{"name": "Sign in and reach the app", "desc": "Password, Google and Microsoft sign-in protect every page. Disabled accounts are signed out.", "via": ["AUTH-04"], "wave": 6, "phase": 0}, {"name": "Request an account", "desc": "Anyone can sign up or sign in with SSO. New accounts wait on an account-status page until approved.", "via": ["AUTH-07"], "wave": 6, "phase": 0}, {"name": "Admin: approve and manage users", "desc": "Admins invite people, approve or reject requests, change roles and branches, and disable accounts.", "via": ["ADM-01"], "wave": 7, "phase": 1}, {"name": "SAML sign-in", "desc": "Sign-in through the organization's own identity provider, behind a feature flag.", "via": ["AUTH-03"], "wave": 7, "phase": 0}, {"name": "Admin: branches", "desc": "Add branches, set their two-letter codes, and map SSO groups to branches.", "via": ["ADM-02"], "wave": 8, "phase": 1}, {"name": "Account linking and removal", "desc": "One account per person across sign-in methods; removed people lose access.", "via": ["AUTH-06"], "wave": 8, "phase": 4}, {"name": "Add and edit songs", "desc": "The full song form: basic info, keys and first chords, lyrics, themes, files and links, branch usage.", "via": ["LIB-17"], "wave": 8, "phase": 1}, {"name": "Song page", "desc": "One song in full: lyrics, sheet music and audio by key, projection files, composers and usage.", "via": ["LIB-18"], "wave": 8, "phase": 1}, {"name": "Bulk import of existing songs", "desc": "An admin script that loads a spreadsheet and a folder of files. Run from a terminal, not a page.", "via": ["IMP-03"], "wave": 8, "phase": 1}, {"name": "Worship Library", "desc": "The home screen: search by title, lyrics, theme or composer; filter by energy, key, decade, branch use and first chords; sort.", "via": ["SRCH-09", "SRCH-10"], "wave": 9, "phase": 2}, {"name": "Typo-tolerant search", "desc": "Misspelled titles still match, with a \"did you mean\" suggestion.", "via": ["SRCH-03"], "wave": 9, "phase": 2}, {"name": "Theme synonyms", "desc": "Searching \"honor\" also finds songs tagged \"glory\".", "via": ["H-02"], "wave": 9, "phase": 5}, {"name": "Quick theme lookup", "desc": "A meeting leader types a theme and shows the matches to the music leader.", "via": ["BR-04"], "wave": 9, "phase": 4}, {"name": "Song change history", "desc": "Who changed what on a song, and when.", "via": ["LIB-19"], "wave": 9, "phase": 1}, {"name": "View and edit setlists", "desc": "Open a saved setlist or playlist, reorder songs, and set the key, BPM or energy for the event.", "via": ["LIST-07", "LIST-08"], "wave": 9, "phase": 3}, {"name": "Usage from setlist history", "desc": "Each branch's usage levels are filled in nightly from the setlists it actually used.", "via": ["BR-03"], "wave": 9, "phase": 4}, {"name": "Create lists and ADD from any song", "desc": "Create Event Setlist and Create Listening Playlist in the nav, plus the ADD menu on every song row.", "via": ["LIST-09"], "wave": 10, "phase": 3}, {"name": "Listening playlist player", "desc": "Play a playlist's MP3s and YouTube links in order from the player bar.", "via": ["PLAY-05"], "wave": 10, "phase": 3}, {"name": "Branches page", "desc": "See what other branches have added and are using lately.", "via": ["BR-02"], "wave": 10, "phase": 4}, {"name": "Install as an app, setlists offline", "desc": "Add the app to a phone's home screen; setlists you've opened keep working without a connection.", "via": ["H-01"], "wave": 10, "phase": 5}, {"name": "Semantic theme search (optional)", "desc": "Find songs by meaning, for example a phrase from a prophetic word.", "via": ["H-03"], "wave": 10, "phase": 5}, {"name": "Share a setlist", "desc": "Share from the nav or a list by read-only link or by email to the ministry team. Recipients don't need an account.", "via": ["SHR-04", "SHR-02", "SHR-03"], "wave": 11, "phase": 4}, {"name": "Account request emails", "desc": "Admins get an email about new requests; people get one when they're approved.", "via": ["ADM-04"], "wave": 11, "phase": 4}, {"name": "Accessibility fixes", "desc": "WCAG 2.1 AA audit and fixes on the core screens.", "via": ["H-04"], "wave": 11, "phase": 5}, {"name": "User guide", "desc": "How members and music leaders use the app.", "via": ["DOC-01"], "wave": 12, "phase": 5}, {"name": "Pilot with one branch", "desc": "One branch uses the app for four weeks, then a go or no-go for all branches.", "via": ["PILOT-01"], "wave": 13, "phase": 5}], "current": 5, "total": 96, "done": 40};
+const STATUS = {
+  review: { label: "In review", cls: "review" },
+  ready: { label: "Ready", cls: "ready" },
+  waiting: { label: "Waiting", cls: "waiting" },
+  human: { label: "Needs you", cls: "human" },
+};
+const PHASES = ["Foundations", "Library", "Search", "Lists", "Sharing", "Hardening"];
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const md = (s) => esc(s).replace(/`([^`]+)`/g, '<span class="mono">$1</span>');
+
+// Summary
+const remaining = DATA.tasks;
+const counts = { review: 0, ready: 0, waiting: 0, human: 0 };
+remaining.forEach((t) => counts[t.state]++);
+const total = DATA.total, done = DATA.done;
+document.getElementById("stats").innerHTML = [
+  [done + " / " + total, "tasks merged"],
+  [counts.review, "in review"],
+  [counts.ready, "ready to start"],
+  [counts.waiting, "waiting"],
+  [counts.human, "need you"],
+].map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+const bar = document.getElementById("bar");
+bar.setAttribute("aria-label", `${done} of ${total} tasks merged, ${counts.review} in review`);
+bar.innerHTML = `<i style="width:${(done / total) * 100}%;background:var(--accent)"></i><i style="width:${(counts.review / total) * 100}%;background:var(--review)"></i>`;
+
+// Timeline
+const byWave = {};
+DATA.features.forEach((f) => (byWave[f.wave] ??= []).push(f));
+document.getElementById("timeline").innerHTML = Object.keys(byWave).map(Number).sort((a, b) => a - b).map((w) => `
+  <div class="tl-wave">
+    <div class="tl-label${w === DATA.current ? " current" : ""}"><b>Wave ${w}</b><span>${w === DATA.current ? "in progress" : w - DATA.current + " after this one"}</span></div>
+    <div class="features">${byWave[w].map((f) => `
+      <div class="feature">
+        <div class="feature-title">${esc(f.name)}<span class="phase">${PHASES[f.phase]}</span></div>
+        <p>${md(f.desc)}</p>
+        <div class="via">Ships with <span class="mono">${f.via.join(", ")}</span></div>
+      </div>`).join("")}
+    </div>
+  </div>`).join("");
+
+// Task list
+const streams = [...new Set(remaining.map((t) => t.stream))].sort();
+const streamSel = document.getElementById("stream");
+streamSel.innerHTML = `<option value="">All areas</option>` + streams.map((s) => `<option value="${s}">${s}</option>`).join("");
+let activeStatus = "";
+const chipBox = document.getElementById("status-chips");
+function renderChips() {
+  chipBox.innerHTML = [["", "All"], ...Object.entries(STATUS).map(([k, v]) => [k, v.label])]
+    .map(([k, l]) => `<button type="button" class="chip" data-s="${k}" aria-pressed="${activeStatus === k}">${l}${k ? " · " + counts[k] : ""}</button>`).join("");
+}
+chipBox.addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  activeStatus = b.dataset.s; renderChips(); renderTasks();
+});
+function renderTasks() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const s = streamSel.value;
+  const list = remaining.filter((t) =>
+    (!activeStatus || t.state === activeStatus) && (!s || t.stream === s) &&
+    (!q || (t.id + " " + t.title + " " + t.goal).toLowerCase().includes(q)));
+  const groups = {};
+  list.forEach((t) => (groups[t.wave] ??= []).push(t));
+  const el = document.getElementById("task-list");
+  if (!list.length) { el.innerHTML = `<div class="empty">No tasks match. Clear the search or pick another filter.</div>`; return; }
+  el.innerHTML = Object.keys(groups).map(Number).sort((a, b) => a - b).map((w) => `
+    <div class="wave-group">
+      <div class="wave-head"><h3>Wave ${w}${w === DATA.current ? " · in progress" : ""}</h3><span class="count">${groups[w].length} task${groups[w].length > 1 ? "s" : ""}</span></div>
+      <div class="tasks">${groups[w].map((t) => `
+        <div class="task">
+          <span class="id mono">${t.id}</span>
+          <div class="body">
+            <span class="t">${esc(t.title)}</span>
+            <span class="goal">${md(t.goal)}</span>
+            <span class="meta">${PHASES[t.phase]} · ${t.stream} · size ${t.size}${t.pr ? ` · <a href="https://github.com/andybowar/music_app/pull/${t.pr}" target="_blank" rel="noopener">PR #${t.pr}</a>` : ""}${t.blockedBy.length ? ` · waiting on <span class="mono">${t.blockedBy.join(", ")}</span>` : ""}</span>
+          </div>
+          <span class="pill ${STATUS[t.state].cls}">${STATUS[t.state].label}</span>
+        </div>`).join("")}
+      </div>
+    </div>`).join("");
+}
+document.getElementById("q").addEventListener("input", renderTasks);
+streamSel.addEventListener("change", renderTasks);
+renderChips(); renderTasks();
+</script>

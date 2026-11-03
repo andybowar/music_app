@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["PLAY-02", "PLAY-03", "PLAY-04", "PLAY-06", "LIST-07"]
 blocks: ["H-04", "SHR-04", "H-05"]
-owns: ["features/player/ui/PlaylistView.tsx", "features/player/ui/usePlayer.ts"]
+owns: ["features/player/ui/PlaylistView.tsx", "features/player/ui/usePlayer.ts", "app/dev/playlist/", "tests/e2e/playlist.spec.ts"]
 touches: ["app/(app)/lists/[id]/page.tsx"]
 requirements: ["REQ-LIST-05"]
 ---
@@ -42,6 +42,6 @@ requirements: ["REQ-LIST-05"]
 - [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `features/player/ui/PlaylistView.tsx`, `features/player/ui/usePlayer.ts`
+- **Owns** (create/modify freely): `features/player/ui/PlaylistView.tsx`, `features/player/ui/usePlayer.ts`, `app/dev/playlist/`, `tests/e2e/playlist.spec.ts`
 - **May touch** (minimal integration edits only, described in PR): `app/(app)/lists/[id]/page.tsx`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

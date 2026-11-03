@@ -2521,10 +2521,16 @@
       "owns": [
         "app/manifest.ts",
         "app/sw.ts",
-        "public/icons/"
+        "app/sw.test.ts",
+        "public/icons/",
+        "tests/e2e/offline.spec.ts"
       ],
       "touches": [
-        "next.config.ts"
+        "next.config.ts",
+        "middleware.ts",
+        "middleware.test.ts",
+        ".gitignore",
+        "eslint.config.mjs"
       ],
       "reqs": [
         "REQ-NF-01",
@@ -2582,7 +2588,8 @@
       ],
       "owns": [
         "features/lists/ui/AddToListAction.tsx",
-        "features/lists/ui/NavListActions.tsx"
+        "features/lists/ui/NavListActions.tsx",
+        "tests/e2e/list-create-add.spec.ts"
       ],
       "touches": [
         "app/(app)/layout.tsx",
@@ -2646,7 +2653,9 @@
       ],
       "owns": [
         "features/player/ui/PlaylistView.tsx",
-        "features/player/ui/usePlayer.ts"
+        "features/player/ui/usePlayer.ts",
+        "app/dev/playlist/",
+        "tests/e2e/playlist.spec.ts"
       ],
       "touches": [
         "app/(app)/lists/[id]/page.tsx"

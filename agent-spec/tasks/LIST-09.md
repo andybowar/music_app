@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["LIST-04", "LIST-05", "LIST-06", "LIST-01", "LIST-02", "SRCH-09", "UI-02"]
 blocks: ["H-04", "SHR-04", "DOC-01", "H-05", "LIB-20"]
-owns: ["features/lists/ui/AddToListAction.tsx", "features/lists/ui/NavListActions.tsx"]
+owns: ["features/lists/ui/AddToListAction.tsx", "features/lists/ui/NavListActions.tsx", "tests/e2e/list-create-add.spec.ts"]
 touches: ["app/(app)/layout.tsx", "features/search/ui/LibraryView.tsx"]
 requirements: ["REQ-LIST-01", "REQ-LIST-02", "REQ-NAV-01"]
 ---
@@ -48,6 +48,6 @@ requirements: ["REQ-LIST-01", "REQ-LIST-02", "REQ-NAV-01"]
 - [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `features/lists/ui/AddToListAction.tsx`, `features/lists/ui/NavListActions.tsx`
+- **Owns** (create/modify freely): `features/lists/ui/AddToListAction.tsx`, `features/lists/ui/NavListActions.tsx`, `tests/e2e/list-create-add.spec.ts`
 - **May touch** (minimal integration edits only, described in PR): `app/(app)/layout.tsx`, `features/search/ui/LibraryView.tsx`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

@@ -1,6 +1,6 @@
 # CR LIST-09 · Own the e2e spec for "create setlist → add 3 songs"
 
-**Status:** proposed (opened with the LIST-09 PR).
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/LIST-09.md`; the spec merged with LIST-09.
 
 ## Problem
 

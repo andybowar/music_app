@@ -100,6 +100,18 @@ describe('normalisePath', () => {
   });
 });
 
+describe('isPublicRoute: PWA files (H-01)', () => {
+  it('lets the manifest and the service worker through without a session', () => {
+    expect(isPublicRoute('/sw.js')).toBe(true);
+    expect(isPublicRoute('/manifest.webmanifest')).toBe(true);
+  });
+
+  it('only matches those exact files (and below), not look-alikes', () => {
+    expect(isPublicRoute('/sw.jsx')).toBe(false);
+    expect(isPublicRoute('/manifest.webmanifest.bak')).toBe(false);
+  });
+});
+
 describe('isPublicRoute', () => {
   it.each([
     '/',

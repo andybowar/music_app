@@ -1,6 +1,6 @@
 # CR PLAY-05 · Playlist gallery + e2e spec, and which recordings a playlist row offers
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03, with option **(a)**: `PlaylistView` gains optional `songs?` (and the `adapters?` seam), `contracts/ui.md` updated. Applied to `tasks/PLAY-05.md`; the gallery, e2e spec and `songs` wiring (PLAY-05 already touches `app/(app)/lists/[id]/page.tsx`) are a PLAY-05 follow-up.
 
 ## Problem
 

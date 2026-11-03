@@ -19,6 +19,12 @@
  * A list the caller cannot read (or a soft-deleted one) is NOT_FOUND rather than FORBIDDEN,
  * like the list actions, so its existence is not revealed.
  *
+ * - `sendShareEmail` (SHR-03, REQ-SHARE-02) emails a summary of the list and its link to up to
+ *   20 recipients, in BCC so nobody sees the others' addresses. Each email gets its own
+ *   never-expiring link from `createShare` (revocable like any other). Each user may send 10 share emails an hour, counted from
+ *   `audit_log` rows (entity `share_email`, recipient count only, never addresses); the SMTP
+ *   server's own sending limit (Gmail's daily quota) is also RATE_LIMITED.
+ *
  * Tokens are stored as issued, as contracts/schema.md and `Share.token` define them, so a link
  * can be shown again in the share dialog. RLS keeps `shares` readable only by users who can
  * write the list (db/migrations/0003_rls.sql).
@@ -30,10 +36,13 @@ import type { AppUser, ListDetail, ListItem, Resource, Share, UUID } from '@/typ
 
 import { randomBytes } from 'node:crypto';
 
-import { and, asc, desc, eq, gt, inArray, isNull, or, sql } from 'drizzle-orm';
+import { createElement } from 'react';
+
+import { and, asc, count, desc, eq, gt, gte, inArray, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import {
+  auditLog,
   branches,
   composers,
   listItems,
@@ -45,12 +54,15 @@ import {
   songs,
   users,
 } from '@/db/schema';
+import { ShareList, shareListSubject } from '@/emails/ShareList';
 import { assembleSongDetail } from '@/features/songs/server/assemble';
 import { ActionError, withAction } from '@/lib/action';
 import { requireUser } from '@/lib/auth';
 import { getDb } from '@/lib/db';
+import { EmailRateLimitError, isEmailConfigured, sendEmail } from '@/lib/email';
 import { env } from '@/lib/env';
 import { resolveItemDisplay } from '@/lib/lists/resolve';
+import { reportError } from '@/lib/log';
 import { assertCan, can } from '@/lib/permissions';
 
 /** A share plus the public link to it. */
@@ -72,6 +84,34 @@ const createSchema = z.object({
     .nullable()
     .optional()
     .refine((v) => v == null || Date.parse(v) > Date.now(), { error: EXPIRY_IN_PAST }),
+});
+
+/** Share-email limits (contracts/api.md): recipients per email, emails per user per hour. */
+const MAX_SHARE_EMAIL_RECIPIENTS = 20;
+const MAX_SHARE_EMAILS_PER_HOUR = 10;
+/** `audit_log.entity` of a sent share email; also the rate-limit counter. */
+const SHARE_EMAIL_ENTITY = 'share_email';
+
+const recipientSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(320, 'Enter a valid email address.')
+  .pipe(z.email({ error: 'Enter a valid email address.' }));
+const sendEmailSchema = z.object({
+  listId: idSchema,
+  to: z
+    .array(recipientSchema, { error: 'Add at least one email address.' })
+    .transform((list) => [...new Set(list)])
+    .pipe(
+      z
+        .array(z.string())
+        .min(1, 'Add at least one email address.')
+        .max(
+          MAX_SHARE_EMAIL_RECIPIENTS,
+          `Send to at most ${MAX_SHARE_EMAIL_RECIPIENTS} people at a time.`,
+        ),
+    ),
 });
 
 // ----- Helpers -----------------------------------------------------------------------------
@@ -186,6 +226,95 @@ export const listShares = withAction(async (listId: UUID): Promise<ShareWithUrl[
     .where(eq(shares.listId, id))
     .orderBy(desc(shares.createdAt), desc(shares.id));
   return rows.map(toShare);
+});
+
+/**
+ * A fresh never-expiring link for an email, made by `createShare` so the email gets exactly
+ * the link a user would copy. Only the returned `url` is used, never a stored token (CR
+ * SHR-01-hash-share-tokens: tokens will be stored hashed). The token in the url's last path
+ * segment is what `/share/[token]` itself reads.
+ */
+async function shareForEmail(listId: UUID): Promise<{ url: string; token: string }> {
+  const result = await createShare(listId);
+  if (!result.ok) throw new ActionError(result.error.code, result.error.message);
+  const { url } = result.data;
+  const token = decodeURIComponent(new URL(url).pathname.split('/').pop() ?? '');
+  return { url, token };
+}
+
+/** Share emails `userId` sent in the last hour. */
+async function shareEmailsInLastHour(userId: UUID): Promise<number> {
+  const [row] = await getDb()
+    .select({ n: count() })
+    .from(auditLog)
+    .where(
+      and(
+        eq(auditLog.actorId, userId),
+        eq(auditLog.entity, SHARE_EMAIL_ENTITY),
+        gte(auditLog.createdAt, sql`now() - interval '1 hour'`),
+      ),
+    );
+  return Number(row?.n ?? 0);
+}
+
+/**
+ * Email a summary of a list (keys and overrides included) and its read-only link
+ * (REQ-SHARE-02). At most 20 recipients, sent in BCC; at most 10 emails per user per hour.
+ */
+export const sendShareEmail = withAction(async (listId: UUID, to: string[]): Promise<void> => {
+  const user = await requireUser();
+  const data = sendEmailSchema.parse({ listId, to });
+  await assertListAccess(user, data.listId, 'share:create');
+
+  if (!isEmailConfigured() && process.env.NODE_ENV === 'production') {
+    // Dev and tests log the message instead; a deployed site without SMTP must say so.
+    throw new ActionError(
+      'INTERNAL',
+      "Email isn't set up on this site yet. Copy the link instead.",
+    );
+  }
+  if ((await shareEmailsInLastHour(user.id)) >= MAX_SHARE_EMAILS_PER_HOUR) {
+    throw new ActionError(
+      'RATE_LIMITED',
+      'You have sent a lot of share emails in the last hour. Try again later.',
+    );
+  }
+
+  const share = await shareForEmail(data.listId);
+  const list = await getSharedList(share.token);
+  if (!list) throw new ActionError('NOT_FOUND', LIST_NOT_FOUND);
+
+  try {
+    await sendEmail({
+      bcc: data.to,
+      replyTo: user.email,
+      subject: shareListSubject(list, user.name),
+      react: createElement(ShareList, { list, url: share.url, senderName: user.name }),
+    });
+  } catch (error) {
+    if (error instanceof EmailRateLimitError) {
+      throw new ActionError(
+        'RATE_LIMITED',
+        'The app has reached its email sending limit for now. Copy the link instead, or try again tomorrow.',
+      );
+    }
+    throw error;
+  }
+
+  try {
+    await getDb()
+      .insert(auditLog)
+      .values({
+        actorId: user.id,
+        entity: SHARE_EMAIL_ENTITY,
+        entityId: data.listId,
+        action: 'create',
+        diff: { recipients: { from: null, to: data.to.length } },
+      });
+  } catch (error) {
+    // The email went out; failing to count it must not report a failed send.
+    reportError(error, { handler: 'sendShareEmail' });
+  }
 });
 
 // ----- Public read -------------------------------------------------------------------------

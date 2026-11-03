@@ -16,7 +16,9 @@ Rules for everything below:
 4. [x] Section 4: Google sign-in app. Section 5 (Microsoft) skipped by project owner 2026-11-01 (need the Supabase project ref from step 2).
 5. [x] Section 8: Sentry account. Resend replaced by Gmail on 2026-11-02 (CR `OWNER-gmail-smtp-email`).
    - [ ] Section 6: Gmail sending account and app password, then point Supabase SMTP at it (section 7, step 3).
-6. [ ] Section 9: set Vercel environment variables (needs values from 2 to 8).
+6. [ ] Section 9: set Vercel environment variables (needs values from 2 to 8). Production done 2026-11-02; Preview still needs the staging values.
+   - [ ] Section 3: create the `staging` branch and set both projects' URL configuration (staging Google provider too).
+   - [ ] Section 2c: make yourself admin on each environment after your first sign-in.
 7. [ ] Section 10: write `docs/ops/environments.md`.
 8. [ ] Section 11: backups and restore drill (OPS-03, after OPS-01).
 9. [ ] Section 12: review the theme list (CNT-01) and tagging guide (CNT-02) with a music leader. Can run in parallel with everything above.
@@ -56,7 +58,18 @@ Unblocks: real SSO testing, hosted password reset, Vercel previews that reach a 
 Verify: both projects show "Healthy"; each has a private bucket named `resources`.
 Tick: `tasks/OPS-01.md` deliverable "Two Supabase projects; private `resources` bucket in each".
 
-Database tables are created by the deploy: once `MIGRATION_DATABASE_URL` is set for an environment (section 9), every Vercel deploy applies any pending migrations before building, and a failed migration fails the deploy. To run them by hand instead, paste the migration SQL into the Supabase SQL Editor or run `pnpm db:migrate` with `DATABASE_URL` set to the session pooler string. See `change-requests/OWNER-migrate-on-deploy.md`.
+Database tables are created by the deploy: once `MIGRATION_DATABASE_URL` is set for an environment (section 9), every Vercel deploy applies any pending migrations before building, and a failed migration fails the deploy. To run them by hand instead, paste the migration SQL into the Supabase SQL Editor or run `pnpm db:migrate` with `DATABASE_URL` set to the session pooler string. See `change-requests/OWNER-migrate-on-deploy.md`. Do **not** run `pnpm db:seed` against production: it loads fake test songs and users.
+
+### 2c. First admin
+
+New accounts start pending, and only an admin can approve them, so the first admin is made by hand. After your first sign-in on an environment, open that Supabase project's SQL Editor and run (with your sign-in email):
+
+```sql
+update public.users set role = 'admin', access_status = 'approved'
+where email = 'you@example.com';
+```
+
+Sign out and back in. From then on, approve everyone else in Admin › Users (`/admin/users`).
 
 ### 2b. Vercel project
 
@@ -69,20 +82,31 @@ Tick: `tasks/OPS-01.md` "Vercel project linked to repo; env vars set per environ
 
 ## 3. Supabase Auth: URL configuration
 
-Do this in **each** Supabase project. Prerequisite: section 2 and the Vercel domains.
+When someone signs in, the trip is app → Google → Supabase → back to the app. These settings tell Supabase which app addresses it may send people back to. Anything not on the list falls back to the Site URL.
 
-1. In the Supabase project, open Authentication and look for URL Configuration.
-2. Set **Site URL** to that environment's `APP_URL` (staging domain for the staging project, production domain for production). No trailing slash.
-3. Under **Redirect URLs**, click Add URL and add each of these (replace the host with your `APP_URL`):
-   - `https://<your-domain>/auth/callback**`
-   - `https://<your-domain>/reset/confirm`
-4. For Vercel preview deploys, also add the preview pattern to the staging project (replace `<team>` with your Vercel team slug shown in preview URLs):
-   - `https://*-<team>.vercel.app/auth/callback**`
-   - `https://*-<team>.vercel.app/reset/confirm`
-5. The `**` after `/auth/callback` is required: the app returns to `/auth/callback?next=...`, and without `**` the query string is rejected.
-6. Optional but recommended for the password reset email when opened on a different device: in Authentication, look for Email Templates, open **Reset password**, and set the link to `{{ .SiteURL }}/reset/confirm?token_hash={{ .TokenHash }}&type=recovery`. This needs the code change from `AUTH-01-reset-redirect-and-e2e` §2 (follow-up for the lead dev), so do it only after that lands.
+The addresses this project uses:
 
-Verify: on a deployed site, use Forgot password; the emailed link lands on `/reset/confirm`, not on the home page.
+| Environment | Supabase project | App address (`APP_URL`) |
+|---|---|---|
+| Production | `bxelmhsxazuqbdafwpvl` | `https://music-app-one-plum.vercel.app` |
+| Staging (previews) | `thzzzcioqylmbzsvmpgo` | `https://music-app-git-staging-andybowars-projects.vercel.app` |
+
+The staging address is Vercel's permanent address for the git branch `staging`. Every other preview gets a new random address on each push, so sign-in is tested at this one. Create the branch once: `git push music_app main:staging` (push main to it again whenever you want staging updated).
+
+In each project open Authentication, then URL Configuration:
+
+1. **Site URL**: that project's app address from the table. No trailing slash.
+2. **Redirect URLs**: exactly these, with the host replaced by that project's app address:
+   - `https://<app address>/auth/callback**` (the `**` is required: the app returns to `/auth/callback?next=…`, and without it the query string is rejected)
+   - `https://<app address>/reset/confirm`
+   - `https://<app address>/login` (where the sign-up confirmation email lands)
+3. **Staging only**, so sign-in also works from any preview address: `https://*-andybowars-projects.vercel.app/**`. Never add a wildcard to production.
+4. **Remove** any single-deployment address such as `https://music-gjnhfiy6a-andybowars-projects.vercel.app`. Those sit behind Vercel's login and end in "This page is unavailable".
+5. Optional, for reset emails opened on a different device: Email Templates, **Reset password**, link `{{ .SiteURL }}/reset/confirm?token_hash={{ .TokenHash }}&type=recovery`. Needs the code change from `AUTH-01-reset-redirect-and-e2e` §2 first.
+
+Also in the **staging** project: Authentication, Providers, **Google**: enable it with the same client ID and secret as production, and add `https://thzzzcioqylmbzsvmpgo.supabase.co/auth/v1/callback` to the Google OAuth app's Authorized redirect URIs (section 4).
+
+Verify: sign in with Google at each app address; you come back to the app (a new account lands on `/account-status`). Forgot password: the emailed link opens `/reset/confirm`.
 Tick: `tasks/OPS-01.md` (Google/Microsoft redirect URLs item).
 Unblocks: password reset and SSO on hosted environments.
 
@@ -173,15 +197,23 @@ Where: Vercel project, Settings, Environment Variables. For each row, add the va
 
 Rule for the Supabase values: Preview uses the **staging** project, Production uses the **production** project.
 
+Things that went wrong the first time (2026-11-02), so check them:
+- **Add each variable separately per environment.** One entry ticked for both Preview and Production holds one value for both, so previews would use the production database.
+- **Don't import `.env.example` or `.env.local`.** They hold blank or local-only values; an import produced a site that returned 500 on every page.
+- **Sensitive values can't be read back**, by you or by an agent. If you're unsure what you entered, set it again.
+- **`NEXT_PUBLIC_*` values are built into the app**, so they only take effect after a new deploy.
+- The removed `RESEND_API_KEY`, `NEXT_PUBLIC_SITE_URL`, `AUTH_GOOGLE_ENABLED` and `AUTH_MICROSOFT_ENABLED` are unused; delete them if they're still there.
+- From a terminal: `vercel env add NAME production --sensitive` (or `preview`) asks for the value without showing it; `vercel env ls` lists what's set.
+
 | Variable | Where to find the value | Environments |
 |---|---|---|
-| `APP_URL` | The site's public URL, no trailing slash (for example `https://<domain>`). Previews: if you can't set a stable URL, use the staging domain. | Preview, Production |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project, Project Settings, look for API (or Data API): Project URL | Preview, Production |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same page: the `anon` / public key | Preview, Production |
-| `SUPABASE_SERVICE_ROLE_KEY` | Same page: the `service_role` key. Secret; server only; mark Sensitive | Preview, Production |
-| `DATABASE_URL` | Supabase: click Connect (or Project Settings, Database) and copy the connection string. Prefer the pooled/transaction string for Vercel; put your DB password in it | Preview, Production |
+| `APP_URL` | Where sign-in returns to (section 3 table). Production: `https://music-app-one-plum.vercel.app`. Preview: `https://music-app-git-staging-andybowars-projects.vercel.app` (the `staging` branch's address). No trailing slash | Preview, Production |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project, Project Settings, look for API (or Data API): Project URL, for example `https://bxelmhsxazuqbdafwpvl.supabase.co`. The base address only: not the project name, and without `/rest/v1/` | Preview, Production |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same page: the `anon` / public key (the newer `sb_publishable_…` key works too) | Preview, Production |
+| `SUPABASE_SERVICE_ROLE_KEY` | Same page: the `service_role` key (or the newer `sb_secret_…` key). Secret; server only; mark Sensitive | Preview, Production |
+| `DATABASE_URL` | Supabase: click Connect and copy the **Transaction pooler** string (port `6543`), with your DB password in place of `[YOUR-PASSWORD]`. If the password has symbols such as `@ # / ?`, reset it to letters and numbers or URL-encode it | Preview, Production |
 | `MIGRATION_DATABASE_URL` | Supabase: click Connect and copy the **Session pooler** string (port `5432`), with your DB password filled in. Used only during the build to apply migrations; leave it out of an environment to skip migrations there. Mark Sensitive | Preview (staging), Production (production) |
-| `SSO_PROVIDERS` | You choose: `google`, `microsoft`, or `google,microsoft` (only providers you finished in sections 4 and 5) | Preview, Production |
+| `SSO_PROVIDERS` | `google` (Microsoft was skipped; use `google,microsoft` once section 5 is done) | Preview, Production |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` / `_SECRET` | Local Supabase CLI only. Hosted projects take these in Supabase, Providers (sections 4 and 5). Leave out of Vercel | Local only |
 | `SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID` / `_SECRET` / `_URL` | Same: local CLI only; hosted values go in Supabase, Providers | Local only |
 | `FEATURE_SAML` | `false` (SAML needs a paid Supabase tier; default per SPEC §6) | Preview, Production |
@@ -194,15 +226,15 @@ Rule for the Supabase values: Preview uses the **staging** project, Production u
 | `SENTRY_DSN` | Sentry project DSN (section 8) | Preview, Production |
 | `NEXT_PUBLIC_SENTRY_DSN` | Same DSN value | Preview, Production |
 | `CRON_SECRET` | Make up a long random string (for example generate 32+ random characters in a password manager). Use a different one per environment. Vercel sends it to the cron route at `/api/cron/usage` | Preview, Production |
-| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | Sentry (section 8). Used by `next.config.ts` for source maps; not yet in `.env.example` (see the OPS-02 CR) | Preview, Production |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | Sentry (section 8). Used by `next.config.ts` to upload source maps; all three are needed for that (optional) | Preview, Production |
 
-Verify: trigger a redeploy of a preview branch; the build passes, the preview loads `/login`, and signing in against staging works. Tick: `tasks/OPS-01.md` acceptance "Preview deploys build and reach staging DB".
+Verify: production loads `/login` with "Continue with Google" and `/library` redirects signed-out visitors to `/login?next=%2Flibrary`. For previews, push the `staging` branch (section 3) and check the same at its address, then sign in against staging. Tick: `tasks/OPS-01.md` acceptance "Preview deploys build and reach staging DB".
 
 ## 10. `docs/ops/environments.md`
 
 Prerequisite: sections 2 to 9 done. Owned by OPS-01.
 
-1. Create `docs/ops/environments.md` listing, with no secrets: the two Supabase project names and refs, the Vercel project and domains, which OAuth apps exist and where, the Gmail sending account, the Sentry project, who owns each account, and when the Entra client secret expires.
+1. Create `docs/ops/environments.md` listing, with no secrets: the two Supabase project names and refs, the Vercel project and domains, which OAuth apps exist and where, the Gmail sending account, the Sentry project, who owns each account, and when the Entra client secret expires. Note that Vercel Hobby keeps runtime logs for about an hour, so check logs right after reproducing a problem.
 2. Commit it on a branch `task/OPS-01-environments` with `status: done` in `tasks/OPS-01.md`, and open a PR titled `[OPS-01] Provision cloud environments`.
 
 Verify: the PR merges. Unblocks: OPS-03.

@@ -23,6 +23,8 @@ pnpm install
 cp .env.example .env.local
 pnpm db:start                # = supabase start; prints API URL, anon key, service_role key
 # copy those values into .env.local
+pnpm db:migrate              # create the tables (Drizzle migrations in db/migrations/)
+pnpm db:seed                 # sample data from fixtures/ (local and staging only, never production)
 pnpm exec playwright install chromium   # first time only, for e2e tests
 ```
 
@@ -39,7 +41,9 @@ pnpm exec playwright install chromium   # first time only, for e2e tests
 | `pnpm test:int`                  | Integration tests (`tests/db/**`, `*.int.test.ts`) against local Supabase |
 | `pnpm test:e2e`                  | Playwright (desktop Chrome + 360px phone); starts the dev server itself   |
 | `pnpm db:start` / `pnpm db:stop` | Start / stop the local Supabase stack                                     |
-| `pnpm db:reset`                  | Reset the local database                                                  |
+| `pnpm db:reset`                  | Wipe the local database (then run `pnpm db:migrate && pnpm db:seed`)      |
+| `pnpm db:migrate`                | Apply pending migrations (Vercel also runs this on every deploy)          |
+| `pnpm db:seed`                   | Load sample data from `fixtures/` (never on production)                   |
 
 Supabase Studio runs at http://127.0.0.1:54323 and the local mail catcher (password resets, invites) at http://127.0.0.1:54324 while the stack is up.
 

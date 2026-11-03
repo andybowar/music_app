@@ -10,6 +10,7 @@ import {
   ListMusic,
   ListPlus,
   LogOut,
+  Plus,
   Search,
   Share2,
   Sparkles,
@@ -50,6 +51,11 @@ export interface NavBarProps {
   onCreate(type: ListType): void;
   /** Share the current list. Only called when `currentList` is set. */
   onShare(): void;
+  /**
+   * Show "Add song" (→ `NAV_HREFS.addSong`) in the More menu. Pass `can(user, 'song:write')`;
+   * the form itself still checks (LIB-20).
+   */
+  canAddSong?: boolean;
 }
 
 /** Link targets. Home carries no params, which clears any search (REQ-NAV-03). */
@@ -59,6 +65,8 @@ export const NAV_HREFS = {
   search: '/library#search',
   openSetlist: '/lists?type=setlist',
   openPlaylist: '/lists?type=playlist',
+  /** The new-song form (LIB-17). Only offered to users with `song:write`. */
+  addSong: '/songs/new',
 } as const;
 
 export interface NavOverflowLink {
@@ -88,7 +96,7 @@ function shareTitle(currentList: List | null): string {
   return currentList ? `Share “${currentList.name}”` : 'Choose or create a list to share';
 }
 
-export function NavBar({ currentList, onCreate, onShare }: NavBarProps) {
+export function NavBar({ currentList, onCreate, onShare, canAddSong = false }: NavBarProps) {
   const pathname = usePathname();
   const onLibrary = pathname === NAV_HREFS.home;
 
@@ -99,12 +107,14 @@ export function NavBar({ currentList, onCreate, onShare }: NavBarProps) {
         onCreate={onCreate}
         onShare={onShare}
         onLibrary={onLibrary}
+        canAddSong={canAddSong}
       />
       <MobileNav
         currentList={currentList}
         onCreate={onCreate}
         onShare={onShare}
         onLibrary={onLibrary}
+        canAddSong={canAddSong}
       />
     </>
   );
@@ -119,7 +129,7 @@ const desktopItem = cn(
   focusRing,
 );
 
-function DesktopNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProps) {
+function DesktopNav({ currentList, onCreate, onShare, onLibrary, canAddSong }: NavVariantProps) {
   return (
     <nav aria-label="Main" className="hidden min-w-0 flex-1 xl:block" data-testid="nav-desktop">
       <ul className="flex flex-wrap items-center gap-1">
@@ -176,7 +186,7 @@ function DesktopNav({ currentList, onCreate, onShare, onLibrary }: NavVariantPro
             </span>
           </button>
         </li>
-        {NAV_OVERFLOW_LINKS.length > 0 ? (
+        {canAddSong || NAV_OVERFLOW_LINKS.length > 0 ? (
           <li>
             <DropdownMenu>
               <DropdownMenuTrigger className={desktopItem}>
@@ -184,7 +194,7 @@ function DesktopNav({ currentList, onCreate, onShare, onLibrary }: NavVariantPro
                 More
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <OverflowLinks />
+                <OverflowLinks canAddSong={canAddSong} />
               </DropdownMenuContent>
             </DropdownMenu>
           </li>
@@ -199,7 +209,7 @@ const tabItem = cn(
   focusRing,
 );
 
-function MobileNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProps) {
+function MobileNav({ currentList, onCreate, onShare, onLibrary, canAddSong }: NavVariantProps) {
   return (
     <nav
       aria-label="Main"
@@ -266,10 +276,10 @@ function MobileNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProp
                   </span>
                 </span>
               </DropdownMenuItem>
-              {NAV_OVERFLOW_LINKS.length > 0 ? (
+              {canAddSong || NAV_OVERFLOW_LINKS.length > 0 ? (
                 <>
                   <DropdownMenuSeparator />
-                  <OverflowLinks />
+                  <OverflowLinks canAddSong={canAddSong} />
                 </>
               ) : null}
             </DropdownMenuContent>
@@ -280,9 +290,17 @@ function MobileNav({ currentList, onCreate, onShare, onLibrary }: NavVariantProp
   );
 }
 
-function OverflowLinks() {
+function OverflowLinks({ canAddSong }: { canAddSong?: boolean }) {
   return (
     <DropdownMenuGroup>
+      {canAddSong ? (
+        <DropdownMenuItem asChild className="min-h-10">
+          <Link href={NAV_HREFS.addSong}>
+            <Plus aria-hidden />
+            Add song
+          </Link>
+        </DropdownMenuItem>
+      ) : null}
       {NAV_OVERFLOW_LINKS.map(({ href, label, icon: Icon }) => (
         <DropdownMenuItem key={href} asChild className="min-h-10">
           <Link href={href}>

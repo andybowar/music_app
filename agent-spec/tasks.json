@@ -899,7 +899,8 @@
         "LIST-08",
         "SRCH-09",
         "BR-02",
-        "LIST-09"
+        "LIST-09",
+        "LIB-20"
       ],
       "owns": [
         "app/(app)/layout.tsx",
@@ -1991,6 +1992,7 @@
       "blocks": [
         "CNT-03",
         "H-04",
+        "LIB-20",
         "H-05"
       ],
       "owns": [
@@ -2411,6 +2413,7 @@
       "blocks": [
         "LIST-09",
         "H-04",
+        "LIB-20",
         "DOC-01",
         "H-05"
       ],
@@ -2456,7 +2459,7 @@
         "REQ-BR-01"
       ],
       "file": "tasks/BR-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "H-01",
@@ -2484,7 +2487,7 @@
         "REQ-NF-02"
       ],
       "file": "tasks/H-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "H-03",
@@ -2528,6 +2531,7 @@
       ],
       "blocks": [
         "H-04",
+        "LIB-20",
         "SHR-04",
         "DOC-01",
         "H-05"
@@ -2546,7 +2550,7 @@
         "REQ-NAV-01"
       ],
       "file": "tasks/LIST-09.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "PLAY-05",
@@ -2579,7 +2583,7 @@
         "REQ-LIST-05"
       ],
       "file": "tasks/PLAY-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SHR-02",
@@ -2605,7 +2609,7 @@
         "REQ-SHARE-03"
       ],
       "file": "tasks/SHR-02.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SHR-03",
@@ -2639,7 +2643,7 @@
         "REQ-SHARE-02"
       ],
       "file": "tasks/SHR-03.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SRCH-11",
@@ -2662,7 +2666,7 @@
         "REQ-SRCH-07"
       ],
       "file": "tasks/SRCH-11.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "ADM-04",
@@ -2721,6 +2725,39 @@
       ],
       "file": "tasks/H-04.md",
       "status": "todo"
+    },
+    {
+      "id": "LIB-20",
+      "title": "Add song entry points (library + nav)",
+      "phase": 1,
+      "wave": 11,
+      "stream": "frontend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "LIB-17",
+        "SRCH-09",
+        "LIST-09",
+        "UI-02"
+      ],
+      "blocks": [],
+      "owns": [],
+      "touches": [
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx",
+        "features/lists/ui/NavListActions.tsx",
+        "features/lists/ui/NavListActions.test.tsx",
+        "features/search/ui/LibraryView.tsx",
+        "app/(app)/library/page.tsx",
+        "app/(app)/library/page.test.tsx",
+        "app/(app)/library/LibraryView.test.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "reqs": [
+        "REQ-LIB-01"
+      ],
+      "file": "tasks/LIB-20.md",
+      "status": "done"
     },
     {
       "id": "SHR-05",

@@ -56,7 +56,7 @@ All components are client components unless noted, props-only (no data fetching 
 | Component | Path | Props | Task |
 |---|---|---|---|
 | `ResponsivePanel` | `components/ResponsivePanel.tsx` | `{ trigger?: ReactNode; anchor?: ReactNode; open?: boolean; onOpenChange?(open: boolean): void; title: string; children: ReactNode }` — pass `trigger` (uncontrolled, as before) or `open` + `onOpenChange` (controlled, optional `anchor`) | UI-01 |
-| `NavBar` | `components/NavBar.tsx` | `{ currentList: List \| null; onCreate(type: ListType): void; onShare(): void }` | UI-02 |
+| `NavBar` | `components/NavBar.tsx` | `{ currentList: List \| null; onCreate(type: ListType): void; onShare(): void; canAddSong?: boolean }` (`canAddSong`: show "Add song" → `/songs/new` in the More menu; LIB-20) | UI-02 |
 | `EnergyChip` | `components/song/EnergyChip.tsx` | `{ energy: EnergyLevel \| null; bpm: number \| null; overridden?: boolean }` | UI-04 |
 | `KeyBadge` | `components/song/KeyBadge.tsx` | `{ value: string \| null; overridden?: boolean }` | UI-04 |
 | `TimeSigBadge` | `components/song/TimeSigBadge.tsx` | `{ value: string \| null }` | UI-04 |

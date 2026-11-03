@@ -30,10 +30,17 @@ beforeEach(() => {
 
 afterEach(cleanup);
 
-function setup(currentList = null as typeof list | null) {
+function setup(currentList = null as typeof list | null, canAddSong?: boolean) {
   const onCreate = vi.fn();
   const onShare = vi.fn();
-  render(<NavBar currentList={currentList} onCreate={onCreate} onShare={onShare} />);
+  render(
+    <NavBar
+      currentList={currentList}
+      onCreate={onCreate}
+      onShare={onShare}
+      canAddSong={canAddSong}
+    />,
+  );
   return {
     onCreate,
     onShare,
@@ -118,6 +125,25 @@ describe('NavBar links', () => {
     );
   });
 
+  it('desktop More menu offers "Add song" only with canAddSong (LIB-20)', async () => {
+    const user = userEvent.setup();
+    const { desktop } = setup(null, true);
+    await user.click(desktop.getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Add song' })).toHaveAttribute(
+      'href',
+      NAV_HREFS.addSong,
+    );
+    expect(NAV_HREFS.addSong).toBe('/songs/new');
+  });
+
+  it('hides "Add song" by default (members cannot add songs)', async () => {
+    const user = userEvent.setup();
+    const { desktop } = setup();
+    await user.click(desktop.getByRole('button', { name: 'More' }));
+    await screen.findByRole('menuitem', { name: 'Quick theme lookup' });
+    expect(screen.queryByRole('menuitem', { name: 'Add song' })).not.toBeInTheDocument();
+  });
+
   it('server-renders without throwing', () => {
     const html = renderToString(
       <NavBar currentList={list} onCreate={() => {}} onShare={() => {}} />,
@@ -200,6 +226,16 @@ describe('NavBar overflow menu (mobile)', () => {
     expect(share).toHaveTextContent('No current list');
     await user.click(share);
     expect(onShare).not.toHaveBeenCalled();
+  });
+
+  it('offers "Add song" with canAddSong (LIB-20)', async () => {
+    const user = userEvent.setup();
+    const { mobile } = setup(null, true);
+    await user.click(mobile.getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Add song' })).toHaveAttribute(
+      'href',
+      '/songs/new',
+    );
   });
 
   it('Share shows the current list name and calls onShare', async () => {

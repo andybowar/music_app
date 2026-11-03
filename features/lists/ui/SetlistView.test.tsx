@@ -34,8 +34,14 @@ vi.mock('@/features/resources/server/files', () => ({
   getSignedResourceUrl: actions.getSignedResourceUrl,
 }));
 
-const { SETLISTS_HREF, SetlistView, SetlistViewSkeleton, formatEventDate, movedMessage } =
-  await import('./SetlistView');
+const {
+  SETLISTS_HREF,
+  SetlistActionsProvider,
+  SetlistView,
+  SetlistViewSkeleton,
+  formatEventDate,
+  movedMessage,
+} = await import('./SetlistView');
 
 const ok = <T,>(data: T): Promise<ActionResult<T>> => Promise.resolve({ ok: true, data });
 const fail = (message: string): Promise<ActionResult<never>> =>
@@ -320,6 +326,49 @@ describe('SetlistView', () => {
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     expect(actions.deleteList).not.toHaveBeenCalled();
+  });
+});
+
+describe('SetlistActionsProvider (the /dev/setlist stand-ins)', () => {
+  function stubs() {
+    return {
+      renameList: vi.fn(() => ok(undefined)),
+      deleteList: vi.fn(() => ok(undefined)),
+      reorderList: vi.fn(() => ok(undefined)),
+      removeListItem: vi.fn(() => ok(undefined)),
+      updateListItem: vi.fn((id: string, patch: Partial<ListItem>) =>
+        ok({ ...items.find((i) => i.id === id)!, ...patch }),
+      ),
+      getSignedResourceUrl: vi.fn(() => ok({ url: 'blob:x', expiresAt: '2026-01-01T00:00:00Z' })),
+    };
+  }
+
+  it('calls the provided actions instead of the server actions', async () => {
+    const fake = stubs();
+    const user = userEvent.setup();
+    render(
+      <SetlistActionsProvider actions={fake}>
+        <SetlistView list={detail} canEdit songs={songs} />
+      </SetlistActionsProvider>,
+    );
+    await chooseAction(user, titles[0]!, /move down/i);
+    await waitFor(() => expect(fake.reorderList).toHaveBeenCalledTimes(1));
+    expect(actions.reorderList).not.toHaveBeenCalled();
+
+    await chooseAction(user, titles[1]!, /change key/i);
+    const dialog = await screen.findByRole('dialog');
+    await user.selectOptions(within(dialog).getByLabelText('Key'), 'E');
+    await waitFor(() => expect(fake.updateListItem).toHaveBeenCalledTimes(1));
+    expect(actions.updateListItem).not.toHaveBeenCalled();
+  });
+
+  it('opens the override editor from the menu and keeps it open', async () => {
+    const { user } = setup();
+    await chooseAction(user, titles[0]!, /change key/i);
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByLabelText('Key')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });
 

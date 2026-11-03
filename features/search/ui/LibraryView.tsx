@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode
 import { PdfViewer } from '@/components/media/PdfViewer';
 import { SongRow } from '@/components/song/SongRow';
 import { cn } from '@/components/ui/utils';
+import { AddToListAction } from '@/features/lists/ui/AddToListAction';
 import {
   SEARCH_FIELDS,
   type ActionResult,
@@ -59,7 +60,10 @@ export interface LibraryViewProps {
   loadSong: LoadSongDetail;
   /** `getSignedResourceUrl` (contracts/api.md), for opening uploaded files. */
   getSignedResourceUrl: GetSignedResourceUrl;
-  /** Renders the ADD region of each row. Left empty here; LIST-09 fills it with `AddToListMenu`. */
+  /**
+   * Renders the ADD region of each row. Defaults to `AddToListAction` (LIST-09), which renders
+   * nothing outside the app shell's list providers.
+   */
   rowAddSlot?(song: SongSummary): ReactNode;
 }
 
@@ -86,6 +90,10 @@ export function hasActiveSearch(params: SearchParams): boolean {
   return serializeSearchParams({ ...params, page: undefined }) !== '';
 }
 
+function defaultRowAddSlot(song: SongSummary): ReactNode {
+  return <AddToListAction songId={song.id} songTitle={song.title} />;
+}
+
 /**
  * Worship Library (SRCH-09; REQ-NAV-02, REQ-SRCH-01, REQ-ROW-02): search box, filters, sort and
  * results. The search lives in the URL (`useSearchState`), so the server renders each search and
@@ -100,7 +108,7 @@ export function LibraryView({
   searchMore,
   loadSong,
   getSignedResourceUrl,
-  rowAddSlot,
+  rowAddSlot = defaultRowAddSlot,
 }: LibraryViewProps) {
   const router = useRouter();
   const search = useSearchState();
@@ -199,7 +207,7 @@ export function LibraryView({
             onComposer={() => openPanel(song, 'composer')}
             onResources={() => openPanel(song, 'resources')}
             onUsage={() => openPanel(song, 'usage')}
-            addSlot={rowAddSlot?.(song)}
+            addSlot={rowAddSlot(song)}
           />
         }
       >

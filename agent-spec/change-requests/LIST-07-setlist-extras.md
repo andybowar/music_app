@@ -1,6 +1,6 @@
 # CR LIST-07 · `SetlistView` song details prop, a gallery page and the setlist e2e spec
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. `contracts/ui.md` updated and applied to `tasks/LIST-07.md`; the gallery page and e2e spec are a LIST-07 follow-up.
 
 ## Problem
 

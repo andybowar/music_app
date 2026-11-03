@@ -1,6 +1,6 @@
 # CR DB-05 · Music leaders can't soft-delete same-branch setlists they don't own
 
-**Status:** proposed (not approved).
+**Status:** approved by project owner 2026-11-03. Implemented by new task DB-08 (`db/migrations/0005_lists_select_leader.sql`).
 
 ## Problem
 

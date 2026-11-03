@@ -129,9 +129,9 @@ export function deriveUsageLevel(setlistCountLast365d: number): UsageLevel; // >
 | `features/lists/server/items.ts` | `addListItem(listId, songId)` (appends) | `ActionResult<ListItem>` | list:write | LIST-02 |
 | | `removeListItem(itemId)` / `reorderList(listId, itemIds)` | `ActionResult<void>` | list:write | LIST-02 |
 | | `updateListItem(itemId, patch)` | `ActionResult<ListItem>` | list:write | LIST-02 |
-| `features/sharing/server.ts` | `createShare(listId, { expiresAt? })` | `ActionResult<Share & { url }>` | share:create | SHR-01 |
-| | `revokeShare(id)` / `listShares(listId)` | | share:revoke / list:write | SHR-01 |
-| | `getSharedList(token)` (service role) | `ListDetail \| null` (resources stripped of urls/paths) | — | SHR-01 |
+| `features/sharing/server.ts` | `createShare(listId, { expiresAt? })` | `ActionResult<Share & { url }>` (the only time the full link exists; CR SHR-01) | share:create | SHR-01 |
+| | `revokeShare(id)` / `listShares(listId)` | `listShares`: `Share[]`, no token or url | share:revoke / list:write | SHR-01 |
+| | `getSharedList(token)` (service role; looks up `sha256(token)`) | `ListDetail \| null` (resources stripped of urls/paths) | — | SHR-01 |
 | | `sendShareEmail(listId, to: string[])` (≤20 recipients, ≤10 sends/user/hour) | `ActionResult<void>` | share:create | SHR-03 |
 | `features/branches/server.ts` | `getBranchActivity({ days = 90 })` | `{ branch: Branch; recentlyAdded: SongSummary[]; upcoming: List[]; topSongs: Array<SongSummary & { count }> }[]` | song:read | BR-01 |
 | `features/admin/server.ts` | `inviteUser` (creates an `approved` user), `updateUser(id, { role?, branchId?, disabled? })`, `listUsers({ accessStatus? })`, `upsertBranch` | | admin:* | ADM-01/02 |

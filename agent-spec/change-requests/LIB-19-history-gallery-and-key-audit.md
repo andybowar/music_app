@@ -1,6 +1,6 @@
 # CR LIB-19 · Song history: gallery, a forced SongPage test edit, and song id on key audits
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/LIB-19.md` (also touches `features/songs/server/keys.ts` for item 3); the `songId` audit snapshot change is a LIB-19 follow-up.
 
 ## Problem
 

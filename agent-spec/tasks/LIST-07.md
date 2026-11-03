@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["LIST-01", "LIST-02", "UI-05", "UI-02", "UI-06"]
 blocks: ["H-01", "PLAY-05", "SHR-04"]
-owns: ["app/(app)/lists/[id]/", "features/lists/ui/SetlistView.tsx", "features/lists/ui/ItemOverrideEditor.tsx"]
+owns: ["app/(app)/lists/[id]/", "features/lists/ui/SetlistView.tsx", "features/lists/ui/ItemOverrideEditor.tsx", "app/dev/setlist/", "tests/e2e/setlist.spec.ts"]
 touches: []
 requirements: ["REQ-LIST-03", "REQ-LIST-04", "REQ-LIST-06"]
 ---
@@ -46,7 +46,7 @@ requirements: ["REQ-LIST-03", "REQ-LIST-04", "REQ-LIST-06"]
 - [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
-- **Owns** (create/modify freely): `app/(app)/lists/[id]/`, `features/lists/ui/SetlistView.tsx`, `features/lists/ui/ItemOverrideEditor.tsx`
+- **Owns** (create/modify freely): `app/(app)/lists/[id]/`, `features/lists/ui/SetlistView.tsx`, `features/lists/ui/ItemOverrideEditor.tsx`, `app/dev/setlist/`, `tests/e2e/setlist.spec.ts`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
 
 ## Notes (LIST-07)

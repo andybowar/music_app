@@ -1,6 +1,6 @@
 # CR SRCH-09 · Library gallery page and e2e spec
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/SRCH-09.md`; the gallery page and e2e spec are a SRCH-09 follow-up.
 
 ## Problem
 

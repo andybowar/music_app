@@ -162,7 +162,7 @@ export interface ResolvedItem {
 
 export interface ListDetail extends List { items: ResolvedItem[] }
 
-export interface Share { id: UUID; listId: UUID; token: string; expiresAt: ISODateTime | null; revokedAt: ISODateTime | null; createdAt: ISODateTime }
+export interface Share { id: UUID; listId: UUID; tokenPrefix: string; expiresAt: ISODateTime | null; revokedAt: ISODateTime | null; createdAt: ISODateTime }
 
 export interface AuditEntry { id: UUID; actorName: string; entity: string; entityId: UUID; action: 'create'|'update'|'delete'; diff: Record<string, { from: unknown; to: unknown }>; createdAt: ISODateTime }
 

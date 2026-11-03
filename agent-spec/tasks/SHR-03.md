@@ -8,7 +8,7 @@ size: S
 status: todo
 human_required: false
 depends_on: ["SHR-01", "F-05"]
-blocks: ["ADM-04", "SHR-04"]
+blocks: ["ADM-04", "SHR-04", "SHR-05"]
 owns: ["lib/email.ts", "emails/ShareList.tsx"]
 touches: ["features/sharing/server.ts", "lib/env.ts", "lib/env.test.ts", ".env.example", ".github/workflows/ci.yml"]
 requirements: ["REQ-SHARE-02"]

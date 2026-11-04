@@ -9,7 +9,7 @@ status: done
 human_required: false
 depends_on: ["DB-07", "AUTH-01", "AUTH-02"]
 blocks: ["AUTH-03", "AUTH-06", "ADM-04"]
-owns: ["app/(auth)/signup/", "app/(auth)/account-status/", "features/auth/ui/SignupForm.tsx", "features/auth/ui/AccountStatus.tsx"]
+owns: ["app/(auth)/signup/", "app/(auth)/account-status/", "features/auth/ui/SignupForm.tsx", "features/auth/ui/AccountStatus.tsx", "app/dev/auth-signup/"]
 touches: ["features/auth/actions.ts", "features/auth/provision.ts", "app/(auth)/login/page.tsx"]
 requirements: ["REQ-AUTH-03", "REQ-AUTH-04", "REQ-AUTH-08"]
 ---
@@ -51,6 +51,6 @@ requirements: ["REQ-AUTH-03", "REQ-AUTH-04", "REQ-AUTH-08"]
 - Blocking pending users from `(app)` routes is AUTH-04's job (`requireUser` and middleware redirect to `/account-status`). The approval queue is ADM-01's, and emails are ADM-04's.
 
 ## Boundaries
-- **Owns** (create/modify freely): `app/(auth)/signup/`, `app/(auth)/account-status/`, `features/auth/ui/SignupForm.tsx`, `features/auth/ui/AccountStatus.tsx`
+- **Owns** (create/modify freely): `app/(auth)/signup/`, `app/(auth)/account-status/`, `features/auth/ui/SignupForm.tsx`, `features/auth/ui/AccountStatus.tsx`, `app/dev/auth-signup/` (CR AUTH-07-gallery-page)
 - **Touches** (small integration edits only; describe each in the PR): `features/auth/actions.ts`, `features/auth/provision.ts`, `app/(auth)/login/page.tsx`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).

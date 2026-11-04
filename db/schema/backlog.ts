@@ -28,7 +28,8 @@ export const adminTodos = pgTable(
     notes: text('notes'),
     doneAt: timestamp('done_at', { withTimezone: true }),
     doneBy: uuid('done_by'),
-    createdBy: uuid('created_by').notNull(),
+    // Null for to-dos imported from agent-spec/TODO.md by a migration (ADM-07).
+    createdBy: uuid('created_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

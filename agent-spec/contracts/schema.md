@@ -220,7 +220,7 @@ create table admin_todos (
   notes       text check (char_length(notes) <= 2000),
   done_at     timestamptz,
   done_by     uuid references users(id),
-  created_by  uuid not null references users(id),
+  created_by  uuid references users(id),         -- null for items imported from agent-spec/TODO.md (ADM-07, 0007)
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

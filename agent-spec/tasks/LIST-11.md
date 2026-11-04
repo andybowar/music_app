@@ -5,7 +5,7 @@ phase: 5
 wave: 11
 stream: frontend
 size: M
-status: blocked
+status: todo
 human_required: false
 depends_on: ["LIST-07", "UI-07", "UI-08", "H-01"]
 blocks: []
@@ -19,7 +19,6 @@ requirements: ["REQ-LIST-09", "REQ-ROW-03", "REQ-NF-02", "REQ-NF-03"]
 
 **Goal.** A musician opens a setlist and taps **Start**. Each song in turn fills the screen with its lyrics in arrangement order, the setlist's key, BPM and first chords, and a one-tap way into that key's chord chart. They move between songs with a swipe, the arrow keys or a Bluetooth page-turner pedal. The screen stays awake, and it works offline for setlists they've opened before. Requested by the project owner on 2026-11-03.
 
-Blocked until CR `LIST-11-set-player` is approved. It adds REQ-LIST-09 and the `SetPlayer` contract row, and approves the touches to `SetlistView`. Once it's approved, set `status: todo`.
 
 ## Read first
 - `agent-spec/AGENTS.md`

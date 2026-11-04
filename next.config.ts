@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Playwright and Supabase auth redirects use 127.0.0.1 rather than localhost.
   allowedDevOrigins: ['127.0.0.1'],
+  // The /dev index lists pages by scanning app/ at request time (it renders per request since
+  // admins can open it on production). Ship the page files with that function so the scan works.
+  outputFileTracingIncludes: {
+    '/dev': ['./app/**/page.{ts,tsx,js,jsx}'],
+  },
   experimental: {
     serverActions: {
       // Uploads go straight to Storage via signed URLs; actions only carry metadata.

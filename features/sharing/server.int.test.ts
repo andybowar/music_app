@@ -4,7 +4,7 @@
 import type { AppUser, Role } from '@/types/domain';
 
 import { existsSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -70,14 +70,26 @@ async function insertList(type: 'setlist' | 'playlist', ownerUser: AppUser) {
   return row!.id;
 }
 
+const newRawToken = () => randomUUID().replace(/-/g, '').padEnd(43, 'x');
+
 /** Insert a share row directly (for states createShare refuses to make, like a past expiry). */
 async function insertShare(listId: string, values: { expiresAt?: Date; revokedAt?: Date } = {}) {
-  const token = randomUUID().replace(/-/g, '').padEnd(43, 'x');
+  const token = newRawToken();
   await getDb()
     .insert(shares)
-    .values({ listId, token, createdBy: owner.id, ...values });
+    .values({
+      listId,
+      tokenHash: createHash('sha256').update(token).digest(),
+      tokenPrefix: token.slice(0, 6),
+      createdBy: owner.id,
+      ...values,
+    });
   return token;
 }
+
+/** The raw token: only ever in the url `createShare` returns. */
+const tokenOf = (share: { url: string }) =>
+  decodeURIComponent(new URL(share.url).pathname.split('/').pop()!);
 
 async function create(listId: string, expiresAt?: string) {
   const result = await createShare(listId, { expiresAt });
@@ -141,15 +153,26 @@ beforeEach(() => {
 });
 
 describe('createShare', () => {
-  test('stores a 32-byte base64url token and returns its link', async () => {
+  test('returns the link once; stores only the sha256 and a 6-char prefix', async () => {
     const listId = await insertList('playlist', owner);
     const share = await create(listId);
-    expect(share.token).toMatch(/^[A-Za-z0-9_-]{43}$/);
-    expect(share.url).toBe(new URL(`/share/${share.token}`, process.env.APP_URL).toString());
-    expect(share).toMatchObject({ listId, expiresAt: null, revokedAt: null });
+    const token = tokenOf(share);
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(share.url).toBe(new URL(`/share/${token}`, process.env.APP_URL).toString());
+    expect(share).toMatchObject({
+      listId,
+      tokenPrefix: token.slice(0, 6),
+      expiresAt: null,
+      revokedAt: null,
+    });
+    expect(share).not.toHaveProperty('token');
 
     const [row] = await getDb().select().from(shares).where(eq(shares.id, share.id));
-    expect(row).toMatchObject({ token: share.token, createdBy: owner.id, listId });
+    expect(row).toMatchObject({ token: null, createdBy: owner.id, listId });
+    expect(row!.tokenHash).toEqual(createHash('sha256').update(token).digest());
+    expect(row!.tokenPrefix).toBe(token.slice(0, 6));
+    const stored = await getDb().execute(sql`select * from shares where id = ${share.id}`);
+    expect(JSON.stringify(stored)).not.toContain(token);
   });
 
   test('keeps a future expiry; refuses a past one', async () => {
@@ -193,10 +216,10 @@ describe('revokeShare and listShares', () => {
   test('revoking stops the link; a second revoke keeps the first time', async () => {
     const listId = await insertList('setlist', owner);
     const share = await create(listId);
-    expect(await getSharedList(share.token)).not.toBeNull();
+    expect(await getSharedList(tokenOf(share))).not.toBeNull();
 
     expect(await revokeShare(share.id)).toEqual({ ok: true, data: undefined });
-    expect(await getSharedList(share.token)).toBeNull();
+    expect(await getSharedList(tokenOf(share))).toBeNull();
     const [first] = await getDb().select().from(shares).where(eq(shares.id, share.id));
     expect(first!.revokedAt).not.toBeNull();
 
@@ -215,7 +238,7 @@ describe('revokeShare and listShares', () => {
       error: { code: 'NOT_FOUND' },
     });
     actor = owner;
-    expect(await getSharedList(share.token)).not.toBeNull();
+    expect(await getSharedList(tokenOf(share))).not.toBeNull();
   });
 
   test('lists every link of the list, newest first, for writers only', async () => {
@@ -229,7 +252,13 @@ describe('revokeShare and listShares', () => {
     if (!result.ok) return;
     expect(result.data.map((s) => s.id)).toEqual([newer.id, older.id]);
     expect(result.data[1]!.revokedAt).not.toBeNull();
-    expect(result.data[0]!.url).toBe(newer.url);
+    expect(result.data[0]!.tokenPrefix).toBe(newer.tokenPrefix);
+    for (const s of result.data) {
+      expect(Object.keys(s).sort()).toEqual(
+        ['createdAt', 'expiresAt', 'id', 'listId', 'revokedAt', 'tokenPrefix'].sort(),
+      );
+    }
+    expect(JSON.stringify(result.data)).not.toContain(tokenOf(newer));
 
     actor = sameBranch;
     expect(await listShares(listId)).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
@@ -275,7 +304,7 @@ describe('getSharedList', () => {
     const share = await create(listId);
 
     requireUser.mockClear();
-    const list = await getSharedList(share.token);
+    const list = await getSharedList(tokenOf(share));
     expect(requireUser).not.toHaveBeenCalled();
     expect(list).toMatchObject({
       id: listId,
@@ -299,7 +328,7 @@ describe('getSharedList', () => {
     const json = JSON.stringify(list);
     expect(json).not.toContain(`secret-${tag}`);
     expect(json).not.toContain(owner.email);
-    expect(json).not.toContain(share.token);
+    expect(json).not.toContain(tokenOf(share));
   });
 
   test('expired, revoked, unknown and malformed tokens → null', async () => {
@@ -316,10 +345,22 @@ describe('getSharedList', () => {
     expect((await getSharedList(live))?.id).toBe(listId);
   });
 
+  test('links from before 0009 still open: a raw-token row gets its hash (old-build insert)', async () => {
+    // What the previous build does during the deploy, and what the backfill did to old rows.
+    const listId = await insertList('setlist', owner);
+    const token = newRawToken();
+    await getDb().execute(
+      sql`insert into shares (list_id, token, created_by) values (${listId}, ${token}, ${owner.id})`,
+    );
+    expect((await getSharedList(token))?.id).toBe(listId);
+    const result = await listShares(listId);
+    expect(result.ok && result.data[0]!.tokenPrefix).toBe(token.slice(0, 6));
+  });
+
   test('a deleted list → null', async () => {
     const listId = await insertList('setlist', owner);
     const share = await create(listId);
     await getDb().update(lists).set({ deletedAt: new Date() }).where(eq(lists.id, listId));
-    expect(await getSharedList(share.token)).toBeNull();
+    expect(await getSharedList(tokenOf(share))).toBeNull();
   });
 });

@@ -267,7 +267,8 @@ export interface ListDetail extends List {
 export interface Share {
   id: UUID;
   listId: UUID;
-  token: string;
+  /** First 6 characters of the token, for display only. The token itself is never stored. */
+  tokenPrefix: string;
   expiresAt: ISODateTime | null;
   revokedAt: ISODateTime | null;
   createdAt: ISODateTime;

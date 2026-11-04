@@ -15,6 +15,13 @@ const requireUser = vi.fn<() => Promise<AppUser>>();
 vi.mock('@/lib/auth', () => ({ requireUser: () => requireUser() }));
 vi.mock('@/lib/env', () => ({ env: { APP_URL: 'https://app.example.test/' } }));
 
+// Share tokens are no longer stored (SHR-05), so the link's token comes from randomBytes:
+// 32 zero bytes are 'A'.repeat(43) in base64url, the TOKEN below.
+vi.mock('node:crypto', async (importOriginal) => {
+  const actual = await importOriginal<object>();
+  return { ...actual, randomBytes: (n: number) => Buffer.alloc(n) };
+});
+
 const reportError = vi.fn();
 vi.mock('@/lib/log', () => ({ reportError: (...a: unknown[]) => reportError(...a) }));
 
@@ -87,7 +94,7 @@ const shareRow = () => [
   {
     id: SHARE,
     listId: LIST,
-    token: TOKEN,
+    tokenPrefix: TOKEN.slice(0, 6),
     expiresAt: null,
     revokedAt: null,
     createdAt: new Date('2026-11-01T10:00:00Z'),

@@ -3,6 +3,8 @@
 // fake query builder. Real rows (expiry, revocation, RLS-free reads) are in server.int.test.ts.
 import type { AppUser, ListType, Role } from '@/types/domain';
 
+import { createHash } from 'node:crypto';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ActionError } from '@/lib/action';
@@ -81,7 +83,7 @@ const listRow = (type: ListType, ownerId: string, branchId: string | null = BRAN
 const shareRow = (overrides: Partial<Record<string, unknown>> = {}) => ({
   id: SHARE,
   listId: LIST,
-  token: TOKEN,
+  tokenPrefix: 'AbC123',
   expiresAt: null,
   revokedAt: null,
   createdAt: new Date('2026-11-01T10:00:00Z'),
@@ -165,20 +167,33 @@ describe('before the database', () => {
 });
 
 describe('createShare', () => {
-  it('issues a 256-bit base64url token and a link under APP_URL', async () => {
+  it('issues a 256-bit base64url token in the url; stores only its sha256 and prefix', async () => {
     queue.push([listRow('playlist', USER_ID)], [shareRow()]);
     const result = await createShare(LIST);
     expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const token = result.data.url.split('/').pop()!;
+    expect(result.data.url).toBe(`https://app.example.test/share/${token}`);
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(Buffer.from(token, 'base64url')).toHaveLength(32);
+
     const insert = chains[1]!;
     expect(insert[0]!.method).toBe('insert');
     const values = insert.find((c) => c.method === 'values')!.args[0] as Record<string, unknown>;
-    expect(values).toMatchObject({ listId: LIST, createdBy: USER_ID, expiresAt: null });
-    const token = values.token as string;
-    expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
-    expect(Buffer.from(token, 'base64url')).toHaveLength(32);
+    expect(values).toEqual({
+      listId: LIST,
+      createdBy: USER_ID,
+      expiresAt: null,
+      tokenHash: createHash('sha256').update(token).digest(),
+      tokenPrefix: token.slice(0, 6),
+    });
+    expect(JSON.stringify(values)).not.toContain(token);
+    // `returning` never asks for a token column.
+    const returning = insert.find((c) => c.method === 'returning')!.args[0] as object;
+    expect(Object.keys(returning)).not.toContain('token');
   });
 
-  it('returns the share with its url, ISO dates and the expiry', async () => {
+  it('returns the share with its prefix, url, ISO dates and the expiry', async () => {
     const expiresAt = new Date(Date.now() + 86_400_000);
     queue.push([listRow('playlist', USER_ID)]);
     queue.push([shareRow({ expiresAt })]);
@@ -188,11 +203,11 @@ describe('createShare', () => {
       data: {
         id: SHARE,
         listId: LIST,
-        token: TOKEN,
+        tokenPrefix: 'AbC123',
         expiresAt: expiresAt.toISOString(),
         revokedAt: null,
         createdAt: '2026-11-01T10:00:00.000Z',
-        url: `https://app.example.test/share/${TOKEN}`,
+        url: expect.stringMatching(/^https:\/\/app\.example\.test\/share\/[A-Za-z0-9_-]{43}$/),
       },
     });
     const values = chains[1]!.find((c) => c.method === 'values')!.args[0] as { expiresAt: Date };
@@ -205,9 +220,9 @@ describe('createShare', () => {
       queue.push([listRow('playlist', USER_ID)], [shareRow()]);
       await createShare(LIST);
       const values = chains.at(-1)!.find((c) => c.method === 'values')!.args[0] as {
-        token: string;
+        tokenHash: Buffer;
       };
-      tokens.add(values.token);
+      tokens.add(values.tokenHash.toString('hex'));
     }
     expect(tokens.size).toBe(50);
   });
@@ -268,14 +283,21 @@ describe('listShares', () => {
     expect(await listShares(LIST)).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
   });
 
-  it('maps rows to shares with urls', async () => {
+  it('maps rows to shares by prefix, with no token or url', async () => {
     const revokedAt = new Date('2026-11-02T00:00:00Z');
     queue.push([listRow('playlist', USER_ID)], [shareRow({ revokedAt })]);
     const result = await listShares(LIST);
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       ok: true,
       data: [
-        { id: SHARE, revokedAt: revokedAt.toISOString(), url: expect.stringContaining(TOKEN) },
+        {
+          id: SHARE,
+          listId: LIST,
+          tokenPrefix: 'AbC123',
+          expiresAt: null,
+          revokedAt: revokedAt.toISOString(),
+          createdAt: '2026-11-01T10:00:00.000Z',
+        },
       ],
     });
   });

@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { UserMenu } from '@/components/NavBar';
 import { branches } from '@/db/schema';
 import { ADMIN_HREF, canSeeAdmin } from '@/features/admin/adminAreas';
+import { NEW_BUG_HREF } from '@/features/bugs/types';
 import { readCurrentListId } from '@/features/lists/server/currentList';
 import { addListItem, removeListItem } from '@/features/lists/server/items';
 import { createList, getList, listLists } from '@/features/lists/server/lists';
@@ -114,6 +115,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
                 branchName={branchName}
                 signOut={signOut}
                 adminHref={canSeeAdmin(user) ? ADMIN_HREF : null}
+                bugReportHref={can(user, 'bug:report') ? NEW_BUG_HREF : null}
               />
             </div>
           </header>

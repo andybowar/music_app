@@ -26,6 +26,11 @@ vi.mock('@/features/admin/backlog/server', () => ({
 }));
 vi.mock('@/components/ui/sonner', () => ({ Toaster: () => null }));
 
+const listOpenBugReports = vi.fn<(limit: number) => Promise<unknown>>();
+vi.mock('@/features/bugs/server', () => ({
+  listOpenBugReports: (limit: number) => listOpenBugReports(limit),
+}));
+
 const reportError = vi.fn();
 vi.mock('@/lib/log', () => ({ reportError: (...a: unknown[]) => reportError(...a) }));
 
@@ -47,7 +52,27 @@ beforeEach(() => {
   listRequests.mockResolvedValue(
     Array.from({ length: 7 }, (_, i) => ({ ...request, id: `req-${i}`, title: `Request ${i}` })),
   );
+  listOpenBugReports.mockResolvedValue({
+    total: 7,
+    reports: Array.from({ length: 5 }, (_, i) => ({ ...bug, id: `bug-${i}`, title: `Bug ${i}` })),
+  });
 });
+
+const bug = {
+  description: 'What happened',
+  expected: null,
+  pagePath: '/library',
+  userAgent: null,
+  viewport: null,
+  appVersion: null,
+  status: 'new',
+  adminNote: null,
+  createdBy: 'u',
+  createdByName: 'Mia Member',
+  createdAt: '2026-11-02T00:00:00.000Z',
+  updatedAt: '2026-11-02T00:00:00.000Z',
+  imageCount: 1,
+};
 
 const todo = {
   id: 'todo-1',
@@ -152,6 +177,39 @@ describe('/admin dashboard', () => {
     expect(out).not.toContain('Enhancement requests');
     expect(listTodos).not.toHaveBeenCalled();
     expect(listRequests).not.toHaveBeenCalled();
+  });
+
+  it('shows admins the 5 newest open bug reports with the open count (ADM-08)', async () => {
+    requirePageUser.mockResolvedValue(as('admin'));
+    const out = await html();
+    expect(listOpenBugReports).toHaveBeenCalledWith(5);
+    expect(out).toContain('Bug reports');
+    expect(out).toContain('7 open');
+    expect(out).toContain('Mia Member');
+    expect(out.match(/href="\/admin\/bugs\/bug-/g)).toHaveLength(5);
+    expect(out).toContain('href="/admin/bugs"');
+  });
+
+  it('says so when no bug report is open', async () => {
+    requirePageUser.mockResolvedValue(as('admin'));
+    listOpenBugReports.mockResolvedValue({ total: 0, reports: [] });
+    expect(await html()).toContain('No open bug reports.');
+  });
+
+  it('shows an error in only the bug reports section when they fail to load', async () => {
+    requirePageUser.mockResolvedValue(as('admin'));
+    listOpenBugReports.mockRejectedValue(new Error('db down'));
+    const out = await html();
+    expect(out).toContain('load the bug reports');
+    expect(out).toContain('Request 0');
+    expect(reportError).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows music leaders no bug reports section', async () => {
+    requirePageUser.mockResolvedValue(as('music_leader'));
+    const out = await html();
+    expect(out).not.toContain('Bug reports');
+    expect(listOpenBugReports).not.toHaveBeenCalled();
   });
 
   it('lets the auth redirect through', async () => {

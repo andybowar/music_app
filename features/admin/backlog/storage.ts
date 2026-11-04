@@ -37,6 +37,16 @@ export function requestFolder(requestId: string): string {
   return `requests/${requestId}`;
 }
 
+/** `bugs/{report_id}/{image_id}.{ext}`: ADM-08's bug report screenshots, same bucket. */
+export function bugImagePath(reportId: string, imageId: string, mime: ImageMimeType): string {
+  return `${bugFolder(reportId)}/${imageId}.${IMAGE_EXT[mime]}`;
+}
+
+/** The folder holding every object of one bug report (ADM-08). */
+export function bugFolder(reportId: string): string {
+  return `bugs/${reportId}`;
+}
+
 export async function createUploadUrl(path: string): Promise<string> {
   const { data, error } = await bucket().createSignedUploadUrl(path);
   if (error) throw error;
@@ -80,7 +90,11 @@ export async function removeObjects(paths: string[]): Promise<void> {
 
 /** Every object under `requests/{request_id}/`, finalized or not. */
 export async function listRequestObjects(requestId: string): Promise<string[]> {
-  const folder = requestFolder(requestId);
+  return listFolderObjects(requestFolder(requestId));
+}
+
+/** Every object directly under `folder` (e.g. `bugFolder(id)`), finalized or not. */
+export async function listFolderObjects(folder: string): Promise<string[]> {
   const { data, error } = await bucket().list(folder, { limit: 1000 });
   if (error) throw error;
   return data.filter((o) => o.id !== null).map((o) => `${folder}/${o.name}`);

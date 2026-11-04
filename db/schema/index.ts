@@ -12,3 +12,4 @@ export * from './lists';
 export * from './shares';
 export * from './audit';
 export * from './backlog';
+export * from './bugs';

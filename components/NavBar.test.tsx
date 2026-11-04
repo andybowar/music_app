@@ -6,7 +6,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 
 import { LIST_IDS, getList } from '@/fixtures';
 
-import { NAV_HREFS, NAV_OVERFLOW_LINKS, NavBar, UserMenu } from './NavBar';
+import { NAV_HREFS, NAV_OVERFLOW_LINKS, NavBar, UserMenu, withFrom } from './NavBar';
 
 const pathname = vi.hoisted(() => ({ value: '/songs/abc' as string | null }));
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.value }));
@@ -289,6 +289,38 @@ describe('UserMenu', () => {
       'href',
       '/admin',
     );
+  });
+
+  it('offers "Report a bug" only when bugReportHref is set, with ?from= (ADM-08)', async () => {
+    const user = userEvent.setup();
+    const props = { name: 'Jordan Ellis', email: 'j@example.com', branchName: null };
+    const { unmount } = render(<UserMenu {...props} signOut={vi.fn(async () => {})} />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    await screen.findByRole('menu');
+    expect(screen.queryByRole('menuitem', { name: 'Report a bug' })).not.toBeInTheDocument();
+    unmount();
+
+    pathname.value = '/songs/abc';
+    render(
+      <UserMenu
+        {...props}
+        signOut={vi.fn(async () => {})}
+        adminHref="/admin"
+        bugReportHref="/bugs/new"
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    const item = await screen.findByRole('menuitem', { name: 'Report a bug' });
+    expect(item).toHaveAttribute('href', '/bugs/new?from=%2Fsongs%2Fabc');
+    // Below "Admin", above "Sign out".
+    const names = screen.getAllByRole('menuitem').map((el) => el.textContent);
+    expect(names).toEqual(['Admin', 'Report a bug', 'Sign out']);
+  });
+
+  it('withFrom appends the current path, encoded', () => {
+    expect(withFrom('/bugs/new', '/lists/1?x=a b')).toBe('/bugs/new?from=%2Flists%2F1%3Fx%3Da%20b');
+    expect(withFrom('/bugs/new?y=1', '/a')).toBe('/bugs/new?y=1&from=%2Fa');
+    expect(withFrom('/bugs/new', null)).toBe('/bugs/new');
   });
 
   it('shows "No branch" when the user has none', async () => {

@@ -24,6 +24,8 @@ export interface LyricsViewerProps {
   mode?: LyricsViewerMode;
   /** Chords over the lyrics (LIB-22). When any section has chords, a "Chords" toggle shows. */
   chords?: SongChords | null;
+  /** Lyric text size in px (the set player's A−/A+, LIST-11). Defaults to the `text-lg` size. */
+  textSizePx?: number;
 }
 
 /** Remembers whether the reader last hid the chords (`localStorage`). */
@@ -85,10 +87,12 @@ function Block({
   idBase,
   index,
   chordText,
+  textSizePx,
 }: {
   block: LyricsBlock;
   idBase: string;
   index: number;
+  textSizePx?: number;
   /** The section with chords inline; shown instead of the plain text when it has chords. */
   chordText?: string | null;
 }) {
@@ -111,9 +115,18 @@ function Block({
       {block.text === null ? (
         <p className="text-sm text-muted-foreground italic">No lyrics for this section</p>
       ) : hasChords(chordText) ? (
-        <ChordLyrics text={chordText!} className="text-lg leading-snug" />
+        <ChordLyrics
+          text={chordText!}
+          className="text-lg leading-snug"
+          style={textSizePx ? { fontSize: textSizePx } : undefined}
+        />
       ) : (
-        <p className="text-lg leading-relaxed whitespace-pre-line">{block.text}</p>
+        <p
+          className="text-lg leading-relaxed whitespace-pre-line"
+          style={textSizePx ? { fontSize: textSizePx } : undefined}
+        >
+          {block.text}
+        </p>
       )}
     </section>
   );
@@ -128,6 +141,7 @@ export function LyricsViewer({
   arrangement,
   mode = 'arrangement',
   chords,
+  textSizePx,
 }: LyricsViewerProps) {
   const [view, setView] = useState<LyricsViewerMode>(mode);
   useEffect(() => setView(mode), [mode]);
@@ -201,6 +215,7 @@ export function LyricsViewer({
           idBase={idBase}
           index={i}
           chordText={chordText(b.section)}
+          textSizePx={textSizePx}
         />
       ))}
 
@@ -219,6 +234,7 @@ export function LyricsViewer({
               idBase={`${idBase}-unsung`}
               index={i}
               chordText={chordText(section)}
+              textSizePx={textSizePx}
             />
           ))}
         </section>

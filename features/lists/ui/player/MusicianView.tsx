@@ -1,0 +1,151 @@
+'use client';
+
+import { FileTextIcon, GuitarIcon, TriangleAlertIcon } from 'lucide-react';
+import { useState } from 'react';
+
+import { LyricsViewer } from '@/components/song/LyricsViewer';
+import { Button } from '@/components/ui/button';
+import type { ResolvedItem, Resource, SongDetail } from '@/types/domain';
+
+import { FirstChords } from '../ItemOverrideEditor';
+import { chartOptions, hasLyrics, keyMismatch, type ChartOption } from './charts';
+import { PdfStack } from './PdfStack';
+
+export interface MusicianViewProps {
+  resolved: ResolvedItem;
+  detail: SongDetail | undefined;
+  textSizePx: number;
+  getPdfUrl(r: Resource): Promise<string>;
+  onOpenViewer(r: Resource): void;
+}
+
+function optionLabel(o: ChartOption): string {
+  return o.type === 'typed' && o.key ? `${o.label} (in ${o.key})` : o.label;
+}
+
+/**
+ * The musician's view of one song (LIST-11): first chords, then a chart. With more than one
+ * chart (typed chords and/or PDFs), it asks which one every time the song comes up; render it
+ * with `key={item id}` so the choice resets per song. No chart: the lyrics plus first chords.
+ */
+export function MusicianView({
+  resolved,
+  detail,
+  textSizePx,
+  getPdfUrl,
+  onOpenViewer,
+}: MusicianViewProps) {
+  const options = chartOptions(resolved, detail);
+  const [chosenId, setChosenId] = useState<string | null>(null);
+  const chosen = options.length === 1 ? options[0]! : options.find((o) => o.id === chosenId);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <FirstChords chords={resolved.firstChords} className="rounded-md bg-muted/60 px-3 py-2" />
+      {resolved.needsUpload && (
+        <p className="text-sm text-muted-foreground">No files for this key.</p>
+      )}
+
+      {options.length === 0 ? (
+        <NoChart resolved={resolved} detail={detail} textSizePx={textSizePx} />
+      ) : !chosen ? (
+        <section aria-labelledby="chart-choice" className="flex flex-col gap-3">
+          <h3 id="chart-choice" className="text-lg font-semibold">
+            Which chart?
+          </h3>
+          <ul className="flex flex-col gap-2">
+            {options.map((o) => (
+              <li key={o.id}>
+                <Button
+                  variant="outline"
+                  className="min-h-tap w-full justify-start text-left text-base"
+                  onClick={() => setChosenId(o.id)}
+                >
+                  {o.type === 'typed' ? <GuitarIcon aria-hidden /> : <FileTextIcon aria-hidden />}
+                  {optionLabel(o)}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <section aria-label={optionLabel(chosen)} className="flex flex-col gap-3">
+          {options.length > 1 && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-medium">{optionLabel(chosen)}</p>
+              <Button variant="ghost" className="min-h-tap" onClick={() => setChosenId(null)}>
+                Choose another chart
+              </Button>
+            </div>
+          )}
+          {chosen.type === 'typed' ? (
+            <TypedChords resolved={resolved} detail={detail!} textSizePx={textSizePx} />
+          ) : (
+            <PdfStack
+              key={chosen.resource.id}
+              resource={chosen.resource}
+              label={chosen.label}
+              getPdfUrl={getPdfUrl}
+              onOpenViewer={onOpenViewer}
+            />
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
+
+function TypedChords({
+  resolved,
+  detail,
+  textSizePx,
+}: {
+  resolved: ResolvedItem;
+  detail: SongDetail;
+  textSizePx: number;
+}) {
+  const warning = keyMismatch(detail.chords?.key ?? null, resolved.key);
+  return (
+    <>
+      {warning && (
+        <p
+          role="note"
+          className="flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm"
+        >
+          <TriangleAlertIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-amber-600" />
+          {warning}
+        </p>
+      )}
+      <LyricsViewer
+        lyrics={detail.lyrics}
+        arrangement={detail.arrangement}
+        chords={detail.chords}
+        textSizePx={textSizePx}
+      />
+    </>
+  );
+}
+
+function NoChart({
+  detail,
+  textSizePx,
+}: {
+  resolved: ResolvedItem;
+  detail: SongDetail | undefined;
+  textSizePx: number;
+}) {
+  return (
+    <>
+      <p className="text-sm text-muted-foreground">No chord chart for this song.</p>
+      {hasLyrics(detail) ? (
+        <LyricsViewer
+          lyrics={detail!.lyrics}
+          arrangement={detail!.arrangement}
+          textSizePx={textSizePx}
+        />
+      ) : (
+        <p className="text-muted-foreground">Lyrics aren’t available for this song.</p>
+      )}
+    </>
+  );
+}

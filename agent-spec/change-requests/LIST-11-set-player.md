@@ -48,3 +48,7 @@ The SPEC has no requirement for this, and the contracts have no component for it
 ## On approval
 
 Apply items 1 and 2, then set `tasks/LIST-11.md` to `status: todo` and remove its "Blocked until" paragraph.
+
+## Amendment (owner, 2026-11-04)
+
+Roles and autoscroll added; see "Owner decisions" in `tasks/LIST-11.md`. Applied to `SPEC.md` (REQ-LIST-09 amendment) and `contracts/ui.md` (`SetPlayer` gains `role`, `onRoleChange` and `getPdfUrl`, moves to `features/lists/ui/player/`; new `StartEventDialog`; `LyricsViewer` gains `textSizePx`). The Start button is labelled **Start event**.

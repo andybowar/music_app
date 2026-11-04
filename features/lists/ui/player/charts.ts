@@ -1,0 +1,115 @@
+/**
+ * What each role can see for one setlist song (LIST-11). Pure, exported for tests.
+ */
+import { firstLine } from '@/lib/lyrics/parse';
+import { hasChords } from '@/lib/lyrics/chords';
+import { openPlan } from '@/features/songs/ui/SongPage';
+import { SECTIONS } from '@/types/domain';
+import type {
+  MusicalKey,
+  ResolvedItem,
+  Resource,
+  ResourceKind,
+  Section,
+  SongDetail,
+} from '@/types/domain';
+
+/** PDF kinds a musician can open, in the order they're offered. */
+export const CHART_KINDS = [
+  'chord_chart',
+  'lead_sheet',
+  'full_score',
+] as const satisfies readonly ResourceKind[];
+
+export const CHART_KIND_LABEL: Record<(typeof CHART_KINDS)[number], string> = {
+  chord_chart: 'Chord chart',
+  lead_sheet: 'Lead sheet',
+  full_score: 'Full score',
+};
+
+export type ChartOption =
+  | { type: 'typed'; id: 'typed'; label: string; key: MusicalKey | null }
+  | { type: 'pdf'; id: string; label: string; resource: Resource };
+
+/** Whether the song has typed chords over its lyrics (LIB-22). */
+export function hasTypedChords(detail: SongDetail | undefined): boolean {
+  const chords = detail?.chords;
+  return !!chords && SECTIONS.some((s) => hasChords(chords.sections[s]));
+}
+
+/**
+ * The charts a musician can choose from: typed chords first, then the effective key's PDF
+ * chord charts, lead sheets and scores (in that order, oldest upload first within a kind).
+ */
+export function chartOptions(
+  resolved: ResolvedItem,
+  detail: SongDetail | undefined,
+): ChartOption[] {
+  const options: ChartOption[] = [];
+  if (hasTypedChords(detail)) {
+    options.push({ type: 'typed', id: 'typed', label: 'Typed chords', key: detail!.chords!.key });
+  }
+  for (const kind of CHART_KINDS) {
+    for (const r of resolved.resources) {
+      if (r.kind !== kind || openPlan(r).type !== 'pdf') continue;
+      const kindLabel = CHART_KIND_LABEL[kind];
+      const label =
+        r.label.trim() && r.label.trim() !== kindLabel ? `${kindLabel}: ${r.label}` : kindLabel;
+      options.push({ type: 'pdf', id: r.id, label, resource: r });
+    }
+  }
+  // Two files with the same label ("Chord chart" twice) get numbered so they can be told apart.
+  const counts = new Map<string, number>();
+  for (const o of options) counts.set(o.label, (counts.get(o.label) ?? 0) + 1);
+  const seen = new Map<string, number>();
+  return options.map((o) => {
+    if ((counts.get(o.label) ?? 0) < 2) return o;
+    const n = (seen.get(o.label) ?? 0) + 1;
+    seen.set(o.label, n);
+    return { ...o, label: `${o.label} ${n}` };
+  });
+}
+
+/**
+ * A warning when the typed chords are written in another key than the setlist plays in
+ * (transposing isn't built yet, TODO #2). Null when they agree or either key is unknown.
+ */
+export function keyMismatch(
+  chordsKey: MusicalKey | null,
+  setlistKey: MusicalKey | null,
+): string | null {
+  if (!chordsKey || !setlistKey || chordsKey === setlistKey) return null;
+  return `These chords are written in ${chordsKey}; this setlist plays the song in ${setlistKey}.`;
+}
+
+export function hasLyrics(detail: SongDetail | undefined): boolean {
+  return !!detail && SECTIONS.some((s) => !!detail.lyrics[s]?.trim());
+}
+
+/** Short section names for the projectionist's running order. */
+export const SECTION_SHORT: Record<Section, string> = {
+  chorus: 'C',
+  verse_1: 'V1',
+  verse_2: 'V2',
+  verse_3: 'V3',
+  verse_4: 'V4',
+  verse_5: 'V5',
+  bridge: 'B',
+};
+
+/**
+ * Each section in the order it's first sung, with its first line, for finding the right slide.
+ * Sections with lyrics that aren't in the arrangement come after, in storage order.
+ */
+export function sectionCues(detail: SongDetail): Array<{ section: Section; line: string }> {
+  const order = [...new Set([...detail.arrangement, ...SECTIONS])];
+  return order.flatMap((section) => {
+    const line = firstLine(detail.lyrics[section]);
+    return line ? [{ section, line }] : [];
+  });
+}
+
+/** The song's projection files and links. */
+export function projectionResources(resolved: ResolvedItem): Resource[] {
+  return resolved.resources.filter((r) => r.kind === 'projection');
+}

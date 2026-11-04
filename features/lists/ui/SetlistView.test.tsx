@@ -329,6 +329,85 @@ describe('SetlistView', () => {
   });
 });
 
+describe('Start event (LIST-11)', () => {
+  afterEach(() => window.history.replaceState(null, '', '/'));
+
+  it('shows Start event to every reader, not on an empty list', () => {
+    const { unmount } = render(<SetlistView list={detail} canEdit={false} songs={songs} />);
+    expect(screen.getByRole('button', { name: 'Start event' })).toBeVisible();
+    unmount();
+    render(<SetlistView list={{ ...detail, items: [], itemCount: 0 }} canEdit songs={songs} />);
+    expect(screen.queryByRole('button', { name: 'Start event' })).toBeNull();
+  });
+
+  it('asks for a role every time, opens the player and keeps it in the URL', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: 'Start event' }));
+    const ask = screen.getByRole('dialog', { name: 'Start event' });
+    expect(
+      within(ask)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual([
+      expect.stringMatching(/^Musician/),
+      expect.stringMatching(/^Vocalist/),
+      expect.stringMatching(/^Projectionist/),
+      'Cancel',
+      'Close',
+    ]);
+    await user.click(within(ask).getByRole('button', { name: /^Vocalist/ }));
+    const player = screen.getByRole('dialog', { name: new RegExp(detail.name) });
+    expect(player).toHaveTextContent(`Song 1 of ${titles.length}`);
+    expect(window.location.search).toBe('?play=1&as=vocalist');
+
+    await user.click(within(player).getByRole('button', { name: /^Next/ }));
+    expect(window.location.search).toBe('?play=2&as=vocalist');
+
+    await user.click(within(player).getByRole('button', { name: 'Close the player' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(window.location.search).toBe('');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Start event' })).toHaveFocus());
+
+    await user.click(screen.getByRole('button', { name: 'Start event' }));
+    expect(screen.getByRole('dialog', { name: 'Start event' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('reopens at ?play=, asking for the role when the URL has none', async () => {
+    window.history.replaceState(null, '', '/?play=2&as=projectionist');
+    setup();
+    expect(screen.getByRole('dialog', { name: new RegExp(detail.name) })).toHaveTextContent(
+      `Song 2 of ${titles.length}`,
+    );
+    expect(screen.getByRole('list', { name: 'Running order' })).toBeVisible();
+    cleanup();
+
+    window.history.replaceState(null, '', '/?play=99');
+    const { user } = setup();
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Start event' })).getByRole('button', {
+        name: /^Musician/,
+      }),
+    );
+    expect(screen.getByRole('dialog', { name: new RegExp(detail.name) })).toHaveTextContent(
+      `Song 1 of ${titles.length}`,
+    );
+  });
+
+  it('“Show lyrics” in the resources panel shows them in place', async () => {
+    const { user } = setup();
+    await user.click(
+      within(screen.getByRole('group', { name: titles[0] })).getByRole('button', {
+        name: /resources/i,
+      }),
+    );
+    await user.click(await screen.findByRole('button', { name: /show lyrics/i }));
+    expect(router.push).not.toHaveBeenCalled();
+    expect(await screen.findByRole('article', { name: 'Lyrics' })).toBeVisible();
+  });
+});
+
 describe('SetlistActionsProvider (the /dev/setlist stand-ins)', () => {
   function stubs() {
     return {

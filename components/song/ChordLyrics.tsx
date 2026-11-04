@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 import { cn } from '@/components/ui/utils';
 import { parseChordLine, type ChordSegment } from '@/lib/lyrics/chords';
 
@@ -5,6 +7,7 @@ export interface ChordLyricsProps {
   /** Lyrics with chords inline, e.g. "[G]Amazing [C]grace". Line breaks are kept. */
   text: string;
   className?: string;
+  style?: CSSProperties;
 }
 
 /** A piece of one word: the chord played on it (if any) and the letters under the chord. */
@@ -80,9 +83,9 @@ function ChordLine({ line }: { line: string }) {
  * Lyrics with each chord shown above the syllable it's played on (LIB-22). Lines without
  * chords render as plain text; lines of only chords render as a row of chords.
  */
-export function ChordLyrics({ text, className }: ChordLyricsProps) {
+export function ChordLyrics({ text, className, style }: ChordLyricsProps) {
   return (
-    <div className={cn('flex flex-col', className)} data-chords="">
+    <div className={cn('flex flex-col', className)} style={style} data-chords="">
       {text.split(/\r\n?|\n/).map((line, i) => (
         <ChordLine key={i} line={line} />
       ))}

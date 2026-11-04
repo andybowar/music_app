@@ -185,6 +185,31 @@ If you own the setlist, or you're a music leader in its branch, you can:
 
 Everyone else can view setlists but not change them.
 
+### Starting an event
+
+On a setlist, tap **Start event** and choose what you're doing. You're asked every time, and you
+can switch from the menu at the top of the player.
+
+- **Musician:** the first chords for the setlist's key, then a chart. If the song has more than
+  one (typed chords, chord charts, lead sheets or scores), you pick one each time the song comes
+  up; **Choose another chart** goes back to the list. PDFs show full width with every page one
+  under another, and **Zoom** opens the page-by-page viewer. With no chart, you get the lyrics
+  and first chords. If typed chords are in a different key from the setlist, a warning says so.
+- **Vocalist:** the lyrics in the order they're sung. **A−** and **A+** change the text size.
+- **Projectionist:** the whole running order with the current song marked, each song's section
+  order (V1 · C · V2 …), the first line of each section, and its projection files to open in
+  ProPresenter or PowerPoint.
+
+Musicians and vocalists can turn on **Autoscroll** and set its **Speed** from 1 (slow) to 10. The
+speed is remembered for each song on your device, and autoscroll turns off when you move to
+another song.
+
+Move between songs with **Previous** and **Next**, by swiping sideways, or with the arrow or Page
+Up/Page Down keys, which is what most Bluetooth page-turner pedals send. For musicians, a pedal
+press first scrolls the chart down a screen, and moves to the next song once you're at the end.
+The screen stays on while the player is open, and setlists you've opened before still work
+offline.
+
 ### Playing a playlist
 
 On a playlist, pick a **Recording** for each song from its menu. You can choose an uploaded

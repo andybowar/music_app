@@ -48,23 +48,17 @@
         "branches_name_key": {
           "name": "branches_name_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         },
         "branches_code_key": {
           "name": "branches_code_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "branches_sso_group_key": {
           "name": "branches_sso_group_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "sso_group"
-          ]
+          "columns": ["sso_group"]
         }
       },
       "policies": {},
@@ -172,12 +166,8 @@
           "tableFrom": "users",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": [
-            "id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -185,12 +175,8 @@
           "name": "users_branch_id_fkey",
           "tableFrom": "users",
           "tableTo": "branches",
-          "columnsFrom": [
-            "branch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["branch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -198,12 +184,8 @@
           "name": "users_access_decided_by_fkey",
           "tableFrom": "users",
           "tableTo": "users",
-          "columnsFrom": [
-            "access_decided_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["access_decided_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -213,9 +195,7 @@
         "users_email_key": {
           "name": "users_email_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -309,12 +289,8 @@
           "name": "song_composers_song_id_fkey",
           "tableFrom": "song_composers",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -322,12 +298,8 @@
           "name": "song_composers_composer_id_fkey",
           "tableFrom": "song_composers",
           "tableTo": "composers",
-          "columnsFrom": [
-            "composer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["composer_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -335,10 +307,7 @@
       "compositePrimaryKeys": {
         "song_composers_pkey": {
           "name": "song_composers_pkey",
-          "columns": [
-            "song_id",
-            "composer_id"
-          ]
+          "columns": ["song_id", "composer_id"]
         }
       },
       "uniqueConstraints": {},
@@ -534,12 +503,8 @@
           "name": "songs_added_by_branch_id_fkey",
           "tableFrom": "songs",
           "tableTo": "branches",
-          "columnsFrom": [
-            "added_by_branch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["added_by_branch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -547,12 +512,8 @@
           "name": "songs_created_by_fkey",
           "tableFrom": "songs",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -560,12 +521,8 @@
           "name": "songs_updated_by_fkey",
           "tableFrom": "songs",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -671,12 +628,8 @@
           "name": "song_keys_song_id_fkey",
           "tableFrom": "song_keys",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -686,10 +639,7 @@
         "song_keys_song_id_key_key": {
           "name": "song_keys_song_id_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "song_id",
-            "key"
-          ]
+          "columns": ["song_id", "key"]
         }
       },
       "policies": {},
@@ -788,12 +738,8 @@
           "name": "resources_song_id_fkey",
           "tableFrom": "resources",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -801,12 +747,8 @@
           "name": "resources_song_key_id_fkey",
           "tableFrom": "resources",
           "tableTo": "song_keys",
-          "columnsFrom": [
-            "song_key_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_key_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -814,12 +756,8 @@
           "name": "resources_uploaded_by_fkey",
           "tableFrom": "resources",
           "tableTo": "users",
-          "columnsFrom": [
-            "uploaded_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["uploaded_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -873,12 +811,8 @@
           "name": "song_themes_song_id_fkey",
           "tableFrom": "song_themes",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -886,12 +820,8 @@
           "name": "song_themes_theme_id_fkey",
           "tableFrom": "song_themes",
           "tableTo": "themes",
-          "columnsFrom": [
-            "theme_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["theme_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -899,11 +829,7 @@
       "compositePrimaryKeys": {
         "song_themes_pkey": {
           "name": "song_themes_pkey",
-          "columns": [
-            "song_id",
-            "theme_id",
-            "section"
-          ]
+          "columns": ["song_id", "theme_id", "section"]
         }
       },
       "uniqueConstraints": {},
@@ -934,12 +860,8 @@
           "name": "theme_synonyms_theme_id_fkey",
           "tableFrom": "theme_synonyms",
           "tableTo": "themes",
-          "columnsFrom": [
-            "theme_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["theme_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -947,10 +869,7 @@
       "compositePrimaryKeys": {
         "theme_synonyms_pkey": {
           "name": "theme_synonyms_pkey",
-          "columns": [
-            "theme_id",
-            "synonym"
-          ]
+          "columns": ["theme_id", "synonym"]
         }
       },
       "uniqueConstraints": {},
@@ -1000,12 +919,8 @@
           "name": "themes_created_by_fkey",
           "tableFrom": "themes",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1015,9 +930,7 @@
         "themes_name_key": {
           "name": "themes_name_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -1074,12 +987,8 @@
           "name": "branch_usage_song_id_fkey",
           "tableFrom": "branch_usage",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1087,12 +996,8 @@
           "name": "branch_usage_branch_id_fkey",
           "tableFrom": "branch_usage",
           "tableTo": "branches",
-          "columnsFrom": [
-            "branch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["branch_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1100,10 +1005,7 @@
       "compositePrimaryKeys": {
         "branch_usage_pkey": {
           "name": "branch_usage_pkey",
-          "columns": [
-            "song_id",
-            "branch_id"
-          ]
+          "columns": ["song_id", "branch_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1185,12 +1087,8 @@
           "name": "list_items_list_id_fkey",
           "tableFrom": "list_items",
           "tableTo": "lists",
-          "columnsFrom": [
-            "list_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["list_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1198,12 +1096,8 @@
           "name": "list_items_song_id_fkey",
           "tableFrom": "list_items",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1211,12 +1105,8 @@
           "name": "list_items_resource_id_fkey",
           "tableFrom": "list_items",
           "tableTo": "resources",
-          "columnsFrom": [
-            "resource_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resource_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1305,12 +1195,8 @@
           "name": "lists_owner_id_fkey",
           "tableFrom": "lists",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1318,12 +1204,8 @@
           "name": "lists_branch_id_fkey",
           "tableFrom": "lists",
           "tableTo": "branches",
-          "columnsFrom": [
-            "branch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["branch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1398,12 +1280,8 @@
           "name": "shares_list_id_fkey",
           "tableFrom": "shares",
           "tableTo": "lists",
-          "columnsFrom": [
-            "list_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["list_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1411,12 +1289,8 @@
           "name": "shares_created_by_fkey",
           "tableFrom": "shares",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1426,9 +1300,7 @@
         "shares_token_key": {
           "name": "shares_token_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -1492,12 +1364,8 @@
           "name": "audit_log_actor_id_fkey",
           "tableFrom": "audit_log",
           "tableTo": "users",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1570,12 +1438,8 @@
           "name": "admin_todos_done_by_fkey",
           "tableFrom": "admin_todos",
           "tableTo": "users",
-          "columnsFrom": [
-            "done_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["done_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1583,12 +1447,8 @@
           "name": "admin_todos_created_by_fkey",
           "tableFrom": "admin_todos",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1669,12 +1529,8 @@
           "name": "feature_request_images_request_id_fkey",
           "tableFrom": "feature_request_images",
           "tableTo": "feature_requests",
-          "columnsFrom": [
-            "request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["request_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1682,12 +1538,8 @@
           "name": "feature_request_images_created_by_fkey",
           "tableFrom": "feature_request_images",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1697,9 +1549,7 @@
         "feature_request_images_storage_path_key": {
           "name": "feature_request_images_storage_path_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "storage_path"
-          ]
+          "columns": ["storage_path"]
         }
       },
       "policies": {},
@@ -1782,12 +1632,8 @@
           "name": "feature_requests_created_by_fkey",
           "tableFrom": "feature_requests",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1812,85 +1658,42 @@
     "public.access_status": {
       "name": "access_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "approved",
-        "rejected"
-      ]
+      "values": ["pending", "approved", "rejected"]
     },
     "public.audit_action": {
       "name": "audit_action",
       "schema": "public",
-      "values": [
-        "create",
-        "update",
-        "delete"
-      ]
+      "values": ["create", "update", "delete"]
     },
     "public.auth_provider": {
       "name": "auth_provider",
       "schema": "public",
-      "values": [
-        "google",
-        "microsoft",
-        "saml",
-        "password"
-      ]
+      "values": ["google", "microsoft", "saml", "password"]
     },
     "public.energy_level": {
       "name": "energy_level",
       "schema": "public",
-      "values": [
-        "high_praise",
-        "high_worship",
-        "mid_worship",
-        "deep_worship",
-        "quiet_worship"
-      ]
+      "values": ["high_praise", "high_worship", "mid_worship", "deep_worship", "quiet_worship"]
     },
     "public.list_type": {
       "name": "list_type",
       "schema": "public",
-      "values": [
-        "setlist",
-        "playlist"
-      ]
+      "values": ["setlist", "playlist"]
     },
     "public.lyric_section": {
       "name": "lyric_section",
       "schema": "public",
-      "values": [
-        "chorus",
-        "verse_1",
-        "verse_2",
-        "verse_3",
-        "verse_4",
-        "verse_5",
-        "bridge"
-      ]
+      "values": ["chorus", "verse_1", "verse_2", "verse_3", "verse_4", "verse_5", "bridge"]
     },
     "public.pop_member": {
       "name": "pop_member",
       "schema": "public",
-      "values": [
-        "none",
-        "past",
-        "current"
-      ]
+      "values": ["none", "past", "current"]
     },
     "public.resource_format": {
       "name": "resource_format",
       "schema": "public",
-      "values": [
-        "pdf",
-        "mp3",
-        "m4a",
-        "pro",
-        "mdb",
-        "ppt",
-        "pptx",
-        "url"
-      ]
+      "values": ["pdf", "mp3", "m4a", "pro", "mdb", "ppt", "pptx", "url"]
     },
     "public.resource_kind": {
       "name": "resource_kind",
@@ -1908,49 +1711,27 @@
     "public.role": {
       "name": "role",
       "schema": "public",
-      "values": [
-        "member",
-        "contributor",
-        "music_leader",
-        "admin"
-      ]
+      "values": ["member", "contributor", "music_leader", "admin"]
     },
     "public.usage_level": {
       "name": "usage_level",
       "schema": "public",
-      "values": [
-        "high",
-        "low",
-        "rare",
-        "none"
-      ]
+      "values": ["high", "low", "rare", "none"]
     },
     "public.usage_source": {
       "name": "usage_source",
       "schema": "public",
-      "values": [
-        "manual",
-        "derived"
-      ]
+      "values": ["manual", "derived"]
     },
     "public.feature_request_kind": {
       "name": "feature_request_kind",
       "schema": "public",
-      "values": [
-        "enhancement",
-        "change"
-      ]
+      "values": ["enhancement", "change"]
     },
     "public.feature_request_status": {
       "name": "feature_request_status",
       "schema": "public",
-      "values": [
-        "new",
-        "planned",
-        "in_progress",
-        "done",
-        "declined"
-      ]
+      "values": ["new", "planned", "in_progress", "done", "declined"]
     }
   },
   "schemas": {},

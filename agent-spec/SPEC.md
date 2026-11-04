@@ -51,6 +51,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-LIB-12** Edits are recorded in an audit log (who, when, what changed) viewable on the song.
 - **REQ-LIB-13** Bulk import from CSV + a folder of files, with dry-run report and idempotent re-run.
 - **REQ-LIB-14** Paste-and-split helper: paste full lyrics with section headings and have them split into the 7 section fields + arrangement.
+- **REQ-LIB-15** Optional chords over the lyrics: when creating or editing a song, a contributor may add chords inline in each lyric section (ChordPro brackets, e.g. `[G]Amazing [C]grace`) and say which key they're in. Pasting a chord sheet with chords on their own lines converts them. Readers see chords above the words and can hide them. Search and first lines use the lyrics without chords. Songs without chords are unaffected.
 
 ### 2.3 Navigation (REQ-NAV) — Diagram II
 

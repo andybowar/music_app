@@ -111,6 +111,8 @@ export interface Resource {
 export interface Theme { id: UUID; name: string }
 
 export type SongLyrics = Record<Section, string | null>;
+/** LIB-22. Each section: its lyrics with [chords] inline; stripChords(section) === lyrics[section]. */
+export interface SongChords { key: MusicalKey | null; sections: SongLyrics }
 
 export interface BranchUsage { branchId: UUID; branchCode: string; level: UsageLevel; source: UsageSource }
 
@@ -130,6 +132,7 @@ export interface SongDetail extends SongSummary {
   altTitles: string[]; sourceGroup: string | null; energyNotes: string | null;
   composers: Composer[];
   lyrics: SongLyrics; arrangement: Section[];
+  chords?: SongChords | null;      // LIB-22; null/absent = no chords
   chorusLine: string | null; verse1Line: string | null;
   keys: SongKey[];                 // primary first, then alphabetical
   resources: Resource[];           // all, keyed and unkeyed
@@ -204,7 +207,7 @@ Must export these schemas; inferred types must be assignable to the interfaces a
 
 | Export | Shape / rules |
 |---|---|
-| `songInputSchema` | `title` 1–200 chars; `altTitles` ≤10 × ≤200; `composerIds` UUID[] 1..10 (ordered); `sourceGroup` ≤100 nullable; `year` 1000–2100 nullable; `tempoBpm` 20–300 nullable; `timeSignature` matches `TIME_SIGNATURE_RE` nullable; `energyLevel` enum nullable; `energyNotes` ≤500 nullable; `lyrics` partial `SongLyrics`, each ≤5000; `arrangement` Section[] ≤30 and every entry must have non-empty lyrics; `addedByBranchId` UUID nullable (admin only) |
+| `songInputSchema` | `title` 1–200 chars; `altTitles` ≤10 × ≤200; `composerIds` UUID[] 1..10 (ordered); `sourceGroup` ≤100 nullable; `year` 1000–2100 nullable; `tempoBpm` 20–300 nullable; `timeSignature` matches `TIME_SIGNATURE_RE` nullable; `energyLevel` enum nullable; `energyNotes` ≤500 nullable; `lyrics` partial `SongLyrics`, each ≤5000; `arrangement` Section[] ≤30 and every entry must have non-empty lyrics; `chords` `{ key: MusicalKey|null; sections: partial, each ≤8000 }` nullable, default null, and each section with its chords removed must equal that section's lyrics (LIB-22); `addedByBranchId` UUID nullable (admin only) |
 | `songKeyInputSchema` | `id` UUID optional (existing `song_keys.id`; omit for a new key — CR LIB-02-song-key-input-id); `key` matches `MUSICAL_KEY_RE`; `isPrimary` bool; `firstChords` partial record, each matches `CHORD_RE` or null |
 | `songKeysInputSchema` | array 1..12 of the above; exactly one `isPrimary`; keys unique; ids (when given) unique |
 | `resourceLinkInputSchema` | `songId`, `songKeyId` (required unless kind=projection; must be null for projection), `kind` (must allow `'url'` in `KIND_FORMATS`), `label` 1–120, `url` http(s) |

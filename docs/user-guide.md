@@ -244,6 +244,12 @@ song** on its page or row panel. The form has six tabs:
 - **Lyrics**: chorus, verses 1–5 and bridge, plus the arrangement (the order they're sung,
   repeats allowed). **Paste full lyrics** splits a pasted song into sections if it has headings
   like "Verse 1" and "Chorus" on their own lines.
+- **Chords (optional)**: tick **Add chords over the lyrics** to write chords into the lyrics. Put
+  each chord in square brackets just before the syllable it's played on, for example
+  `[G]Amazing [C]grace`, and choose the key they're in. A preview under each section shows the
+  chords above the words. You can also paste a chord sheet with the chords on their own lines
+  above the words; they're moved into place. Unticking the box removes the chords and keeps the
+  lyrics. On the song page, the **Chords** button shows or hides them.
 - **Themes**: tag each lyric section with themes from the shared list. You can create a new theme
   if none fits.
 - **Branch usage**: how often each branch sings the song (high, low, rare or none). Usage is

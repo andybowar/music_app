@@ -1,6 +1,6 @@
 # Task index
 
-106 tasks · 17 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
+107 tasks · 17 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
 
 **How to use.** A task is *ready* when every task in `depends_on` is merged. All ready tasks in a wave can run at the same time — their `owns` paths never overlap (checked by `scripts/check_tasks.py`). Start a task by setting `status: in_progress` in its file; see `AGENTS.md` for the full protocol.
 
@@ -124,7 +124,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | [LIST-01](tasks/LIST-01.md) | Lists server (create/get/list/rename/delete) | 3 Lists | backend | M | LIB-01, LIST-03, AUTH-05 |
 | [SRCH-02](tasks/SRCH-02.md) | searchSongs action + default view | 2 Search | backend | S | SRCH-01, LIB-01, AUTH-04 |
 
-### Wave 9 — 11 tasks in parallel
+### Wave 9 — 12 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
@@ -134,6 +134,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | [CNT-03](tasks/CNT-03.md) 👤 | Pilot data entry: first 50 songs | 1 Library | content | L | LIB-17, CNT-02 |
 | [H-02](tasks/H-02.md) | Theme synonyms in search | 5 Hardening | backend | S | SRCH-02, LIB-04, CNT-01 |
 | [LIB-19](tasks/LIB-19.md) | Song change history | 1 Library | frontend | S | LIB-18, DB-06 |
+| [LIB-22](tasks/LIB-22.md) | Chords over the lyrics (optional) | 1 Library | fullstack | M | LIB-01, LIB-12, LIB-16, LIB-17, LIB-18, UI-07 |
 | [LIST-07](tasks/LIST-07.md) | Setlist view + route | 3 Lists | frontend | L | LIST-01, LIST-02, UI-05, UI-02, UI-06 |
 | [LIST-08](tasks/LIST-08.md) | Open Setlist / Open Playlist index | 3 Lists | frontend | S | LIST-01, UI-02 |
 | [SHR-01](tasks/SHR-01.md) | Share tokens server | 4 Sharing | backend | M | LIST-01, AUTH-05 |
@@ -214,7 +215,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | content | CNT-01, CNT-02, CNT-03, DOC-01, PILOT-01 |
 | data | DB-01, DB-02, DB-04, DB-07, DB-08, IMP-01, IMP-02, IMP-03 |
 | frontend | ADM-01, ADM-02, ADM-05, BR-02, BR-04, H-01, LIB-10, LIB-11, LIB-12, LIB-13, LIB-14, LIB-15, LIB-17, LIB-18, LIB-19, LIB-20, LIB-21, LIST-04, LIST-05, LIST-06, LIST-07, LIST-08, LIST-09, LIST-10, LIST-11, PLAY-01, PLAY-02, PLAY-03, PLAY-04, PLAY-05, PLAY-06, SHR-02, SHR-04, SRCH-04, SRCH-05, SRCH-06, SRCH-07, SRCH-08, SRCH-09, UI-01, UI-02, UI-04, UI-05, UI-06, UI-07, UI-08 |
-| fullstack | ADM-06, ADM-08 |
+| fullstack | ADM-06, ADM-08, LIB-22 |
 | ops | OPS-01, OPS-02, OPS-03 |
 | platform | DB-06, F-01, F-02, F-03, F-04, F-05 |
 | qa | H-04, H-05 |
@@ -252,6 +253,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | REQ-LIB-12 | DB-06, LIB-01, LIB-19 |
 | REQ-LIB-13 | IMP-01, IMP-02, IMP-03 |
 | REQ-LIB-14 | LIB-16, LIB-12 |
+| REQ-LIB-15 | LIB-22 |
 | REQ-LIST-01 | LIST-04, LIST-05, LIST-01, LIST-09 |
 | REQ-LIST-02 | LIST-06, LIST-02, LIST-09, H-05 |
 | REQ-LIST-03 | LIST-02, LIST-01, LIST-07 |

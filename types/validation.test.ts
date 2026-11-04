@@ -37,7 +37,42 @@ describe('songInputSchema', () => {
       energyNotes: null,
       lyrics: {},
       arrangement: [],
+      chords: null,
     });
+  });
+
+  it('accepts chords whose words match the lyrics (LIB-22)', () => {
+    const r = songInputSchema.safeParse({
+      ...minimal,
+      lyrics: { chorus: 'Amazing grace\nHow sweet' },
+      chords: { key: 'G', sections: { chorus: '[G]Amazing [C]grace\n[D] [G]\nHow [D]sweet' } },
+    });
+    expect(r.success).toBe(true);
+    expect(r.data?.chords).toEqual({
+      key: 'G',
+      sections: { chorus: '[G]Amazing [C]grace\n[D] [G]\nHow [D]sweet' },
+    });
+  });
+
+  it('defaults the chords key to null and allows an empty chords object', () => {
+    const r = songInputSchema.safeParse({ ...minimal, chords: {} });
+    expect(r.success && r.data.chords).toEqual({ key: null, sections: {} });
+  });
+
+  it('rejects chords that disagree with the lyrics, a bad key or overlong text', () => {
+    const issues = (chords: unknown, lyrics: unknown = { verse_1: 'Amazing grace' }) => {
+      const r = songInputSchema.safeParse({ ...minimal, lyrics, chords });
+      return r.success ? [] : r.error.issues.map((i) => i.path.join('.'));
+    };
+    expect(issues({ sections: { verse_1: '[G]Amazing love' } })).toEqual([
+      'chords.sections.verse_1',
+    ]);
+    // A section with lyrics but no chorded copy doesn't match either.
+    expect(issues({ sections: {} })).toEqual(['chords.sections.verse_1']);
+    expect(issues({ key: 'H', sections: { verse_1: 'Amazing grace' } })).toEqual(['chords.key']);
+    expect(issues({ sections: { verse_1: 'x'.repeat(8001) } }, {})).toContain(
+      'chords.sections.verse_1',
+    );
   });
 
   it('accepts a full song with arrangement repeats', () => {

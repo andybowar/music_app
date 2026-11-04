@@ -85,6 +85,9 @@ create table songs (
   verse_5_lyrics   text,
   bridge_lyrics    text,
   arrangement      lyric_section[] not null default '{}',   -- e.g. {verse_1,chorus,verse_2,chorus,bridge,chorus}
+  -- chords over the lyrics (LIB-22, migration 0010); null = no chords
+  chord_lyrics     jsonb check (jsonb_typeof(chord_lyrics) = 'object'),  -- { section: lyrics with [chords] inline }, sections with text only
+  chords_key       text check (chords_key ~ '^[A-G](#|b)?m?$'),          -- key the chords are written in
   -- derived (maintained by triggers in DB-02; never written by app code)
   chorus_line      text,         -- first non-empty line of chorus_lyrics
   verse1_line      text,         -- first non-empty line of verse_1_lyrics

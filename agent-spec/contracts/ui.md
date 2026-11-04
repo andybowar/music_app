@@ -73,7 +73,8 @@ All components are client components unless noted, props-only (no data fetching 
 | `UsagePanel` | `components/song/panels/UsagePanel.tsx` | `{ addedByBranchCode: string \| null; usage: BranchUsage[] }` | UI-06 |
 | `ReminderPanel` | `components/song/panels/ReminderPanel.tsx` | `{ chorusLine: string \| null; verse1Line: string \| null }` | UI-06 |
 | `ResourcesPanel` | `components/song/panels/ResourcesPanel.tsx` | `{ resources: Resource[]; keys: SongKey[]; onOpen(r: Resource): void; onShowLyrics(): void; hasLyrics?: boolean; addFilesSlot?: ReactNode }` groups: Lyrics, Sheet Music (by key), Audio (by key), Projection | UI-07 |
-| `LyricsViewer` | `components/song/LyricsViewer.tsx` | `{ lyrics: SongLyrics; arrangement: Section[]; mode?: 'arrangement' \| 'sections' }` | UI-07 |
+| `LyricsViewer` | `components/song/LyricsViewer.tsx` | `{ lyrics: SongLyrics; arrangement: Section[]; mode?: 'arrangement' \| 'sections'; chords?: SongChords \| null }` (`chords`: LIB-22, adds a "Chords" toggle) | UI-07 |
+| `ChordLyrics` | `components/song/ChordLyrics.tsx` | `{ text: string; className?: string }` (text with inline `[chords]`) | LIB-22 |
 | `PdfViewer` | `components/media/PdfViewer.tsx` | `{ url: string; title: string; onClose(): void }` | UI-08 |
 | `InlineAudio` | `components/media/InlineAudio.tsx` | `{ url: string; title: string }` | UI-08 |
 | `SearchBar` | `features/search/ui/SearchBar.tsx` | `{ value: string; fields: SearchField[]; onChange(q, fields): void; onSubmit(): void }` | SRCH-05 |
@@ -107,7 +108,7 @@ All components are client components unless noted, props-only (no data fetching 
 export interface SongFormValue {
   basic: { title: string; altTitles: string[]; composers: Composer[]; sourceGroup: string|null; year: number|null };
   musical: { keys: Array<Omit<SongKey,'id'|'songId'> & { id?: UUID }>; tempoBpm: number|null; timeSignature: string|null; energyLevel: EnergyLevel|null; energyNotes: string|null };
-  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[] };
+  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[]; chords?: { key: MusicalKey|null; sections: Partial<SongLyrics> } | null };  // chords: LIB-22
   themes: Array<{ section: Section; theme: Theme }>;
   usage: Array<{ branchId: UUID; level: UsageLevel }>;
 }

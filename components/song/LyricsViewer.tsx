@@ -1,9 +1,19 @@
 'use client';
 
+import { GuitarIcon } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Toggle } from '@/components/ui/toggle';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { SECTIONS, SECTION_LABEL, type Section, type SongLyrics } from '@/types/domain';
+import { hasChords } from '@/lib/lyrics/chords';
+import {
+  SECTIONS,
+  SECTION_LABEL,
+  type Section,
+  type SongChords,
+  type SongLyrics,
+} from '@/types/domain';
+import { ChordLyrics } from './ChordLyrics';
 
 export type LyricsViewerMode = 'arrangement' | 'sections';
 
@@ -12,6 +22,27 @@ export interface LyricsViewerProps {
   arrangement: Section[];
   /** Initial view. Defaults to 'arrangement' (as sung); the reader can switch. */
   mode?: LyricsViewerMode;
+  /** Chords over the lyrics (LIB-22). When any section has chords, a "Chords" toggle shows. */
+  chords?: SongChords | null;
+}
+
+/** Remembers whether the reader last hid the chords (`localStorage`). */
+export const SHOW_CHORDS_STORAGE_KEY = 'lyrics:show-chords';
+
+function readShowChords(): boolean {
+  try {
+    return window.localStorage.getItem(SHOW_CHORDS_STORAGE_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+}
+
+function writeShowChords(show: boolean): void {
+  try {
+    window.localStorage.setItem(SHOW_CHORDS_STORAGE_KEY, String(show));
+  } catch {
+    // Storage can be unavailable (private mode); the toggle still works for this page.
+  }
 }
 
 export interface LyricsBlock {
@@ -49,7 +80,18 @@ export function unsungSections(lyrics: SongLyrics, arrangement: Section[]): Sect
   return SECTIONS.filter((s) => !sung.has(s) && hasText(lyrics[s]));
 }
 
-function Block({ block, idBase, index }: { block: LyricsBlock; idBase: string; index: number }) {
+function Block({
+  block,
+  idBase,
+  index,
+  chordText,
+}: {
+  block: LyricsBlock;
+  idBase: string;
+  index: number;
+  /** The section with chords inline; shown instead of the plain text when it has chords. */
+  chordText?: string | null;
+}) {
   const headingId = `${idBase}-${index}`;
   const repeat = block.occurrence > 1;
   return (
@@ -68,6 +110,8 @@ function Block({ block, idBase, index }: { block: LyricsBlock; idBase: string; i
       </h3>
       {block.text === null ? (
         <p className="text-sm text-muted-foreground italic">No lyrics for this section</p>
+      ) : hasChords(chordText) ? (
+        <ChordLyrics text={chordText!} className="text-lg leading-snug" />
       ) : (
         <p className="text-lg leading-relaxed whitespace-pre-line">{block.text}</p>
       )}
@@ -79,10 +123,20 @@ function Block({ block, idBase, index }: { block: LyricsBlock; idBase: string; i
  * Readable lyrics (REQ-ROW-03): as sung, in arrangement order with repeats labelled, or by
  * section. Falls back to by-section when there's no arrangement. Props only.
  */
-export function LyricsViewer({ lyrics, arrangement, mode = 'arrangement' }: LyricsViewerProps) {
+export function LyricsViewer({
+  lyrics,
+  arrangement,
+  mode = 'arrangement',
+  chords,
+}: LyricsViewerProps) {
   const [view, setView] = useState<LyricsViewerMode>(mode);
   useEffect(() => setView(mode), [mode]);
   const idBase = useId();
+  const [showChords, setShowChords] = useState(true);
+  useEffect(() => setShowChords(readShowChords()), []);
+  const chorded = !!chords && SECTIONS.some((s) => hasChords(chords.sections[s]));
+  const chordText = (section: Section) =>
+    chorded && showChords ? chords!.sections[section] : null;
 
   const bySection = sectionBlocks(lyrics);
   if (bySection.length === 0) {
@@ -94,8 +148,30 @@ export function LyricsViewer({ lyrics, arrangement, mode = 'arrangement' }: Lyri
   const blocks = effective === 'arrangement' ? arrangementBlocks(lyrics, arrangement) : bySection;
   const unsung = effective === 'arrangement' ? unsungSections(lyrics, arrangement) : [];
 
+  const chordsToggle = chorded ? (
+    <div className="flex flex-wrap items-center gap-2">
+      <Toggle
+        variant="outline"
+        size="sm"
+        className="min-h-tap px-3"
+        pressed={showChords}
+        onPressedChange={(on) => {
+          setShowChords(on);
+          writeShowChords(on);
+        }}
+      >
+        <GuitarIcon aria-hidden />
+        Chords
+      </Toggle>
+      {chords!.key ? (
+        <span className="text-xs text-muted-foreground">Chords in {chords!.key}</span>
+      ) : null}
+    </div>
+  ) : null;
+
   return (
     <article className="flex flex-col gap-4" aria-label="Lyrics">
+      {chordsToggle}
       {hasArrangement ? (
         <ToggleGroup
           type="single"
@@ -119,7 +195,13 @@ export function LyricsViewer({ lyrics, arrangement, mode = 'arrangement' }: Lyri
       )}
 
       {blocks.map((b, i) => (
-        <Block key={`${effective}-${i}`} block={b} idBase={idBase} index={i} />
+        <Block
+          key={`${effective}-${i}`}
+          block={b}
+          idBase={idBase}
+          index={i}
+          chordText={chordText(b.section)}
+        />
       ))}
 
       {unsung.length > 0 ? (
@@ -136,6 +218,7 @@ export function LyricsViewer({ lyrics, arrangement, mode = 'arrangement' }: Lyri
               block={{ section, text: lyrics[section], occurrence: 1 }}
               idBase={`${idBase}-unsung`}
               index={i}
+              chordText={chordText(section)}
             />
           ))}
         </section>

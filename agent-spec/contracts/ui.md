@@ -24,7 +24,7 @@
 | `/bugs`, `/bugs/new?from=<path>`, `/bugs/[id]` | Report a bug (any approved user; from the account menu) and my reports | ADM-08 |
 | `/admin/bugs`, `/admin/bugs/[id]` | All bug reports, triage (status, note to reporter, delete) | ADM-08 |
 | `/admin/users`, `/admin/branches` | Admin | ADM-01, ADM-02 |
-| `/dev/[component]` | Component gallery with fixtures; 404 on the production deployment via `if (!isDevGalleryEnabled()) notFound()` (`lib/devGallery.ts`), served on previews | each UI task adds its own page |
+| `/dev/[component]` | Component gallery with fixtures; open on local dev and previews. On the production deployment only approved admins may open it (from the "Component gallery" card on `/admin`); everyone else gets a 404, enforced by `middleware.ts` and `app/dev/layout.tsx` (`lib/devGallery.ts`). Pages still call `if (!isDevGalleryEnabled()) notFound()`, which now always passes | each UI task adds its own page |
 
 Route groups: `app/(auth)/…` (no shell), `app/(app)/…` (shell + `requireUser`), `app/share/…` (public), `app/dev/…`.
 

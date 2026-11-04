@@ -7,7 +7,7 @@ import type { AppUser } from '@/types/domain';
 
 export const ADMIN_HREF = '/admin';
 
-export type AdminAreaId = 'users' | 'branches' | 'themes';
+export type AdminAreaId = 'users' | 'branches' | 'themes' | 'galleries';
 
 export interface AdminArea {
   id: AdminAreaId;
@@ -39,6 +39,15 @@ const AREAS: ReadonlyArray<AdminArea & { allowed(user: AppUser): boolean }> = [
     description: 'Manage the theme vocabulary and the synonyms search uses.',
     // Same check as app/(app)/admin/themes/page.tsx.
     allowed: (user) => can(user, 'theme:merge') && can(user, 'theme:synonyms'),
+  },
+  {
+    id: 'galleries',
+    href: '/dev',
+    title: 'Component gallery',
+    description:
+      'Every screen and component with sample data, to check designs and states. No real data.',
+    // Same rule as middleware.ts and app/dev/layout.tsx (lib/devGallery): admins only.
+    allowed: (user) => can(user, 'admin:users'),
   },
 ];
 

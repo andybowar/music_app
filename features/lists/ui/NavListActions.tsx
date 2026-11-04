@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { NavBar } from '@/components/NavBar';
+import { ShareDialog } from '@/features/sharing/ui/ShareDialog';
 import type { ActionResult, List, ListType } from '@/types/domain';
 import type { ListInput } from '@/types/validation';
 
@@ -12,8 +13,12 @@ import { CreateListDialog } from './CreateListDialog';
 import { useCurrentList } from './CurrentList';
 
 export interface NavListActionsProps {
-  /** Share the current list (SHR-04). Only called while a current list is set. */
-  onShare(): void;
+  /**
+   * Optional: notified when Share is pressed. Share itself opens `ShareDialog` for the current
+   * list here (SHR-04), so callers need not pass this; `app/(app)/layout.tsx`'s no-op
+   * placeholder can go (agent-spec/change-requests/SHR-04-layout-share-placeholder.md).
+   */
+  onShare?(): void;
   /** Passed to `NavBar`: show "Add song" in the More menu (LIB-20). */
   canAddSong?: boolean;
 }
@@ -29,14 +34,16 @@ const UNAVAILABLE: ActionResult<List> = {
 /**
  * `NavBar` wired to the session's lists (LIST-09; REQ-NAV-01, REQ-LIST-01): "Create event
  * setlist" / "Create listening playlist" open `CreateListDialog`; on success the new list is the
- * current list and the user lands on the Worship Library. Must sit inside `CurrentListProvider`
- * and `ListActionsProvider`.
+ * current list and the user lands on the Worship Library. "Share" opens `ShareDialog` for the
+ * current list (SHR-04, REQ-NAV-04; the NavBar disables it when there is none). Must sit inside
+ * `CurrentListProvider` and `ListActionsProvider`.
  */
 export function NavListActions({ onShare, canAddSong = false }: NavListActionsProps) {
   const router = useRouter();
   const { current } = useCurrentList();
   const actions = useListActions();
   const [dialogType, setDialogType] = useState<ListType | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const submit = async (input: ListInput): Promise<ActionResult<List>> => {
     if (!actions) return UNAVAILABLE;
@@ -50,7 +57,10 @@ export function NavListActions({ onShare, canAddSong = false }: NavListActionsPr
       <NavBar
         currentList={current}
         onCreate={setDialogType}
-        onShare={onShare}
+        onShare={() => {
+          setShareOpen(true);
+          onShare?.();
+        }}
         canAddSong={canAddSong}
       />
       {(['setlist', 'playlist'] as const).map((type) => (
@@ -62,6 +72,7 @@ export function NavListActions({ onShare, canAddSong = false }: NavListActionsPr
           onSubmit={submit}
         />
       ))}
+      {current && <ShareDialog list={current} open={shareOpen} onOpenChange={setShareOpen} />}
     </>
   );
 }

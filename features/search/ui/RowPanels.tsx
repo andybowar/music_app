@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { InlineAudio } from '@/components/media/InlineAudio';
 import { ResponsivePanel } from '@/components/ResponsivePanel';
 import { LyricsViewer } from '@/components/song/LyricsViewer';
+import { songChordSets } from '@/lib/lyrics/chords';
 import { ComposerPanel, ComposerPanelSkeleton } from '@/components/song/panels/ComposerPanel';
 import { KeyPanel, KeyPanelSkeleton } from '@/components/song/panels/KeyPanel';
 import { ReminderPanel, ReminderPanelSkeleton } from '@/components/song/panels/ReminderPanel';
@@ -269,7 +270,11 @@ function ResourcesBody({
           <ArrowLeftIcon aria-hidden />
           Back to files
         </Button>
-        <LyricsViewer lyrics={song.lyrics} arrangement={song.arrangement} chords={song.chords} />
+        <LyricsViewer
+          lyrics={song.lyrics}
+          arrangement={song.arrangement}
+          chords={songChordSets(song.keys)}
+        />
       </div>
     );
   }

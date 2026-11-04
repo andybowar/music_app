@@ -25,11 +25,16 @@ import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
 import { type Tx, withTx } from '@/lib/db';
 import { assertCan } from '@/lib/permissions';
-import type { AppUser, SongKey } from '@/types/domain';
+import { chordsMatchLyrics, sectionsHaveChords } from '@/lib/lyrics/chords';
+import { SECTION_LABEL, SECTIONS } from '@/types/domain';
+import type { AppUser, Section, SongKey, SongLyrics } from '@/types/domain';
+
+import { chordsFromColumn, lyricsFromRow } from './assemble';
 import { type SongKeyInput, songKeysInputSchema } from '@/types/validation';
 
 type SongKeyRow = typeof songKeys.$inferSelect;
 type ChordColumns = Pick<SongKeyRow, 'introChord' | 'verseChord' | 'chorusChord' | 'bridgeChord'>;
+type ChordLyrics = SongKeyRow['chordLyrics'];
 
 const songIdSchema = z.guid();
 
@@ -44,10 +49,46 @@ function chordColumns(input: SongKeyInput): ChordColumns {
 }
 
 /**
+ * The stored form of a key's typed chords (LIB-23): only sections with text, and null when no
+ * section has a chord. `undefined` (not sent) means "keep what's stored".
+ */
+function chordLyricsColumn(input: SongKeyInput): { chordLyrics?: ChordLyrics } {
+  if (input.chords === undefined) return {};
+  const chords = input.chords;
+  if (!sectionsHaveChords(chords)) return { chordLyrics: null };
+  const kept: Partial<Record<Section, string>> = {};
+  for (const s of SECTIONS) {
+    const text = chords![s];
+    if (text?.trim()) kept[s] = text;
+  }
+  return { chordLyrics: kept };
+}
+
+/** Each key's chords must keep the song's words: only chords may differ (LIB-23). */
+function checkChordWords(keys: SongKeyInput[], lyrics: SongLyrics): void {
+  const fieldErrors: Record<string, string[]> = {};
+  keys.forEach((k, i) => {
+    if (!k.chords || !sectionsHaveChords(k.chords)) return;
+    for (const s of SECTIONS) {
+      if (!chordsMatchLyrics(k.chords[s], lyrics[s])) {
+        fieldErrors[`${i}.chords.${s}`] = [
+          `${SECTION_LABEL[s]} in ${k.key} has different words from the lyrics; only chords can differ`,
+        ];
+      }
+    }
+  });
+  if (Object.keys(fieldErrors).length > 0) {
+    throw new ActionError('VALIDATION', 'Invalid input.', fieldErrors);
+  }
+}
+
+/**
  * The audited, user-visible fields of a row (no ids). Create and delete snapshots also
  * carry `songId` so the song's history keeps keys that were later removed.
  */
-function auditFields(row: Pick<SongKeyRow, 'key' | 'isPrimary'> & ChordColumns) {
+function auditFields(
+  row: Pick<SongKeyRow, 'key' | 'isPrimary'> & ChordColumns & { chordLyrics?: ChordLyrics },
+) {
   return {
     key: row.key,
     isPrimary: row.isPrimary,
@@ -55,6 +96,7 @@ function auditFields(row: Pick<SongKeyRow, 'key' | 'isPrimary'> & ChordColumns) 
     verseChord: row.verseChord,
     chorusChord: row.chorusChord,
     bridgeChord: row.bridgeChord,
+    chordLyrics: row.chordLyrics ?? null,
   };
 }
 
@@ -70,6 +112,8 @@ function toSongKey(row: SongKeyRow): SongKey {
       chorus: row.chorusChord,
       bridge: row.bridgeChord,
     },
+    // Only keys with typed chords carry the field (most have none).
+    ...(row.chordLyrics ? { chords: chordsFromColumn(row.chordLyrics) } : {}),
   };
 }
 
@@ -186,11 +230,12 @@ async function replaceSongKeys(
   return withTx(async (tx) => {
     // Lock the song so concurrent saves of its keys serialise.
     const [song] = await tx
-      .select({ id: songs.id })
+      .select()
       .from(songs)
       .where(and(eq(songs.id, songId), isNull(songs.deletedAt)))
       .for('update');
     if (!song) throw new ActionError('NOT_FOUND', 'Song not found.');
+    checkChordWords(keys, lyricsFromRow(song));
 
     // FOR UPDATE also blocks resources being attached to these rows (the FK check
     // takes FOR KEY SHARE) until we commit, so the resource check below holds.
@@ -235,9 +280,14 @@ async function replaceSongKeys(
     }
 
     for (const { row, input } of plan.updates) {
-      const next = { key: input.key, isPrimary: input.isPrimary, ...chordColumns(input) };
+      const next = {
+        key: input.key,
+        isPrimary: input.isPrimary,
+        ...chordColumns(input),
+        ...chordLyricsColumn(input),
+      };
       const before = auditFields(row);
-      const after = auditFields(next);
+      const after = auditFields({ ...row, ...next });
       if (JSON.stringify(before) === JSON.stringify(after)) continue;
       await tx.update(songKeys).set(next).where(eq(songKeys.id, row.id));
       await recordAudit(tx, {
@@ -253,7 +303,13 @@ async function replaceSongKeys(
     for (const input of plan.inserts) {
       const [row] = await tx
         .insert(songKeys)
-        .values({ songId, key: input.key, isPrimary: input.isPrimary, ...chordColumns(input) })
+        .values({
+          songId,
+          key: input.key,
+          isPrimary: input.isPrimary,
+          ...chordColumns(input),
+          ...chordLyricsColumn(input),
+        })
         .returning();
       await recordAudit(tx, {
         actorId: user.id,

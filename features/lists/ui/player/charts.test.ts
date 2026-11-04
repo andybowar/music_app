@@ -32,7 +32,20 @@ describe('chartOptions', () => {
     const amazing = getSong(SONG_IDS.amazingGrace);
     const options = chartOptions(resolve(SONG_IDS.amazingGrace), amazing);
     expect(options.map((o) => o.label)).toEqual(['Typed chords', 'Chord chart', 'Lead sheet']);
-    expect(options[0]).toMatchObject({ type: 'typed', key: 'G' });
+    expect(options[0]).toMatchObject({ type: 'typed', id: 'typed:G', chords: { key: 'G' } });
+  });
+
+  it('offers typed chords per key, the setlist key first (LIB-23)', () => {
+    const amazing = getSong(SONG_IDS.amazingGrace);
+    const g = amazing.keys.find((k) => k.key === 'G')!;
+    const twoKeys = {
+      ...amazing,
+      keys: amazing.keys.map((k) => (k.key === 'F' ? { ...k, chords: g.chords } : k)),
+    };
+    const inF = chartOptions(resolve(SONG_IDS.amazingGrace, 'F'), twoKeys);
+    expect(inF.filter((o) => o.type === 'typed').map((o) => o.id)).toEqual(['typed:F', 'typed:G']);
+    const inG = chartOptions(resolve(SONG_IDS.amazingGrace), twoKeys);
+    expect(inG.filter((o) => o.type === 'typed').map((o) => o.id)).toEqual(['typed:G', 'typed:F']);
   });
 
   it('numbers PDFs with the same label and skips non-PDF resources', () => {

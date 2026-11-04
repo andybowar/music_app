@@ -103,7 +103,7 @@ export function deriveUsageLevel(setlistCountLast365d: number): UsageLevel; // >
 | | `deleteSong(id)` | `ActionResult<void>` | song:delete | LIB-01 |
 | | `getSong(id)` (read helper) | `SongDetail \| null` | song:read | LIB-01 |
 | | `getSongs(ids)` (read helper) | `SongDetail[]` | song:read | LIB-01 |
-| `features/songs/server/keys.ts` | `setSongKeys(songId, keys)` (replace-all) | `ActionResult<SongKey[]>` | song:write | LIB-02 |
+| `features/songs/server/keys.ts` | `setSongKeys(songId, keys)` (replace-all; each key may carry `chords`, LIB-23) | `ActionResult<SongKey[]>` | song:write | LIB-02 |
 | `features/songs/server/composers.ts` | `searchComposers(prefix)` | `Composer[]` | song:read | LIB-03 |
 | | `createComposer(name)` | `ActionResult<Composer>` | composer:create | LIB-03 |
 | | `setSongComposers(songId, composerIds)` | `ActionResult<void>` | song:write | LIB-03 |

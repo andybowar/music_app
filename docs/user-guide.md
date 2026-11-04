@@ -273,10 +273,20 @@ song** on its page or row panel. The form has six tabs:
   like "Verse 1" and "Chorus" on their own lines.
 - **Chords (optional)**: tick **Add chords over the lyrics** to write chords into the lyrics. Put
   each chord in square brackets just before the syllable it's played on, for example
-  `[G]Amazing [C]grace`, and choose the key they're in. A preview under each section shows the
-  chords above the words. You can also paste a chord sheet with the chords on their own lines
-  above the words; they're moved into place. Unticking the box removes the chords and keeps the
-  lyrics. On the song page, the **Chords** button shows or hides them.
+  `[G]Amazing [C]grace` (mid-word works too: `won[Em]derful`). A preview under each section shows
+  the chords above the words.
+  - **Each key has its own chords.** Pick a key under **Chords for** (the song's keys from Keys &
+    tempo). The words are shared: change them in one key and they change in every key, with that
+    key's chords moved to follow. Check them after big edits.
+  - A key with no chords yet can **Start from the lyrics**, or **Fill from** another key, which
+    transposes that key's chords as a starting point. Choose sharps or flats first; it follows
+    the key's signature unless you change it.
+  - **Paste full lyrics** puts the paste (and any chords in it) into the key you're editing. A
+    chord sheet with the chords on their own lines above the words works too.
+  - **Remove chords in G** removes one key's chords; unticking the box removes them all. The
+    lyrics stay either way.
+  - On the song page, the **Chords** button shows or hides them, and the key buttons next to it
+    switch key. In **Start event**, musicians get the setlist's key first.
 - **Themes**: tag each lyric section with themes from the shared list. You can create a new theme
   if none fits.
 - **Branch usage**: how often each branch sings the song (high, low, rare or none). Usage is

@@ -69,15 +69,14 @@ describe('buildSeedData', () => {
     }
   });
 
-  test('maps chords over the lyrics, only the sections with text (LIB-22)', () => {
-    const chorded = songs.find((s) => s.chords)!;
-    const row = data.songs.find((r) => r.id === chorded.id)!;
-    expect(row.chordsKey).toBe(chorded.chords!.key);
-    expect(row.chordLyrics).toMatchObject({ verse_1: chorded.chords!.sections.verse_1 });
+  test('maps chords over the lyrics onto their key, only sections with text (LIB-23)', () => {
+    const chorded = songs.flatMap((s) => s.keys).find((k) => k.chords)!;
+    const row = data.songKeys.find((r) => r.id === chorded.id)!;
+    expect(row.chordLyrics).toMatchObject({ verse_1: chorded.chords!.verse_1 });
     expect(Object.values(row.chordLyrics!).every((v) => typeof v === 'string' && v)).toBe(true);
-    const plain = data.songs.find((r) => r.id === songs.find((s) => !s.chords)!.id)!;
+    const plain = data.songKeys.find((r) => r.id === songs[0]!.keys[0]!.id)!;
     expect(plain.chordLyrics).toBeNull();
-    expect(plain.chordsKey).toBeNull();
+    expect(data.songs.every((r) => r.chordLyrics === null && r.chordsKey === null)).toBe(true);
   });
 
   test('maps lyric sections and first chords onto their columns', () => {

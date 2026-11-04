@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { BRANCH_IDS, composers, getSong, SONG_IDS, thousandHallelujahs } from '@/fixtures';
+import { SECTIONS } from '@/types/domain';
 import type { ActionResult, SongKey } from '@/types/domain';
 import { songInputSchema, songKeysInputSchema, usageInputSchema } from '@/types/validation';
 
@@ -81,7 +82,7 @@ describe('starting values', () => {
         energyLevel: null,
         energyNotes: null,
       },
-      lyrics: { lyrics: {}, arrangement: [], chords: null },
+      lyrics: { lyrics: {}, arrangement: [] },
       themes: [],
       usage: [],
     });
@@ -138,7 +139,6 @@ describe('toSongInput', () => {
         bridge: null,
       },
       arrangement: ['chorus'],
-      chords: null,
     });
     expect(input).not.toHaveProperty('addedByBranchId');
     expect(songInputSchema.safeParse(input).success).toBe(true);
@@ -506,5 +506,64 @@ describe('saveSong', () => {
       });
       expect(actions.setSongThemes).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('chords per key (LIB-23)', () => {
+  const amazing = getSong(SONG_IDS.amazingGrace);
+  const keyRow = (chords: Record<string, string | null> | null | undefined) => ({
+    key: 'G',
+    isPrimary: true,
+    firstChords: { intro: null, verse: null, chorus: null, bridge: null },
+    ...(chords === undefined ? {} : { chords }),
+  });
+
+  it('toKeysInput: absent keeps, none typed or null removes, typed sends every section', () => {
+    expect(toKeysInput([keyRow(undefined)])[0]).not.toHaveProperty('chords');
+    expect(toKeysInput([keyRow(null)])[0]!.chords).toBeNull();
+    expect(toKeysInput([keyRow({ chorus: 'No chords here' })])[0]!.chords).toBeNull();
+    const typed = toKeysInput([keyRow({ chorus: '[G]Sing', verse_1: '  ' })])[0]!.chords!;
+    expect(typed.chorus).toBe('[G]Sing');
+    expect(typed.verse_1).toBeNull();
+    expect(Object.keys(typed).sort()).toEqual([...SECTIONS].sort());
+  });
+
+  it('songFormValueFromSong copies each key’s chords and brings them onto the current words', () => {
+    const value = songFormValueFromSong(amazing);
+    const g = value.musical.keys.find((k) => k.key === 'G')!;
+    expect(g.chords?.verse_1).toBe(amazing.keys.find((k) => k.key === 'G')!.chords!.verse_1);
+    expect(value.musical.keys.find((k) => k.key === 'F')!.chords).toBeUndefined();
+
+    const edited = {
+      ...amazing,
+      lyrics: { ...amazing.lyrics, chorus: 'My chains are gone!\n(chorus placeholder)' },
+    };
+    const moved = songFormValueFromSong(edited).musical.keys.find((k) => k.key === 'G')!;
+    expect(moved.chords?.chorus).toBe('[G]My chains are [C]gone!\n(chorus [Em]place[D]holder)');
+  });
+
+  it('validateSongForm flags chords whose words differ', () => {
+    const value = songFormValueFromSong(amazing);
+    const i = value.musical.keys.findIndex((k) => k.key === 'G');
+    value.musical.keys[i] = {
+      ...value.musical.keys[i]!,
+      chords: { ...value.musical.keys[i]!.chords, chorus: '[G]Other words' },
+    };
+    expect(validateSongForm(value)[`chords.${i}.chorus`]).toEqual([
+      'Chorus in G has different words from the lyrics; only chords can differ',
+    ]);
+  });
+
+  it('keyErrorsToForm sends chord errors to the lyrics tab', () => {
+    const errors = keyErrorsToForm({
+      code: 'VALIDATION',
+      message: 'Invalid input.',
+      fieldErrors: { '1.chords.chorus': ['Chorus in A has different words'], '0.key': ['Bad key'] },
+    });
+    expect(errors).toEqual({
+      'chords.1.chorus': ['Chorus in A has different words'],
+      'keys.0.key': ['Bad key'],
+    });
+    expect(tabForErrorKey('chords.1.chorus')).toBe('lyrics');
   });
 });

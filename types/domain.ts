@@ -157,6 +157,11 @@ export interface SongKey {
   key: MusicalKey;
   isPrimary: boolean;
   firstChords: Record<ChordSlot, string | null>; // null → display MISSING_CHORD
+  /**
+   * Chords over the lyrics in this key (LIB-23): each section's lyrics with `[chords]` inline;
+   * removing the chords gives the song's `lyrics` (spacing aside). Null/absent: none typed.
+   */
+  chords?: SongLyrics | null;
 }
 
 export interface Resource {
@@ -181,13 +186,13 @@ export interface Theme {
 export type SongLyrics = Record<Section, string | null>;
 
 /**
- * Chords over the lyrics (LIB-22). Each section holds its lyrics with chords inline in ChordPro
- * brackets, e.g. "[G]Amazing [C]grace". Removing the chords gives the section's `lyrics`
- * (`stripChords` in `@/lib/lyrics/chords`). Optional: most songs have none.
+ * One key's chords over the lyrics (LIB-22/23), as the viewers take them. Each section holds
+ * its lyrics with chords inline in ChordPro brackets, e.g. "[G]Amazing [C]grace". Built from
+ * `SongKey.chords` (`songChordSets` in `@/lib/lyrics/chords`).
  */
 export interface SongChords {
-  /** The key the chords are written in; null when not stated. */
-  key: MusicalKey | null;
+  /** The key the chords are written in. */
+  key: MusicalKey;
   sections: SongLyrics;
 }
 
@@ -221,8 +226,6 @@ export interface SongDetail extends SongSummary {
   composers: Composer[];
   lyrics: SongLyrics;
   arrangement: Section[];
-  /** Chords over the lyrics; null (or absent) when the song has none. LIB-22. */
-  chords?: SongChords | null;
   chorusLine: string | null;
   verse1Line: string | null;
   keys: SongKey[]; // primary first, then alphabetical

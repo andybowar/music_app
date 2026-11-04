@@ -74,6 +74,7 @@ export function musicalInfoFromSong(
       key: k.key,
       isPrimary: k.isPrimary,
       firstChords: { ...k.firstChords },
+      ...(k.chords ? { chords: { ...k.chords } } : {}),
     })),
     tempoBpm: song.tempoBpm,
     timeSignature: song.timeSignature,

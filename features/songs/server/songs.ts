@@ -33,13 +33,12 @@ import { ActionError, withAction } from '@/lib/action';
 import { recordAudit } from '@/lib/audit';
 import { requireUser } from '@/lib/auth';
 import { getDb, withTx, type Tx } from '@/lib/db';
-import { hasChords } from '@/lib/lyrics/chords';
 import { assertCan } from '@/lib/permissions';
 import type { AppUser, SongDetail, UUID } from '@/types/domain';
 import { SECTIONS } from '@/types/domain';
 import { songInputSchema, type SongInput } from '@/types/validation';
 
-import { assembleSongDetail, chordsFromRow, LYRIC_COLUMNS, type SongRow } from './assemble';
+import { assembleSongDetail, LYRIC_COLUMNS, type SongRow } from './assemble';
 
 const ENTITY = 'song';
 const NOT_FOUND = 'Song not found.';
@@ -95,23 +94,6 @@ function resolveAddedBy(
   return requested;
 }
 
-/**
- * The stored chords (LIB-22): only sections with text, and nothing at all when no section has
- * a chord, so a song whose editor turned chords on but added none reads back as chord-free.
- */
-function chordValues(input: SongInput) {
-  const chords = input.chords;
-  if (!chords || !SECTIONS.some((s) => hasChords(chords.sections[s]))) {
-    return { chordLyrics: null, chordsKey: null };
-  }
-  const sections: Partial<Record<(typeof SECTIONS)[number], string>> = {};
-  for (const s of SECTIONS) {
-    const text = chords.sections[s];
-    if (text?.trim()) sections[s] = text;
-  }
-  return { chordLyrics: sections, chordsKey: chords.key };
-}
-
 /** Song columns written from a validated input (derived columns are left to DB-02). */
 function songValues(input: SongInput) {
   const lyrics = Object.fromEntries(
@@ -128,7 +110,6 @@ function songValues(input: SongInput) {
     energyNotes: input.energyNotes || null,
     ...lyrics,
     arrangement: input.arrangement,
-    ...chordValues(input),
   };
 }
 
@@ -162,7 +143,6 @@ function auditSnapshot(song: SongRow, composerIds: string[]): Record<string, unk
     energyNotes: song.energyNotes,
     lyrics: Object.fromEntries(SECTIONS.map((s) => [s, song[LYRIC_COLUMNS[s]]])),
     arrangement: song.arrangement,
-    chords: chordsFromRow(song),
     addedByBranchId: song.addedByBranchId,
   };
 }

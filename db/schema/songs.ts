@@ -62,9 +62,9 @@ export const songs = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'`),
-    // chords over the lyrics (LIB-22): per section, the lyrics with [chords] inline. Only
-    // sections with text are stored; null when the song has no chords. The plain lyrics
-    // columns above stay the source for search and first lines.
+    // Deprecated (LIB-23): chords now live per key on `song_keys.chord_lyrics`; migration 0011
+    // copied these over. Kept only while a build that reads them may still be live; nothing
+    // writes them any more. A later migration drops both.
     chordLyrics: jsonb('chord_lyrics').$type<Partial<Record<Section, string>>>(),
     /** The key the chords are written in. */
     chordsKey: text('chords_key'),

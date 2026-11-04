@@ -94,8 +94,9 @@ function TapRow() {
       <ResponsivePanel
         title="Branch usage"
         trigger={
-          <button type="button" className={rowButton} aria-label="Branch usage">
+          <button type="button" className={rowButton}>
             <BranchCode code={song.addedByBranchCode} />
+            <span className="sr-only">, show branch usage</span>
           </button>
         }
       >

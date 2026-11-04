@@ -35,7 +35,7 @@ requirements: ["REQ-LIST-05"]
 
 ## Acceptance criteria
 - [x] Disabled with hint when song has no audio
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied — all items met except the `/dev/<name>` gallery, pending CR PLAY-06-audio-picker-gallery
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied (the `/dev/audio-picker` gallery landed in a follow-up, CR PLAY-06-audio-picker-gallery)
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/player/ui/AudioPicker.tsx`, `features/player/ui/AudioPicker.test.tsx`, `app/dev/audio-picker/`
@@ -46,4 +46,4 @@ requirements: ["REQ-LIST-05"]
 - Offers only `audio` (MP3/M4A/link) and `video_link` resources. Instruction links and PDFs are left out. Option text comes from `resource.label`; a YouTube URL whose label lacks a "YouTube" prefix gets "YouTube: " added.
 - Uses a native `<select>`, so keyboard and mobile pickers work out of the box. Includes a "No recording" option that clears the choice (`onChange(null)`).
 - Loading and error states don't apply. The component is fully controlled and does no I/O, so the parent owns those.
-- The `/dev/audio-picker` gallery isn't created because PLAY-06 doesn't own that path. See `agent-spec/change-requests/PLAY-06-audio-picker-gallery.md`.
+- The `/dev/audio-picker` gallery was added in a follow-up, per `agent-spec/change-requests/PLAY-06-audio-picker-gallery.md`.

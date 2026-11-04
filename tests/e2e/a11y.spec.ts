@@ -36,15 +36,7 @@ const BLOCKING = new Set(['serious', 'critical']);
  * Violations in files outside H-04's paths, waiting on a change request. Each entry skips one
  * rule for nodes whose HTML contains `html` on `path`; remove it when the CR lands.
  */
-const KNOWN: { path: string; rule: string; html: string; cr: string }[] = [
-  {
-    // The gallery's branch-code trigger is labelled "Branch usage" but shows the code ("SV").
-    path: '/dev/panels',
-    rule: 'label-content-name-mismatch',
-    html: 'aria-label="Branch usage"',
-    cr: 'agent-spec/change-requests/H-04-panels-gallery-label.md',
-  },
-];
+const KNOWN: { path: string; rule: string; html: string; cr: string }[] = [];
 
 function isKnown(path: string, rule: string, html: string): boolean {
   return KNOWN.some((k) => k.path === path && k.rule === rule && html.includes(k.html));

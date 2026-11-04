@@ -357,8 +357,17 @@ describe('middleware: Supabase not configured (unprovisioned preview)', () => {
 
 describe('middleware: /dev galleries on the live deployment (admins only)', () => {
   const ADMIN = { access_status: 'approved', role: 'admin', disabled_at: null };
-  beforeEach(() => vi.stubEnv('VERCEL_ENV', 'production'));
-  afterEach(() => vi.stubEnv('VERCEL_ENV', ''));
+  const appUrl = process.env.APP_URL ?? '';
+  beforeEach(() => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    // Production also redirects other hosts to APP_URL (canonicalHostRedirect); keep that out
+    // of these tests, whose requests go to localhost whatever APP_URL the environment has.
+    vi.stubEnv('APP_URL', '');
+  });
+  afterEach(() => {
+    vi.stubEnv('VERCEL_ENV', '');
+    vi.stubEnv('APP_URL', appUrl);
+  });
 
   it.each(['/dev', '/dev/tokens', '/dev/admin-backlog'])(
     'lets an approved admin open %s',

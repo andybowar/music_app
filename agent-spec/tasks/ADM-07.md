@@ -8,7 +8,7 @@ size: S
 status: done
 human_required: false
 depends_on: ["ADM-06"]
-blocks: ["SHR-05"]
+blocks: ["SHR-05", "ADM-08"]
 owns: ["db/migrations/0007_import_todos.sql", "tests/db/todo-import.int.test.ts"]
 touches: ["db/migrations/meta/", "db/schema/backlog.ts", "features/admin/backlog/types.ts"]
 requirements: ["REQ-ADM-01"]

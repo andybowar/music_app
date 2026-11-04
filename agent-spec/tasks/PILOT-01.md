@@ -2,7 +2,7 @@
 id: PILOT-01
 title: "Pilot branch rollout"
 phase: 5
-wave: 16
+wave: 17
 stream: content
 size: L
 status: todo

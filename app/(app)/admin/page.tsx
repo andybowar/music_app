@@ -12,6 +12,9 @@ import { BacklogTodos } from '@/features/admin/backlog/ui/BacklogTodos';
 import { RequestList, REQUESTS_HREF } from '@/features/admin/backlog/ui/RequestList';
 import { SectionError } from '@/features/admin/backlog/ui/RouteStates';
 import { listUsers } from '@/features/admin/server';
+import { listOpenBugReports } from '@/features/bugs/server';
+import { ADMIN_BUGS_HREF, type BugReport } from '@/features/bugs/types';
+import { BugReportList } from '@/features/bugs/ui/BugReportList';
 import { requirePageUser } from '@/lib/auth';
 import { reportError } from '@/lib/log';
 import { can } from '@/lib/permissions';
@@ -59,11 +62,25 @@ async function loadRequests(): Promise<FeatureRequest[] | null> {
 
 const DASHBOARD_REQUESTS = 5;
 
+/** The 5 newest open (new or confirmed) bug reports and the open count, or `null` on failure. */
+async function loadBugReports(): Promise<{ reports: BugReport[]; total: number } | null> {
+  try {
+    return await listOpenBugReports(DASHBOARD_BUGS);
+  } catch (e) {
+    unstable_rethrow(e);
+    reportError(e, { where: '(app)/admin listOpenBugReports' });
+    return null;
+  }
+}
+
+const DASHBOARD_BUGS = 5;
+
 /**
  * Admin dashboard (ADM-05), reached from the account menu: one card per admin area the user
  * may open. Admins see Users, Branches and Themes; music leaders see Themes only. Below the
  * cards, users with `admin:backlog` (admins) get the To-dos and Enhancement requests sections
- * (ADM-06); each shows its own error state if its data fails to load.
+ * (ADM-06); with `bug:triage` (admins) the newest open bug reports follow (ADM-08). Each
+ * section shows its own error state if its data fails to load.
  */
 export default async function AdminPage() {
   const user = await requirePageUser(ADMIN_HREF);
@@ -83,10 +100,12 @@ export default async function AdminPage() {
   }
 
   const backlog = can(user, 'admin:backlog');
-  const [pending, todos, requests] = await Promise.all([
+  const triage = can(user, 'bug:triage');
+  const [pending, todos, requests, bugs] = await Promise.all([
     can(user, 'admin:users') ? pendingCount() : null,
     backlog ? loadTodos() : null,
     backlog ? loadRequests() : null,
+    triage ? loadBugReports() : null,
   ]);
 
   return (
@@ -150,6 +169,34 @@ export default async function AdminPage() {
           </section>
           <Toaster />
         </>
+      ) : null}
+
+      {triage ? (
+        <section aria-labelledby="admin-bugs" className="grid gap-3 rounded-lg border p-4">
+          <h2 id="admin-bugs" className="flex flex-wrap items-center gap-2 text-lg font-semibold">
+            Bug reports
+            {bugs ? (
+              <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+                {bugs.total} open
+              </span>
+            ) : null}
+          </h2>
+          {bugs ? (
+            bugs.reports.length > 0 ? (
+              <BugReportList reports={bugs.reports} admin limit={DASHBOARD_BUGS} />
+            ) : (
+              <p className="text-sm text-muted-foreground">No open bug reports.</p>
+            )
+          ) : (
+            <SectionError what="the bug reports" />
+          )}
+          <Link
+            href={ADMIN_BUGS_HREF}
+            className="justify-self-start text-sm font-medium underline-offset-4 hover:underline"
+          >
+            View all bug reports
+          </Link>
+        </section>
       ) : null}
     </div>
   );

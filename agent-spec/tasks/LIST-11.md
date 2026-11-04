@@ -5,7 +5,7 @@ phase: 5
 wave: 11
 stream: frontend
 size: M
-status: todo
+status: blocked
 human_required: false
 depends_on: ["LIST-07", "UI-07", "UI-08", "H-01"]
 blocks: []
@@ -76,3 +76,7 @@ requirements: ["REQ-LIST-09", "REQ-ROW-03", "REQ-NF-02", "REQ-NF-03"]
 - **Owns** (create/modify freely): `features/lists/ui/SetPlayer.tsx`, `features/lists/ui/SetPlayer.test.tsx`, `features/lists/ui/wakeLock.ts`, `features/lists/ui/wakeLock.test.ts`, `app/dev/set-player/`, `tests/e2e/set-player.spec.ts`
 - **Touches** (small integration edits only; describe each in the PR): `features/lists/ui/SetlistView.tsx`, `features/lists/ui/SetlistView.test.tsx`
 - Anything else: do not edit. Open a change request (`AGENTS.md` §6).
+
+## Blocked
+
+Deferred by the project owner on 2026-11-03: finish the original task list first. Set `status: todo` again when the owner picks this up.

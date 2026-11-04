@@ -2958,7 +2958,7 @@
         "REQ-NF-03"
       ],
       "file": "tasks/LIST-11.md",
-      "status": "todo"
+      "status": "blocked"
     },
     {
       "id": "ADM-07",

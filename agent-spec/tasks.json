@@ -1474,7 +1474,8 @@
         "app/(auth)/signup/",
         "app/(auth)/account-status/",
         "features/auth/ui/SignupForm.tsx",
-        "features/auth/ui/AccountStatus.tsx"
+        "features/auth/ui/AccountStatus.tsx",
+        "app/dev/auth-signup/"
       ],
       "touches": [
         "features/auth/actions.ts",
@@ -2800,6 +2801,7 @@
         "DB-08"
       ],
       "blocks": [
+        "ADM-07",
         "SHR-05"
       ],
       "owns": [
@@ -2848,7 +2850,8 @@
       ],
       "touches": [
         "components/",
-        "features/"
+        "features/",
+        "app/dev/panels/PanelsGallery.tsx"
       ],
       "reqs": [
         "REQ-NF-03"
@@ -2954,13 +2957,42 @@
         "REQ-NF-03"
       ],
       "file": "tasks/LIST-11.md",
-      "status": "blocked"
+      "status": "todo"
+    },
+    {
+      "id": "ADM-07",
+      "title": "Show the open TODO.md items on the admin dashboard",
+      "phase": 4,
+      "wave": 12,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "ADM-06"
+      ],
+      "blocks": [
+        "SHR-05"
+      ],
+      "owns": [
+        "db/migrations/0007_import_todos.sql",
+        "tests/db/todo-import.int.test.ts"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "db/schema/backlog.ts",
+        "features/admin/backlog/types.ts"
+      ],
+      "reqs": [
+        "REQ-ADM-01"
+      ],
+      "file": "tasks/ADM-07.md",
+      "status": "done"
     },
     {
       "id": "SHR-05",
       "title": "Store share tokens hashed",
       "phase": 4,
-      "wave": 12,
+      "wave": 13,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -2969,13 +3001,14 @@
         "SHR-02",
         "SHR-03",
         "DB-08",
-        "ADM-06"
+        "ADM-06",
+        "ADM-07"
       ],
       "blocks": [
         "SHR-04"
       ],
       "owns": [
-        "db/migrations/0007_share_token_hash.sql"
+        "db/migrations/0008_share_token_hash.sql"
       ],
       "touches": [
         "db/migrations/meta/",
@@ -2999,7 +3032,7 @@
       "id": "SHR-04",
       "title": "ShareDialog + nav Share wiring",
       "phase": 4,
-      "wave": 13,
+      "wave": 14,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -3035,7 +3068,7 @@
       "id": "DOC-01",
       "title": "User guide",
       "phase": 5,
-      "wave": 14,
+      "wave": 15,
       "stream": "content",
       "size": "S",
       "human": false,
@@ -3059,7 +3092,7 @@
       "id": "H-05",
       "title": "End-to-end journey suite",
       "phase": 5,
-      "wave": 14,
+      "wave": 15,
       "stream": "qa",
       "size": "M",
       "human": false,
@@ -3089,7 +3122,7 @@
       "id": "PILOT-01",
       "title": "Pilot branch rollout",
       "phase": 5,
-      "wave": 15,
+      "wave": 16,
       "stream": "content",
       "size": "L",
       "human": true,

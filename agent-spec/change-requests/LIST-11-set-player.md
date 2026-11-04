@@ -1,6 +1,6 @@
 # CR LIST-11 · Full-screen set player, and lyrics in place on the setlist
 
-**Status:** proposed (2026-11-03). Requested by the project owner; written by the lead agent.
+**Status:** approved by project owner 2026-11-03. Items 1 and 2 applied to `SPEC.md` and `contracts/ui.md`; `tasks/LIST-11.md` set to `todo`.
 
 ## Problem
 

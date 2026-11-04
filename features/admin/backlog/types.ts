@@ -65,7 +65,8 @@ export interface AdminTodo {
   notes: string | null;
   doneAt: ISODateTime | null;
   doneBy: UUID | null;
-  createdBy: UUID;
+  /** Null for to-dos imported from `agent-spec/TODO.md` (ADM-07). */
+  createdBy: UUID | null;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
 }

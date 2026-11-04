@@ -86,6 +86,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-LIST-06** Lists persist until manually deleted (soft delete).
 - **REQ-LIST-07** Open Setlist / Open Playlist show the user's lists and their branch's lists; upcoming events first.
 - **REQ-LIST-08** Setlists are readable by all members (supports "what other branches are using"); playlists are private to their owner unless shared.
+- **REQ-LIST-09** Play a setlist: from a setlist, Start opens a full-screen view of one song at a time, in setlist order. Each song shows its lyrics in arrangement order, the setlist's key, BPM and first chords, and opens that key's chord charts. Next and previous work by button, swipe, arrow and Page Up/Down keys (page-turner pedals). The screen stays awake while it's open, and it works offline for setlists the user has opened (REQ-NF-02).
 
 ### 2.7 Sharing & cross-branch (REQ-SHARE, REQ-BR)
 

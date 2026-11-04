@@ -1,6 +1,6 @@
 # CR H-04 · `/dev/panels` branch-code trigger label
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/H-04.md` (touches `app/dev/panels/PanelsGallery.tsx`); the two-line fix and removing the `KNOWN` entry are an H-04 follow-up.
 
 ## Problem
 

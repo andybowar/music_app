@@ -1,6 +1,6 @@
 # Task index
 
-104 tasks · 15 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
+105 tasks · 16 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
 
 **How to use.** A task is *ready* when every task in `depends_on` is merged. All ready tasks in a wave can run at the same time — their `owns` paths never overlap (checked by `scripts/check_tasks.py`). Start a task by setting `status: in_progress` in its file; see `AGENTS.md` for the full protocol.
 
@@ -8,7 +8,7 @@ This file is a generated snapshot (`scripts/gen_index.py`). The `status:` field 
 
 ## Critical path
 
-F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 → H-02 → ADM-05 → ADM-06 → SHR-05 → SHR-04 → H-05 → PILOT-01  (≈ 15.5 agent-days; everything else runs alongside)
+F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 → H-02 → ADM-05 → ADM-06 → ADM-07 → SHR-05 → SHR-04 → H-05 → PILOT-01  (≈ 16 agent-days; everything else runs alongside)
 
 ## Waves
 
@@ -170,22 +170,28 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
-| [SHR-05](tasks/SHR-05.md) | Store share tokens hashed | 4 Sharing | backend | M | SHR-01, SHR-02, SHR-03, DB-08, ADM-06 |
+| [ADM-07](tasks/ADM-07.md) | Show the open TODO.md items on the admin dashboard | 4 Sharing | backend | S | ADM-06 |
 
 ### Wave 13 — 1 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
+| [SHR-05](tasks/SHR-05.md) | Store share tokens hashed | 4 Sharing | backend | M | SHR-01, SHR-02, SHR-03, DB-08, ADM-06, ADM-07 |
+
+### Wave 14 — 1 tasks in parallel
+
+| ID | Title | Phase | Stream | Size | Depends on |
+|---|---|---|---|---|---|
 | [SHR-04](tasks/SHR-04.md) | ShareDialog + nav Share wiring | 4 Sharing | frontend | S | SHR-01, SHR-03, LIST-09, LIST-07, PLAY-05, SHR-05 |
 
-### Wave 14 — 2 tasks in parallel
+### Wave 15 — 2 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
 | [DOC-01](tasks/DOC-01.md) | User guide | 5 Hardening | content | S | SRCH-09, LIST-09, SHR-04 |
 | [H-05](tasks/H-05.md) | End-to-end journey suite | 5 Hardening | qa | M | SRCH-09, LIST-09, SHR-04, PLAY-05, LIB-17 |
 
-### Wave 15 — 1 tasks in parallel
+### Wave 16 — 1 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
@@ -198,7 +204,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | Stream | Tasks |
 |---|---|
 | auth | AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-06, AUTH-07 |
-| backend | ADM-04, BR-01, BR-03, H-02, H-03, LIB-01, LIB-02, LIB-03, LIB-04, LIB-05, LIB-06, LIB-07, LIB-16, LIST-01, LIST-02, LIST-03, SHR-01, SHR-03, SHR-05, SRCH-01, SRCH-02, SRCH-03, SRCH-10, SRCH-11 |
+| backend | ADM-04, ADM-07, BR-01, BR-03, H-02, H-03, LIB-01, LIB-02, LIB-03, LIB-04, LIB-05, LIB-06, LIB-07, LIB-16, LIST-01, LIST-02, LIST-03, SHR-01, SHR-03, SHR-05, SRCH-01, SRCH-02, SRCH-03, SRCH-10, SRCH-11 |
 | content | CNT-01, CNT-02, CNT-03, DOC-01, PILOT-01 |
 | data | DB-01, DB-02, DB-04, DB-07, DB-08, IMP-01, IMP-02, IMP-03 |
 | frontend | ADM-01, ADM-02, ADM-05, BR-02, BR-04, H-01, LIB-10, LIB-11, LIB-12, LIB-13, LIB-14, LIB-15, LIB-17, LIB-18, LIB-19, LIB-20, LIB-21, LIST-04, LIST-05, LIST-06, LIST-07, LIST-08, LIST-09, LIST-10, LIST-11, PLAY-01, PLAY-02, PLAY-03, PLAY-04, PLAY-05, PLAY-06, SHR-02, SHR-04, SRCH-04, SRCH-05, SRCH-06, SRCH-07, SRCH-08, SRCH-09, UI-01, UI-02, UI-04, UI-05, UI-06, UI-07, UI-08 |
@@ -212,7 +218,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 
 | Requirement | Tasks |
 |---|---|
-| REQ-ADM-01 | ADM-06 |
+| REQ-ADM-01 | ADM-06, ADM-07 |
 | REQ-ADM-02 | ADM-06 |
 | REQ-AUTH-01 | AUTH-02, AUTH-03 |
 | REQ-AUTH-02 | AUTH-01 |

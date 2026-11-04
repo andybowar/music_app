@@ -1,7 +1,6 @@
 # CR ADM-06 · RLS test files need small edits when `admin:backlog` and its tables land
 
-**Status:** proposed (ADM-06, 2026-11-03). The edits below are included in the ADM-06 PR so CI
-stays green; approve this CR or ask for them to be split out.
+**Status:** approved by project owner 2026-11-03. The edits merged with ADM-06 (#134).
 
 ## Problem
 

@@ -823,7 +823,7 @@ export function LyricsSection({ value, onChange, errors, disabled }: LyricsSecti
           <>
             <p className="text-xs text-muted-foreground">
               Type each chord in square brackets just before the syllable it’s played on, e.g.{' '}
-              <code className="rounded bg-muted px-1">[G]Amazing [C]grace</code>. A line of only
+              <code className="rounded bg-muted px-1 text-foreground">[G]Amazing [C]grace</code>. A line of only
               chords, like an intro, is fine too. Search and the song’s first lines use the lyrics
               without chords.
             </p>

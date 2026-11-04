@@ -2,11 +2,12 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { thousandHallelujahs } from '@/fixtures';
+import { getSong, SONG_IDS, thousandHallelujahs } from '@/fixtures';
 import type { SongLyrics } from '@/types/domain';
 import {
   LyricsViewer,
   LyricsViewerSkeleton,
+  SHOW_CHORDS_STORAGE_KEY,
   arrangementBlocks,
   sectionBlocks,
   unsungSections,
@@ -142,5 +143,65 @@ describe('LyricsViewerSkeleton', () => {
       'aria-busy',
       'true',
     );
+  });
+});
+
+describe('LyricsViewer chords (LIB-22)', () => {
+  const chorded = getSong(SONG_IDS.amazingGrace);
+
+  afterEach(() => window.localStorage.clear());
+
+  it('shows chords over the lyrics with a toggle and the key', async () => {
+    const user = userEvent.setup();
+    render(
+      <LyricsViewer
+        lyrics={chorded.lyrics}
+        arrangement={chorded.arrangement}
+        chords={chorded.chords}
+      />,
+    );
+    const toggle = screen.getByRole('button', { name: 'Chords' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Chords in G')).toBeVisible();
+    expect(document.querySelectorAll('[data-chords]').length).toBeGreaterThan(0);
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(document.querySelector('[data-chords]')).toBeNull();
+    expect(window.localStorage.getItem(SHOW_CHORDS_STORAGE_KEY)).toBe('false');
+  });
+
+  it('remembers hidden chords', () => {
+    window.localStorage.setItem(SHOW_CHORDS_STORAGE_KEY, 'false');
+    render(
+      <LyricsViewer
+        lyrics={chorded.lyrics}
+        arrangement={chorded.arrangement}
+        chords={chorded.chords}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Chords' })).toHaveAttribute('aria-pressed', 'false');
+    expect(document.querySelector('[data-chords]')).toBeNull();
+  });
+
+  it('shows plain lyrics for sections without chords, and no toggle without any chords', () => {
+    const { unmount } = render(
+      <LyricsViewer
+        lyrics={chorded.lyrics}
+        arrangement={chorded.arrangement}
+        chords={{ key: null, sections: { ...blank, verse_1: chorded.chords!.sections.verse_1 } }}
+      />,
+    );
+    expect(screen.queryByText(/Chords in/)).toBeNull();
+    expect(document.querySelectorAll('[data-chords]')).toHaveLength(1);
+    unmount();
+    render(
+      <LyricsViewer
+        lyrics={lyrics}
+        arrangement={arrangement}
+        chords={{ key: 'D', sections: { ...lyrics } }}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Chords' })).toBeNull();
   });
 });

@@ -6,6 +6,7 @@
  * folded, merged or dropped is reported in `warnings`.
  */
 import { SECTION_LABEL, SECTIONS, type Section, type SongLyrics } from '@/types/domain';
+import { hasChords, stripChords } from './chords';
 
 /** Same limits as `songInputSchema` in `@/types/validation`. */
 const MAX_ARRANGEMENT = 30;
@@ -149,6 +150,11 @@ function parseHeading(line: string): Heading | null {
   return null;
 }
 
+/** True when the whole line is a section heading such as "Chorus" or "[Verse 2]". */
+export function isHeadingLine(line: string): boolean {
+  return parseHeading(line) !== null;
+}
+
 /** A heading line, optionally followed on the same line by its first lyric line. */
 function detectHeading(line: string): { heading: Heading; inline: string } | null {
   const whole = parseHeading(line);
@@ -181,8 +187,9 @@ function cleanBody(lines: string[]): string {
   return out.join('\n');
 }
 
+/** Text for "is this the same section again?": chords (LIB-22) and spacing don't count. */
 function comparable(s: string): string {
-  return s.replace(/\s+/g, ' ').trim().toLowerCase();
+  return stripChords(s).replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
 /** First non-blank line of a section, trimmed; null when there is none. */
@@ -239,6 +246,8 @@ export function parseLyrics(text: string): ParsedLyrics {
     const existing = lyrics[section];
     let merged = false;
     if (!body || (existing && comparable(existing) === comparable(body))) {
+      // Same words again: keep whichever copy has chords (sheets often chord only one).
+      if (body && existing && hasChords(body) && !hasChords(existing)) lyrics[section] = body;
       push(section, repeat);
       currentFresh = false;
     } else if (!existing) {

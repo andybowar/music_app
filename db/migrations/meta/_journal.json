@@ -36,6 +36,41 @@
       "when": 1793733161220,
       "tag": "0005_lists_select_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793745556328,
+      "tag": "0006_admin_backlog",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793753696918,
+      "tag": "0007_import_todos",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793755462707,
+      "tag": "0008_bug_reports",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793758222106,
+      "tag": "0009_share_token_hash",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793798967406,
+      "tag": "0010_chord_lyrics",
+      "breakpoints": true
     }
   ]
 }

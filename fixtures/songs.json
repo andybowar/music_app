@@ -30,6 +30,7 @@
       "bridge": "Lorem ipsum (bridge placeholder)\n(bridge placeholder)"
     },
     "arrangement": ["verse_1", "chorus", "verse_2", "chorus", "bridge", "chorus"],
+    "chords": null,
     "chorusLine": "With a thousand hallelujahs",
     "verse1Line": "Who else would rocks cry out to worship?",
     "keys": [
@@ -433,6 +434,7 @@
       "bridge": null
     },
     "arrangement": ["chorus", "verse_1", "chorus", "verse_2", "chorus", "verse_3", "chorus"],
+    "chords": null,
     "chorusLine": "Bless the Lord, O my soul",
     "verse1Line": "The sun comes up, it's a new day dawning",
     "keys": [
@@ -641,6 +643,7 @@
       "bridge": null
     },
     "arrangement": ["verse_1", "chorus", "verse_1", "chorus"],
+    "chords": null,
     "chorusLine": "Holy, holy are You, Lord God Almighty",
     "verse1Line": "Alleluia, alleluia",
     "keys": [
@@ -783,6 +786,7 @@
       "bridge": null
     },
     "arrangement": ["chorus", "verse_1", "chorus", "verse_2", "chorus"],
+    "chords": null,
     "chorusLine": "Lorem ipsum (chorus placeholder)",
     "verse1Line": "Lorem ipsum (verse 1 placeholder)",
     "keys": [
@@ -950,6 +954,7 @@
       "bridge": "Lorem ipsum (bridge placeholder)\n(bridge placeholder)"
     },
     "arrangement": ["chorus", "verse_1", "chorus", "bridge", "chorus"],
+    "chords": null,
     "chorusLine": "Jesus, be the center",
     "verse1Line": "Lorem ipsum (verse 1 placeholder)",
     "keys": [
@@ -1104,6 +1109,7 @@
       "bridge": "Lorem ipsum (bridge placeholder)\n(bridge placeholder)"
     },
     "arrangement": ["verse_1", "chorus", "verse_2", "chorus", "bridge", "chorus"],
+    "chords": null,
     "chorusLine": "Lorem ipsum (chorus placeholder)",
     "verse1Line": "Lorem ipsum (verse 1 placeholder)",
     "keys": [
@@ -1267,6 +1273,7 @@
       "bridge": null
     },
     "arrangement": ["verse_1", "chorus", "verse_2", "chorus", "verse_3", "chorus"],
+    "chords": null,
     "chorusLine": "Lorem ipsum (chorus placeholder)",
     "verse1Line": "Lorem ipsum (verse 1 placeholder)",
     "keys": [
@@ -1435,6 +1442,7 @@
       "bridge": "Lorem ipsum (bridge placeholder)\n(bridge placeholder)"
     },
     "arrangement": ["verse_1", "chorus", "verse_2", "chorus", "bridge", "chorus"],
+    "chords": null,
     "chorusLine": "Lorem ipsum (chorus placeholder)",
     "verse1Line": "Lorem ipsum (verse 1 placeholder)",
     "keys": [
@@ -1621,6 +1629,7 @@
       "bridge": "Lorem ipsum (bridge placeholder)\n(bridge placeholder)"
     },
     "arrangement": ["verse_1", "chorus", "verse_2", "chorus", "bridge", "chorus"],
+    "chords": null,
     "chorusLine": "Holy Spirit, You are welcome here",
     "verse1Line": "There's nothing worth more that will ever come close",
     "keys": [
@@ -1814,6 +1823,18 @@
       "verse_5",
       "bridge"
     ],
+    "chords": {
+      "key": "G",
+      "sections": {
+        "chorus": "[G]My chains are [C]gone\n(chorus [Em]place[D]holder)",
+        "verse_1": "[G]Amazing [G7]grace, how [C]sweet the [G]sound\n(verse 1 [D]placeholder)",
+        "verse_2": "Lorem ipsum (verse 2 placeholder)\n(verse 2 placeholder)",
+        "verse_3": "Lorem ipsum (verse 3 placeholder)\n(verse 3 placeholder)",
+        "verse_4": "Lorem ipsum (verse 4 placeholder)\n(verse 4 placeholder)",
+        "verse_5": "Lorem ipsum (verse 5 placeholder)\n(verse 5 placeholder)",
+        "bridge": "[C] [G] [D]\n[C]Lorem ipsum (bridge [G]placeholder)\n(bridge [D]placeholder)"
+      }
+    },
     "chorusLine": "My chains are gone",
     "verse1Line": "Amazing grace, how sweet the sound",
     "keys": [
@@ -2021,6 +2042,7 @@
       "bridge": "Lorem ipsum (bridge placeholder)\n(bridge placeholder)"
     },
     "arrangement": ["verse_1", "chorus", "verse_2", "chorus", "bridge", "chorus"],
+    "chords": null,
     "chorusLine": "Lorem ipsum (chorus placeholder)",
     "verse1Line": "Lorem ipsum (verse 1 placeholder)",
     "keys": [
@@ -2188,6 +2210,7 @@
       "bridge": null
     },
     "arrangement": ["verse_1", "chorus"],
+    "chords": null,
     "chorusLine": "Lorem ipsum (chorus placeholder)",
     "verse1Line": "Lorem ipsum (verse 1 placeholder)",
     "keys": [

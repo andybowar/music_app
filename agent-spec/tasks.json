@@ -314,7 +314,8 @@
       ],
       "blocks": [
         "LIB-12",
-        "LIB-17"
+        "LIB-17",
+        "LIB-22"
       ],
       "owns": [
         "lib/lyrics/"
@@ -967,7 +968,8 @@
       "blocks": [
         "LIB-14",
         "LIB-18",
-        "SRCH-09"
+        "SRCH-09",
+        "LIST-11"
       ],
       "owns": [
         "components/media/",
@@ -1116,7 +1118,8 @@
         "LIB-16"
       ],
       "blocks": [
-        "LIB-17"
+        "LIB-17",
+        "LIB-22"
       ],
       "owns": [
         "features/songs/ui/form/LyricsSection.tsx",
@@ -1394,7 +1397,9 @@
       ],
       "blocks": [
         "LIB-18",
-        "SRCH-09"
+        "LIB-22",
+        "SRCH-09",
+        "LIST-11"
       ],
       "owns": [
         "components/song/panels/ResourcesPanel.tsx",
@@ -1472,7 +1477,8 @@
         "app/(auth)/signup/",
         "app/(auth)/account-status/",
         "features/auth/ui/SignupForm.tsx",
-        "features/auth/ui/AccountStatus.tsx"
+        "features/auth/ui/AccountStatus.tsx",
+        "app/dev/auth-signup/"
       ],
       "touches": [
         "features/auth/actions.ts",
@@ -1610,6 +1616,7 @@
         "DB-05"
       ],
       "blocks": [
+        "ADM-06",
         "SHR-05"
       ],
       "owns": [
@@ -1621,7 +1628,7 @@
       ],
       "reqs": [],
       "file": "tasks/DB-08.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "LIB-01",
@@ -1642,7 +1649,8 @@
         "LIB-17",
         "LIB-18",
         "LIST-01",
-        "SRCH-02"
+        "SRCH-02",
+        "LIB-22"
       ],
       "owns": [
         "features/songs/server/songs.ts",
@@ -1996,6 +2004,7 @@
       ],
       "blocks": [
         "CNT-03",
+        "LIB-22",
         "H-04",
         "LIB-20",
         "LIB-21",
@@ -2034,6 +2043,7 @@
       ],
       "blocks": [
         "LIB-19",
+        "LIB-22",
         "H-01",
         "LIB-21"
       ],
@@ -2282,6 +2292,71 @@
       "status": "done"
     },
     {
+      "id": "LIB-22",
+      "title": "Chords over the lyrics (optional)",
+      "phase": 1,
+      "wave": 9,
+      "stream": "fullstack",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIB-01",
+        "LIB-12",
+        "LIB-16",
+        "LIB-17",
+        "LIB-18",
+        "UI-07"
+      ],
+      "blocks": [
+        "LIST-11"
+      ],
+      "owns": [
+        "db/migrations/0010_chord_lyrics.sql",
+        "components/song/ChordLyrics.tsx",
+        "components/song/ChordLyrics.test.tsx",
+        "app/dev/chords/"
+      ],
+      "touches": [
+        "lib/lyrics/chords.ts",
+        "lib/lyrics/chords.test.ts",
+        "db/migrations/meta/",
+        "db/schema/songs.ts",
+        "db/seed/data.ts",
+        "db/seed/data.test.ts",
+        "types/domain.ts",
+        "types/validation.ts",
+        "types/validation.test.ts",
+        "lib/lyrics/parse.ts",
+        "features/songs/server/songs.ts",
+        "features/songs/server/assemble.ts",
+        "features/songs/server/assemble.test.ts",
+        "features/songs/server/songs.int.test.ts",
+        "features/songs/ui/form/types.ts",
+        "features/songs/ui/form/toInput.ts",
+        "features/songs/ui/form/toInput.test.ts",
+        "features/songs/ui/form/LyricsSection.tsx",
+        "features/songs/ui/form/LyricsSection.test.tsx",
+        "components/song/LyricsViewer.tsx",
+        "components/song/LyricsViewer.test.tsx",
+        "features/songs/ui/SongPage.tsx",
+        "features/search/ui/RowPanels.tsx",
+        "fixtures/songs.json",
+        "fixtures/schemas.ts",
+        "fixtures/fixtures.test.ts",
+        "docs/user-guide.md",
+        "agent-spec/SPEC.md",
+        "agent-spec/TODO.md",
+        "agent-spec/contracts/schema.md",
+        "agent-spec/contracts/types.md",
+        "agent-spec/contracts/ui.md"
+      ],
+      "reqs": [
+        "REQ-LIB-15"
+      ],
+      "file": "tasks/LIB-22.md",
+      "status": "done"
+    },
+    {
       "id": "LIST-07",
       "title": "Setlist view + route",
       "phase": 3,
@@ -2300,6 +2375,7 @@
         "H-01",
         "LIST-10",
         "PLAY-05",
+        "LIST-11",
         "SHR-04"
       ],
       "owns": [
@@ -2457,7 +2533,9 @@
         "H-02",
         "UI-02"
       ],
-      "blocks": [],
+      "blocks": [
+        "ADM-06"
+      ],
       "owns": [
         "app/(app)/admin/page.tsx",
         "app/(app)/admin/page.test.tsx",
@@ -2517,7 +2595,9 @@
         "LIST-07",
         "LIB-18"
       ],
-      "blocks": [],
+      "blocks": [
+        "LIST-11"
+      ],
       "owns": [
         "app/manifest.ts",
         "app/sw.ts",
@@ -2780,6 +2860,49 @@
       "status": "done"
     },
     {
+      "id": "ADM-06",
+      "title": "Admin backlog: to-dos and enhancement requests with wireframes",
+      "phase": 4,
+      "wave": 11,
+      "stream": "fullstack",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "ADM-05",
+        "DB-08"
+      ],
+      "blocks": [
+        "ADM-07",
+        "ADM-08",
+        "SHR-05"
+      ],
+      "owns": [
+        "db/migrations/0006_admin_backlog.sql",
+        "features/admin/backlog/",
+        "app/(app)/admin/requests/",
+        "app/dev/admin-backlog/",
+        "tests/db/backlog.int.test.ts",
+        "tests/e2e/admin-backlog.spec.ts"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "db/schema/backlog.ts",
+        "db/schema/index.ts",
+        "lib/permissions.ts",
+        "lib/permissions.test.ts",
+        "app/(app)/admin/page.tsx",
+        "app/(app)/admin/page.test.tsx",
+        "features/admin/adminAreas.ts",
+        "features/admin/adminAreas.test.ts"
+      ],
+      "reqs": [
+        "REQ-ADM-01",
+        "REQ-ADM-02"
+      ],
+      "file": "tasks/ADM-06.md",
+      "status": "done"
+    },
+    {
       "id": "H-04",
       "title": "Accessibility audit + fixes",
       "phase": 5,
@@ -2799,7 +2922,8 @@
       ],
       "touches": [
         "components/",
-        "features/"
+        "features/",
+        "app/dev/panels/PanelsGallery.tsx"
       ],
       "reqs": [
         "REQ-NF-03"
@@ -2872,10 +2996,125 @@
       "status": "done"
     },
     {
+      "id": "LIST-11",
+      "title": "Play a setlist: full-screen worship mode",
+      "phase": 5,
+      "wave": 11,
+      "stream": "frontend",
+      "size": "M",
+      "human": false,
+      "deps": [
+        "LIST-07",
+        "UI-07",
+        "UI-08",
+        "H-01",
+        "LIB-22"
+      ],
+      "blocks": [],
+      "owns": [
+        "features/lists/ui/player/",
+        "app/dev/set-player/",
+        "tests/e2e/set-player.spec.ts"
+      ],
+      "touches": [
+        "features/lists/ui/SetlistView.tsx",
+        "features/lists/ui/SetlistView.test.tsx",
+        "components/song/LyricsViewer.tsx",
+        "components/song/ChordLyrics.tsx",
+        "docs/user-guide.md",
+        "agent-spec/SPEC.md",
+        "agent-spec/contracts/ui.md",
+        "agent-spec/change-requests/LIST-11-set-player.md"
+      ],
+      "reqs": [
+        "REQ-LIST-09",
+        "REQ-ROW-03",
+        "REQ-NF-02",
+        "REQ-NF-03"
+      ],
+      "file": "tasks/LIST-11.md",
+      "status": "done"
+    },
+    {
+      "id": "ADM-07",
+      "title": "Show the open TODO.md items on the admin dashboard",
+      "phase": 4,
+      "wave": 12,
+      "stream": "backend",
+      "size": "S",
+      "human": false,
+      "deps": [
+        "ADM-06"
+      ],
+      "blocks": [
+        "ADM-08",
+        "SHR-05"
+      ],
+      "owns": [
+        "db/migrations/0007_import_todos.sql",
+        "tests/db/todo-import.int.test.ts"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "db/schema/backlog.ts",
+        "features/admin/backlog/types.ts"
+      ],
+      "reqs": [
+        "REQ-ADM-01"
+      ],
+      "file": "tasks/ADM-07.md",
+      "status": "done"
+    },
+    {
+      "id": "ADM-08",
+      "title": "Report a bug from the account menu",
+      "phase": 4,
+      "wave": 13,
+      "stream": "fullstack",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "ADM-06",
+        "ADM-07"
+      ],
+      "blocks": [
+        "SHR-05"
+      ],
+      "owns": [
+        "db/migrations/0008_bug_reports.sql",
+        "features/bugs/",
+        "app/(app)/bugs/",
+        "app/(app)/admin/bugs/",
+        "app/dev/bug-report/",
+        "tests/db/bugs.int.test.ts",
+        "tests/e2e/bug-report.spec.ts"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "db/schema/bugs.ts",
+        "db/schema/index.ts",
+        "lib/permissions.ts",
+        "lib/permissions.test.ts",
+        "tests/db/rls.test.ts",
+        "tests/db/0003_rls.int.test.ts",
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/page.tsx",
+        "app/(app)/admin/page.test.tsx",
+        "features/admin/backlog/storage.ts"
+      ],
+      "reqs": [
+        "REQ-ADM-03"
+      ],
+      "file": "tasks/ADM-08.md",
+      "status": "done"
+    },
+    {
       "id": "SHR-05",
       "title": "Store share tokens hashed",
       "phase": 4,
-      "wave": 11,
+      "wave": 14,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -2883,13 +3122,16 @@
         "SHR-01",
         "SHR-02",
         "SHR-03",
-        "DB-08"
+        "DB-08",
+        "ADM-06",
+        "ADM-07",
+        "ADM-08"
       ],
       "blocks": [
         "SHR-04"
       ],
       "owns": [
-        "db/migrations/0006_share_token_hash.sql"
+        "db/migrations/0009_share_token_hash.sql"
       ],
       "touches": [
         "db/migrations/meta/",
@@ -2907,13 +3149,13 @@
         "REQ-SHARE-03"
       ],
       "file": "tasks/SHR-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "SHR-04",
       "title": "ShareDialog + nav Share wiring",
       "phase": 4,
-      "wave": 12,
+      "wave": 15,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -2943,13 +3185,13 @@
         "REQ-SHARE-02"
       ],
       "file": "tasks/SHR-04.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "DOC-01",
       "title": "User guide",
       "phase": 5,
-      "wave": 13,
+      "wave": 16,
       "stream": "content",
       "size": "S",
       "human": false,
@@ -2967,13 +3209,13 @@
       "touches": [],
       "reqs": [],
       "file": "tasks/DOC-01.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "H-05",
       "title": "End-to-end journey suite",
       "phase": 5,
-      "wave": 13,
+      "wave": 16,
       "stream": "qa",
       "size": "M",
       "human": false,
@@ -2997,13 +3239,13 @@
         "REQ-SHARE-01"
       ],
       "file": "tasks/H-05.md",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "PILOT-01",
       "title": "Pilot branch rollout",
       "phase": 5,
-      "wave": 14,
+      "wave": 17,
       "stream": "content",
       "size": "L",
       "human": true,

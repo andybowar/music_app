@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Bug,
   Building2,
   CalendarPlus,
   CircleUser,
@@ -323,11 +324,30 @@ export interface UserMenuProps {
   signOut(): Promise<void>;
   /** Link to the admin dashboard (ADM-05), or omitted/null to hide it. Pass `canSeeAdmin(user)`. */
   adminHref?: string | null;
+  /**
+   * The bug report form (ADM-08), or omitted/null to hide "Report a bug". The item links to
+   * `${bugReportHref}?from=<current path>`. Pass `can(user, 'bug:report') ? '/bugs/new' : null`.
+   */
+  bugReportHref?: string | null;
+}
+
+/** `href?from=<path>`, keeping any query `href` already has. */
+export function withFrom(href: string, path: string | null): string {
+  if (!path) return href;
+  return `${href}${href.includes('?') ? '&' : '?'}from=${encodeURIComponent(path)}`;
 }
 
 /** Account menu in the app header: who is signed in, their branch, and Sign out. */
-export function UserMenu({ name, email, branchName, signOut, adminHref = null }: UserMenuProps) {
+export function UserMenu({
+  name,
+  email,
+  branchName,
+  signOut,
+  adminHref = null,
+  bugReportHref = null,
+}: UserMenuProps) {
   const formRef = useRef<HTMLFormElement>(null);
+  const pathname = usePathname();
 
   return (
     <>
@@ -353,6 +373,17 @@ export function UserMenu({ name, email, branchName, signOut, adminHref = null }:
                 <Link href={adminHref}>
                   <Shield aria-hidden />
                   Admin
+                </Link>
+              </DropdownMenuItem>
+              {bugReportHref ? null : <DropdownMenuSeparator />}
+            </>
+          ) : null}
+          {bugReportHref ? (
+            <>
+              <DropdownMenuItem asChild className="min-h-10">
+                <Link href={withFrom(bugReportHref, pathname)}>
+                  <Bug aria-hidden />
+                  Report a bug
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

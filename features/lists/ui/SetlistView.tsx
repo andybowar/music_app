@@ -19,7 +19,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical } from 'lucide-react';
+import { GripVertical, MoreVertical, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -38,6 +38,7 @@ import { toast } from 'sonner';
 import { PdfViewer } from '@/components/media/PdfViewer';
 import { ResponsivePanel } from '@/components/ResponsivePanel';
 import { SongRow } from '@/components/song/SongRow';
+import { LyricsViewer } from '@/components/song/LyricsViewer';
 import { ComposerPanel } from '@/components/song/panels/ComposerPanel';
 import { KeyPanel } from '@/components/song/panels/KeyPanel';
 import { ReminderPanel } from '@/components/song/panels/ReminderPanel';
@@ -65,6 +66,7 @@ import { deleteList, renameList } from '@/features/lists/server/lists';
 import { removeListItem, reorderList, updateListItem } from '@/features/lists/server/items';
 import { listIndexHref } from '@/features/lists/ui/ListIndex';
 import { getSignedResourceUrl } from '@/features/resources/server/files';
+import { ShareDialog } from '@/features/sharing/ui/ShareDialog';
 import { openPlan } from '@/features/songs/ui/SongPage';
 import { resolveItemDisplay } from '@/lib/lists/resolve';
 import { SECTIONS } from '@/types/domain';
@@ -79,6 +81,10 @@ import type {
 import type { ListItemPatch } from '@/types/validation';
 
 import { FirstChords, ItemOverrideEditor, UploadPrompt } from './ItemOverrideEditor';
+import type { PlayerRole } from './player/playerPrefs';
+import { parsePlayParams, withPlayParams } from './player/playUrl';
+import { SetPlayer } from './player/SetPlayer';
+import { StartEventDialog } from './player/StartEventDialog';
 
 export interface SetlistViewProps {
   list: ListDetail;
@@ -92,7 +98,7 @@ export interface SetlistViewProps {
   songs?: SongDetail[];
 }
 
-type PanelKind = 'key' | 'title' | 'composer' | 'resources' | 'usage' | 'edit';
+type PanelKind = 'key' | 'title' | 'composer' | 'resources' | 'usage' | 'edit' | 'lyrics';
 
 const PANEL_TITLE: Record<PanelKind, string> = {
   key: 'Keys and first chords',
@@ -101,6 +107,7 @@ const PANEL_TITLE: Record<PanelKind, string> = {
   resources: 'Resources',
   usage: 'Branch usage',
   edit: 'Key, BPM and energy for this event',
+  lyrics: 'Lyrics',
 };
 
 const FALLBACK_ERROR = 'Something went wrong. Please try again.';
@@ -499,8 +506,14 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   const [panel, setPanel] = useState<{ kind: PanelKind; itemId: UUID } | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [pdf, setPdf] = useState<{ url: string; title: string } | null>(null);
   const [status, setStatus] = useState('');
+  /** The open set player (LIST-11), mirrored in the URL as `?play=<n>&as=<role>`. */
+  const [play, setPlay] = useState<{ index: number; role: PlayerRole } | null>(null);
+  /** The role question; `index` is where the player opens once a role is picked. */
+  const [asking, setAsking] = useState<{ index: number } | null>(null);
+  const startRef = useRef<HTMLButtonElement>(null);
 
   // A refresh brings new server data: adopt it.
   useEffect(() => setItems(list.items), [list.items]);
@@ -508,6 +521,38 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
     () => setHeader({ name: list.name, eventDate: list.eventDate }),
     [list.name, list.eventDate],
   );
+
+  // Reopen the player from the URL (reload, Back, or the offline copy of this page).
+  useEffect(() => {
+    const state = parsePlayParams(window.location.search, list.items.length);
+    if (!state) return;
+    if (state.role) setPlay({ index: state.index, role: state.role });
+    else setAsking({ index: state.index });
+    // Only on arrival: later changes come from the player itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function showPlayer(next: { index: number; role: PlayerRole } | null) {
+    setPlay(next);
+    const { pathname, search, hash } = window.location;
+    // history, not router.replace: the URL only records where the player is, so no refetch.
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${pathname}${withPlayParams(search, next)}${hash}`,
+    );
+  }
+
+  function closePlayer() {
+    showPlayer(null);
+    requestAnimationFrame(() => startRef.current?.focus());
+  }
+
+  async function signedPdfUrl(r: Resource): Promise<string> {
+    const result = await settle(() => actions.getSignedResourceUrl(r.id));
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data.url;
+  }
 
   // A stable id keeps dnd-kit's generated aria-describedby the same on server and client.
   const dndId = useId();
@@ -642,6 +687,14 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
         );
       case 'composer':
         return <ComposerPanel composers={currentDetail.composers} />;
+      case 'lyrics':
+        return (
+          <LyricsViewer
+            lyrics={currentDetail.lyrics}
+            arrangement={currentDetail.arrangement}
+            chords={currentDetail.chords}
+          />
+        );
       case 'usage':
         return (
           <UsagePanel
@@ -655,7 +708,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
             resources={current.resources}
             keys={currentDetail.keys}
             onOpen={(r) => void openResource(r)}
-            onShowLyrics={() => router.push(songHref(current.song.id))}
+            onShowLyrics={() => setPanel({ kind: 'lyrics', itemId: current.item.id })}
             hasLyrics={SECTIONS.some((s) => !!currentDetail.lyrics[s]?.trim())}
             addFilesSlot={
               current.needsUpload && current.key ? (
@@ -693,16 +746,27 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
             </p>
           )}
         </div>
-        {canEdit && (
-          <div className="flex shrink-0 gap-2">
-            <Button variant="outline" className="min-h-tap" onClick={() => setRenameOpen(true)}>
-              Rename
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {items.length > 0 && (
+            <Button ref={startRef} className="min-h-tap" onClick={() => setAsking({ index: 0 })}>
+              <PlayIcon aria-hidden />
+              Start event
             </Button>
-            <Button variant="outline" className="min-h-tap" onClick={() => setDeleteOpen(true)}>
-              Delete
-            </Button>
-          </div>
-        )}
+          )}
+          {canEdit && (
+            <>
+              <Button variant="outline" className="min-h-tap" onClick={() => setShareOpen(true)}>
+                Share
+              </Button>
+              <Button variant="outline" className="min-h-tap" onClick={() => setRenameOpen(true)}>
+                Rename
+              </Button>
+              <Button variant="outline" className="min-h-tap" onClick={() => setDeleteOpen(true)}>
+                Delete
+              </Button>
+            </>
+          )}
+        </div>
       </header>
 
       {items.length === 0 ? (
@@ -765,6 +829,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
 
       {canEdit && (
         <>
+          <ShareDialog list={{ ...list, ...header }} open={shareOpen} onOpenChange={setShareOpen} />
           <RenameDialog
             list={{ ...list, ...header }}
             open={renameOpen}
@@ -781,6 +846,30 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
             onDeleted={() => router.push(SETLISTS_HREF)}
           />
         </>
+      )}
+
+      <StartEventDialog
+        open={asking !== null}
+        onOpenChange={(open) => !open && setAsking(null)}
+        onStart={(role) => {
+          const index = asking?.index ?? 0;
+          setAsking(null);
+          showPlayer({ index, role });
+        }}
+      />
+      {play && items.length > 0 && (
+        <SetPlayer
+          title={header.name}
+          items={items}
+          songs={songs}
+          index={play.index}
+          onIndexChange={(index) => showPlayer({ ...play, index })}
+          role={play.role}
+          onRoleChange={(role) => showPlayer({ ...play, role })}
+          getPdfUrl={signedPdfUrl}
+          onOpenResource={(r) => void openResource(r)}
+          onClose={closePlayer}
+        />
       )}
 
       {pdf && <PdfViewer url={pdf.url} title={pdf.title} onClose={() => setPdf(null)} />}

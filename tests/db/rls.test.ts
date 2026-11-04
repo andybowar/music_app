@@ -55,6 +55,7 @@ const ids = {
   otherPlaylistA: '',
   otherSetlistA: '',
   otherSetlistB: '',
+  bugReport: '', // ADM-08: filed by ownerA
   object: `songs/${tag}/common/${randomUUID()}.pdf`,
 };
 
@@ -305,6 +306,56 @@ const ROLE_PROBES: Record<RoleAction, Probe[]> = {
         tx`insert into songs (title, added_by_branch_id) values (${`Import ${tag}`}, ${ids.branchB})`,
     ),
   ],
+  // ADM-06 (CR ADM-06-rls-test-touches): admin-only backlog tables and bucket.
+  'admin:backlog': [
+    p(
+      'insert to-do',
+      (tx, s) => tx`insert into admin_todos (title, created_by) values ('To-do', ${s.user.id})`,
+    ),
+    p(
+      'insert request',
+      (tx, s) =>
+        tx`insert into feature_requests (title, created_by) values ('Request', ${s.user.id})`,
+    ),
+    p(
+      'upload wireframe object',
+      (tx) =>
+        tx`insert into storage.objects (bucket_id, name)
+           values ('admin-attachments', ${`requests/${tag}/${uniq()}.png`})`,
+    ),
+  ],
+  // ADM-08: bug reports. Anyone approved files and reads their own (with screenshots);
+  // admins read, triage and delete everyone's.
+  'bug:report': [
+    p(
+      'file a report',
+      (tx, s) =>
+        tx`insert into bug_reports (title, description, created_by) values ('Bug', 'What happened', ${s.user.id})`,
+    ),
+    p('file, read and add a screenshot', async (tx, s) => {
+      const [report] = await tx<{ id: string }[]>`
+        insert into bug_reports (title, description, created_by)
+        values ('Bug', 'What happened', ${s.user.id}) returning id`;
+      const own = await tx`select 1 from bug_reports where id = ${report!.id}`;
+      if (own.count === 0) return own;
+      return tx`insert into bug_report_images (report_id, storage_path, file_name, mime_type, size_bytes, created_by)
+                values (${report!.id}, ${`bugs/${report!.id}/${uniq()}.png`}, 'a.png', 'image/png', 1, ${s.user.id})`;
+    }),
+  ],
+  'bug:triage': [
+    p(
+      "read another user's report",
+      (tx) => tx`select 1 from bug_reports where id = ${ids.bugReport}`,
+    ),
+    p(
+      "set another user's report status",
+      (tx) => tx`update bug_reports set status = 'confirmed' where id = ${ids.bugReport}`,
+    ),
+    p(
+      "delete another user's report",
+      (tx) => tx`delete from bug_reports where id = ${ids.bugReport}`,
+    ),
+  ],
 };
 
 // ---------------------------------------------------------------------------------------
@@ -497,6 +548,11 @@ beforeAll(async () => {
 
   await sql`insert into storage.objects (bucket_id, name) values ('resources', ${ids.object})`;
 
+  const [bug] = await sql<{ id: string }[]>`
+    insert into bug_reports (title, description, created_by)
+    values (${`RLS parity bug ${tag}`}, 'What happened', ${ids.ownerA}) returning id`;
+  ids.bugReport = bug!.id;
+
   ids.otherPlaylistA = await insertList('playlist', ids.ownerA, ids.branchA);
   ids.otherSetlistA = await insertList('setlist', ids.ownerA, ids.branchA);
   ids.otherSetlistB = await insertList('setlist', ids.ownerB, ids.branchB);
@@ -513,6 +569,7 @@ afterAll(async () => {
   });
   const userIds = allUserIds();
   await sql`delete from audit_log where actor_id = any(${userIds})`;
+  await sql`delete from bug_reports where created_by = any(${userIds})`; // cascades images
   await sql`delete from lists where owner_id = any(${userIds})`; // cascades items + shares
   await sql`delete from songs where title like ${`%${tag}%`}`; // cascades song children
   await sql`delete from composers where name like ${`%${tag}%`}`;
@@ -627,6 +684,6 @@ describe('coverage', () => {
     // guards against an action being given an empty probe list.
     for (const [action, probes] of [...Object.entries(ROLE_PROBES), ...Object.entries(LIST_PROBES)])
       expect(probes.length, action).toBeGreaterThan(0);
-    expect(Object.keys(ROLE_PROBES).length + Object.keys(LIST_PROBES).length).toBe(21);
+    expect(Object.keys(ROLE_PROBES).length + Object.keys(LIST_PROBES).length).toBe(24);
   });
 });

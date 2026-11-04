@@ -80,7 +80,19 @@ export function toSongInput(value: SongFormValue): SongInput {
     energyNotes: textOrNull(musical.energyNotes),
     lyrics: text,
     arrangement: [...lyrics.arrangement],
+    chords: toChordsInput(lyrics.chords),
   };
+}
+
+/** The `chords` of the song input: each section as typed, blank ones null; null for no chords. */
+function toChordsInput(chords: SongFormValue['lyrics']['chords']): SongInput['chords'] {
+  if (!chords) return null;
+  const sections: Partial<Record<Section, string | null>> = {};
+  for (const s of SECTIONS) {
+    const raw = chords.sections[s];
+    sections[s] = raw && raw.trim() !== '' ? raw : null;
+  }
+  return { key: chords.key, sections };
 }
 
 /** `setSongKeys` input, in form order. Existing keys echo their id so renames keep resources. */
@@ -244,6 +256,7 @@ const TAB_ROOTS: Record<string, FormTab> = {
   energyNotes: 'musical',
   lyrics: 'lyrics',
   arrangement: 'lyrics',
+  chords: 'lyrics',
   themes: 'themes',
   entries: 'themes',
   usage: 'usage',

@@ -1,6 +1,6 @@
 # CR AUTH-07 · Gallery page for SignupForm and AccountStatus
 
-**Status:** proposed.
+**Status:** approved by project owner 2026-11-03. Applied to `tasks/AUTH-07.md` (owns `app/dev/auth-signup/`); the gallery page is an AUTH-07 follow-up. `app/dev/pages.ts` finds pages by itself, so no touch is needed.
 
 ## Problem
 

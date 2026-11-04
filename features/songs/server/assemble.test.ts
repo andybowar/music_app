@@ -5,6 +5,7 @@ import type { SongDetail } from '@/types/domain';
 
 import {
   assembleSongDetail,
+  chordsFromRow,
   assembleSongSummary,
   fillUsage,
   sortKeys,
@@ -45,6 +46,10 @@ function rowsFor(detail: SongDetail): SongDetailRows {
     verse5Lyrics: detail.lyrics.verse_5,
     bridgeLyrics: detail.lyrics.bridge,
     arrangement: detail.arrangement,
+    chordLyrics: detail.chords
+      ? Object.fromEntries(Object.entries(detail.chords.sections).filter(([, v]) => v !== null))
+      : null,
+    chordsKey: detail.chords?.key ?? null,
     chorusLine: detail.chorusLine,
     verse1Line: detail.verse1Line,
     composerNames: '',
@@ -105,6 +110,25 @@ describe('assembleSongDetail', () => {
     expect(detail.resourceCount).toBe(0);
     expect(detail.addedByBranchCode).toBeNull();
     expect(detail.usage).toEqual([]);
+  });
+
+  test('chords map every section, or are null when none are stored (LIB-22)', () => {
+    const rows = rowsFor(thousandHallelujahs);
+    expect(chordsFromRow(rows.song)).toBeNull();
+    const song = { ...rows.song, chordLyrics: { chorus: '[D]With a', bridge: '' }, chordsKey: 'D' };
+    expect(chordsFromRow(song)).toEqual({
+      key: 'D',
+      sections: {
+        chorus: '[D]With a',
+        verse_1: null,
+        verse_2: null,
+        verse_3: null,
+        verse_4: null,
+        verse_5: null,
+        bridge: null,
+      },
+    });
+    expect(chordsFromRow({ ...song, chordsKey: null })?.key).toBeNull();
   });
 
   test('lyrics map every section, missing ones as null', () => {

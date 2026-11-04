@@ -8,7 +8,7 @@ size: L
 status: done
 human_required: false
 depends_on: ["DB-02", "DB-06", "AUTH-04", "AUTH-05"]
-blocks: ["IMP-03", "LIB-17", "LIB-18", "LIST-01", "SRCH-02"]
+blocks: ["IMP-03", "LIB-17", "LIB-18", "LIST-01", "SRCH-02", "LIB-22"]
 owns: ["features/songs/server/songs.ts", "features/songs/server/assemble.ts"]
 touches: []
 requirements: ["REQ-LIB-01", "REQ-LIB-02", "REQ-LIB-04", "REQ-LIB-06", "REQ-LIB-12"]

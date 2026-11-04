@@ -81,7 +81,7 @@ describe('starting values', () => {
         energyLevel: null,
         energyNotes: null,
       },
-      lyrics: { lyrics: {}, arrangement: [] },
+      lyrics: { lyrics: {}, arrangement: [], chords: null },
       themes: [],
       usage: [],
     });
@@ -138,6 +138,7 @@ describe('toSongInput', () => {
         bridge: null,
       },
       arrangement: ['chorus'],
+      chords: null,
     });
     expect(input).not.toHaveProperty('addedByBranchId');
     expect(songInputSchema.safeParse(input).success).toBe(true);

@@ -330,7 +330,7 @@ export function SongPage({
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="flex min-w-0 flex-col gap-4">
         <Panel title="Lyrics" id={lyricsId}>
-          <LyricsViewer lyrics={song.lyrics} arrangement={song.arrangement} />
+          <LyricsViewer lyrics={song.lyrics} arrangement={song.arrangement} chords={song.chords} />
         </Panel>
         <Panel title="Themes">
           <ThemesList themes={song.themes} />

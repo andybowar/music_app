@@ -24,6 +24,9 @@ create type resource_format as enum ('pdf','mp3','m4a','pro','mdb','ppt','pptx',
 create type list_type      as enum ('setlist','playlist');
 create type audit_action   as enum ('create','update','delete');
 create type access_status  as enum ('pending','approved','rejected');   -- DB-07, REQ-AUTH-03/08
+create type feature_request_kind   as enum ('enhancement','change');                              -- ADM-06
+create type feature_request_status as enum ('new','planned','in_progress','done','declined');      -- ADM-06
+create type bug_report_status      as enum ('new','confirmed','fixed','wont_fix','duplicate');     -- ADM-08
 ```
 
 ## Tables
@@ -82,6 +85,9 @@ create table songs (
   verse_5_lyrics   text,
   bridge_lyrics    text,
   arrangement      lyric_section[] not null default '{}',   -- e.g. {verse_1,chorus,verse_2,chorus,bridge,chorus}
+  -- chords over the lyrics (LIB-22, migration 0010); null = no chords
+  chord_lyrics     jsonb check (jsonb_typeof(chord_lyrics) = 'object'),  -- { section: lyrics with [chords] inline }, sections with text only
+  chords_key       text check (chords_key ~ '^[A-G](#|b)?m?$'),          -- key the chords are written in
   -- derived (maintained by triggers in DB-02; never written by app code)
   chorus_line      text,         -- first non-empty line of chorus_lyrics
   verse1_line      text,         -- first non-empty line of verse_1_lyrics
@@ -210,6 +216,70 @@ create table audit_log (
   diff        jsonb not null default '{}',
   created_at  timestamptz not null default now()
 );
+
+-- ADM-06 (REQ-ADM-01/02): admin-only backlog. RLS: all operations require app_role_at_least('admin').
+create table admin_todos (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null check (char_length(title) between 1 and 200),
+  notes       text check (char_length(notes) <= 2000),
+  done_at     timestamptz,
+  done_by     uuid references users(id),
+  created_by  uuid references users(id),         -- null for items imported from agent-spec/TODO.md (ADM-07, 0007)
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create table feature_requests (
+  id          uuid primary key default gen_random_uuid(),
+  kind        feature_request_kind not null default 'enhancement',
+  title       text not null check (char_length(title) between 1 and 200),
+  description text not null default '' check (char_length(description) <= 10000),
+  status      feature_request_status not null default 'new',
+  created_by  uuid not null references users(id),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create table feature_request_images (               -- wireframes; at most 5 per request (enforced server-side)
+  id           uuid primary key default gen_random_uuid(),
+  request_id   uuid not null references feature_requests(id) on delete cascade,
+  storage_path text not null unique,                -- requests/{request_id}/{id}.{ext} in bucket admin-attachments
+  file_name    text not null,
+  mime_type    text not null check (mime_type in ('image/png','image/jpeg','image/webp','image/gif')),
+  size_bytes   integer not null check (size_bytes between 1 and 10485760),
+  created_by   uuid not null references users(id),
+  created_at   timestamptz not null default now()
+);
+
+-- ADM-08 (REQ-ADM-03): bug reports from any approved user. RLS: insert own (approved users);
+-- select own or admin; update/delete admin. Images: select follows the report; insert by the
+-- report's creator within 24 h of created_at; delete admin.
+create table bug_reports (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null check (char_length(title) between 1 and 200),
+  description text not null check (char_length(description) between 1 and 10000),
+  expected    text check (char_length(expected) <= 2000),
+  page_path   text check (page_path ~ '^/' and char_length(page_path) <= 2000),
+  user_agent  text check (char_length(user_agent) <= 1000),
+  viewport    text check (char_length(viewport) <= 40),          -- e.g. '390x844'
+  app_version text,                                              -- VERCEL_GIT_COMMIT_SHA or null
+  status      bug_report_status not null default 'new',
+  admin_note  text check (char_length(admin_note) <= 2000),      -- shown to the reporter
+  created_by  uuid not null references users(id),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create table bug_report_images (                    -- screenshots; at most 5 per report (enforced server-side)
+  id           uuid primary key default gen_random_uuid(),
+  report_id    uuid not null references bug_reports(id) on delete cascade,
+  storage_path text not null unique,                -- bugs/{report_id}/{id}.{ext} in bucket admin-attachments
+  file_name    text not null,
+  mime_type    text not null check (mime_type in ('image/png','image/jpeg','image/webp','image/gif')),
+  size_bytes   integer not null check (size_bytes between 1 and 10485760),
+  created_by   uuid not null references users(id),
+  created_at   timestamptz not null default now()
+);
 ```
 
 ## Indexes (DB-02)
@@ -264,3 +334,4 @@ new.search_vector :=
 - Path: `songs/{song_id}/{song_key_id or 'common'}/{resource_id}.{ext}`.
 - Upload flow: server issues signed upload URL → client PUTs file → server finalizes `resources` row (verifies object exists and size).
 - Read: server issues signed URL, TTL `SIGNED_URL_TTL_SECONDS`.
+- Bucket `admin-attachments`, **private**, admin-only storage policies (ADM-06). Paths: `requests/{request_id}/{image_id}.{ext}` (ADM-06) and `bugs/{report_id}/{image_id}.{ext}` (ADM-08, uploaded through server-issued signed URLs); PNG/JPEG/WebP/GIF, ≤ 10 MiB each. Same signed-upload → finalize flow; deleting a request removes its objects.

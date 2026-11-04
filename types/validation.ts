@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { chordsMatchLyrics } from '@/lib/lyrics/chords';
+
 import {
   CHORD_RE,
   CHORD_SLOTS,
@@ -11,6 +13,7 @@ import {
   RESOURCE_FORMATS,
   RESOURCE_KINDS,
   SEARCH_FIELDS,
+  SECTION_LABEL,
   SECTIONS,
   SORTS,
   TIME_SIGNATURE_RE,
@@ -46,6 +49,19 @@ const lyricsSchema = z.object(
   },
 );
 
+/** Chorded text is longer than the plain lyrics; 8000 leaves room for the brackets. */
+const chordSectionsSchema = z.object(
+  Object.fromEntries(SECTIONS.map((s) => [s, z.string().max(8000).nullable().optional()])) as {
+    [K in Section]: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+  },
+);
+
+/** Chords over the lyrics (LIB-22). Each section, without its chords, must equal its lyrics. */
+const chordsSchema = z.object({
+  key: musicalKey.nullable().default(null),
+  sections: chordSectionsSchema.default({}),
+});
+
 export const songInputSchema = z
   .object({
     title: z.string().trim().min(1).max(200),
@@ -59,6 +75,8 @@ export const songInputSchema = z
     energyNotes: z.string().trim().max(500).nullable().default(null),
     lyrics: lyricsSchema.default({}),
     arrangement: z.array(section).max(30).default([]),
+    /** Optional chords over the lyrics; null (the default) means none. */
+    chords: chordsSchema.nullable().default(null),
     /** Admin only; the action ignores/forbids it for other roles. Omitted → caller's branch. */
     addedByBranchId: uuid.nullable().optional(),
   })
@@ -72,6 +90,18 @@ export const songInputSchema = z
         });
       }
     });
+    const chords = input.chords;
+    if (chords) {
+      for (const s of SECTIONS) {
+        if (!chordsMatchLyrics(chords.sections[s], input.lyrics[s])) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['chords', 'sections', s],
+            message: `${SECTION_LABEL[s]} with its chords taken out doesn't match its lyrics`,
+          });
+        }
+      }
+    }
   });
 export type SongInput = z.infer<typeof songInputSchema>;
 

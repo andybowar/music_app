@@ -8,7 +8,7 @@ size: S
 status: done
 human_required: false
 depends_on: ["F-03"]
-blocks: ["LIB-12", "LIB-17"]
+blocks: ["LIB-12", "LIB-17", "LIB-22"]
 owns: ["lib/lyrics/"]
 touches: []
 requirements: ["REQ-LIB-14"]

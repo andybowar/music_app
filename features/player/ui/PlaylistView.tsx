@@ -52,6 +52,7 @@ import { AudioPicker, audioOptionLabel, playableResources } from '@/features/pla
 import { PlayerBar } from '@/features/player/ui/PlayerBar';
 import { usePlayer, type PlayerAdapterFactories } from '@/features/player/ui/usePlayer';
 import { getSignedResourceUrl } from '@/features/resources/server/files';
+import { ShareDialog } from '@/features/sharing/ui/ShareDialog';
 import { parseYouTubeId } from '@/lib/youtube';
 import type {
   ActionResult,
@@ -535,6 +536,7 @@ export function PlaylistView({
   const [name, setName] = useState(list.name);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [status, setStatus] = useState('');
 
   // A refresh brings new server data: adopt it.
@@ -694,6 +696,9 @@ export function PlaylistView({
             </Button>
             {canEdit && (
               <>
+                <Button variant="outline" className="min-h-tap" onClick={() => setShareOpen(true)}>
+                  Share
+                </Button>
                 <Button variant="outline" className="min-h-tap" onClick={() => setRenameOpen(true)}>
                   Rename
                 </Button>
@@ -781,6 +786,7 @@ export function PlaylistView({
 
       {canEdit && (
         <>
+          <ShareDialog list={{ ...list, name }} open={shareOpen} onOpenChange={setShareOpen} />
           <RenameDialog
             rename={actions.renameList}
             name={name}

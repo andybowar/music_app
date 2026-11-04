@@ -8,7 +8,7 @@ size: M
 status: done
 human_required: false
 depends_on: ["LIB-10", "LIB-16"]
-blocks: ["LIB-17"]
+blocks: ["LIB-17", "LIB-22"]
 owns: ["features/songs/ui/form/LyricsSection.tsx", "app/dev/form-lyrics/"]
 touches: []
 requirements: ["REQ-LIB-06", "REQ-LIB-14"]

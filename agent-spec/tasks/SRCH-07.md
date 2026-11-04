@@ -35,7 +35,7 @@ requirements: ["REQ-SRCH-04"]
 
 ## Acceptance criteria
 - [x] Keyboard operable
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/search/ui/SortControl.tsx`, `app/dev/sort-control/`
@@ -43,5 +43,5 @@ requirements: ["REQ-SRCH-04"]
 
 ## Notes
 
-- Definition of Done is left unticked for two reasons. First, there is no `/dev/sort-control` gallery, because this task doesn't own an `app/dev/` path; it's proposed in `agent-spec/change-requests/SRCH-07-sort-control-props-and-gallery.md`. Second, the 360px layout is covered only by a class-level unit test and hasn't been checked in a browser.
+- Definition of Done was first left unticked for two reasons; both are resolved by the gallery follow-up, which adds `/dev/sort-control` and checked it in Chromium at 360px (no horizontal scroll; axe clean). First, there is no `/dev/sort-control` gallery, because this task doesn't own an `app/dev/` path; it's proposed in `agent-spec/change-requests/SRCH-07-sort-control-props-and-gallery.md`. Second, the 360px layout is covered only by a class-level unit test and hasn't been checked in a browser.
 - The same CR proposes the optional `hasQuery` prop. "Relevance" needs it, and the frozen contract doesn't carry `q`. It also proposes typing `onChange(sort: Sort | undefined, dir: 'asc'|'desc' | undefined)`.

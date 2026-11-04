@@ -51,6 +51,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-LIB-12** Edits are recorded in an audit log (who, when, what changed) viewable on the song.
 - **REQ-LIB-13** Bulk import from CSV + a folder of files, with dry-run report and idempotent re-run.
 - **REQ-LIB-14** Paste-and-split helper: paste full lyrics with section headings and have them split into the 7 section fields + arrangement.
+- **REQ-LIB-15** Optional chords over the lyrics: when creating or editing a song, a contributor may add chords inline in each lyric section (ChordPro brackets, e.g. `[G]Amazing [C]grace`) and say which key they're in. Pasting a chord sheet with chords on their own lines converts them. Readers see chords above the words and can hide them. Search and first lines use the lyrics without chords. Songs without chords are unaffected.
 
 ### 2.3 Navigation (REQ-NAV) — Diagram II
 
@@ -86,6 +87,8 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-LIST-06** Lists persist until manually deleted (soft delete).
 - **REQ-LIST-07** Open Setlist / Open Playlist show the user's lists and their branch's lists; upcoming events first.
 - **REQ-LIST-08** Setlists are readable by all members (supports "what other branches are using"); playlists are private to their owner unless shared.
+- **REQ-LIST-09** Play a setlist: from a setlist, Start opens a full-screen view of one song at a time, in setlist order. Each song shows its lyrics in arrangement order, the setlist's key, BPM and first chords, and opens that key's chord charts. Next and previous work by button, swipe, arrow and Page Up/Down keys (page-turner pedals). The screen stays awake while it's open, and it works offline for setlists the user has opened (REQ-NF-02).
+  - *Amended 2026-11-04 (owner):* the button is **Start event**, and every time it asks who is playing: **musician**, **vocalist** or **projectionist** (switchable inside the player). Musicians see first chords and a chart: typed chords (REQ-LIB-15) or a chord chart, lead sheet or score PDF for the key, shown inline with pages stacked. When there's more than one, they choose each time the song comes up. No chart: lyrics plus first chords. Typed chords in another key than the setlist's are shown with a warning. Vocalists see lyrics only, with text size controls. Musicians and vocalists get an autoscroll toggle with a 1–10 speed remembered per song on the device; it turns off on every song change. For musicians a page-turner press scrolls one screen, and at the end moves to the next song. Projectionists see the running order with the current song marked, each song's arrangement, each section's first line, and its projection files.
 
 ### 2.7 Sharing & cross-branch (REQ-SHARE, REQ-BR)
 
@@ -103,6 +106,12 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-NF-03** Accessibility: WCAG 2.1 AA. Energy is never conveyed by color alone (label/tooltip text too).
 - **REQ-NF-04** Errors tracked (Sentry); daily DB backups; storage usage alerts.
 - **REQ-NF-05** Every server mutation is authorized server-side; RLS is defense in depth.
+
+### 2.9 Admin backlog (REQ-ADM)
+
+- **REQ-ADM-01** The admin dashboard shows a shared to-do list: admins add items, mark them done, and delete them. Admins only.
+- **REQ-ADM-02** Admins submit enhancement or change requests (kind, title, description, up to 5 wireframe images: PNG/JPEG/WebP/GIF, ≤ 10 MiB each), list them by status (new, planned, in progress, done, declined), and update or delete them. Admins only; images are stored privately.
+- **REQ-ADM-03** Any approved user can report a bug from the account menu: what went wrong, what happened, what they expected, and up to 5 screenshots; the page, browser, screen size and app version are captured automatically. Reporters see their own reports with status and an admin note; admins see all reports on the dashboard, triage them (new, confirmed, fixed, won't fix, duplicate) and get an email for each new report.
 
 ## 3. Tech stack (decided)
 

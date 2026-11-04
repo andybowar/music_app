@@ -16,7 +16,12 @@ const as = (role: Role, over: Partial<AppUser> = {}): AppUser => ({
 
 describe('adminAreasFor', () => {
   it('gives admins every area, in order', () => {
-    expect(adminAreasFor(as('admin')).map((a) => a.id)).toEqual(['users', 'branches', 'themes']);
+    expect(adminAreasFor(as('admin')).map((a) => a.id)).toEqual([
+      'users',
+      'branches',
+      'themes',
+      'galleries',
+    ]);
   });
 
   it('gives music leaders only Themes', () => {

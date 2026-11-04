@@ -19,9 +19,12 @@
 | `/branches` | Other branches activity | BR-02 |
 | `/quick` | Quick theme lookup | BR-04 |
 | `/share/[token]` | Public read-only list | SHR-02 |
-| `/admin` | Admin dashboard: a card per admin area the user may open (from the account menu) | ADM-05 |
+| `/admin` | Admin dashboard: a card per admin area the user may open (from the account menu); for `admin:backlog`, To-dos and Enhancement requests sections | ADM-05 (backlog sections: ADM-06) |
+| `/admin/requests`, `/admin/requests/new`, `/admin/requests/[id]`, `/admin/requests/[id]/edit` | Enhancement/change requests: list, form with wireframe uploader, detail | ADM-06 |
+| `/bugs`, `/bugs/new?from=<path>`, `/bugs/[id]` | Report a bug (any approved user; from the account menu) and my reports | ADM-08 |
+| `/admin/bugs`, `/admin/bugs/[id]` | All bug reports, triage (status, note to reporter, delete) | ADM-08 |
 | `/admin/users`, `/admin/branches` | Admin | ADM-01, ADM-02 |
-| `/dev/[component]` | Component gallery with fixtures; 404 on the production deployment via `if (!isDevGalleryEnabled()) notFound()` (`lib/devGallery.ts`), served on previews | each UI task adds its own page |
+| `/dev/[component]` | Component gallery with fixtures; open on local dev and previews. On the production deployment only approved admins may open it (from the "Component gallery" card on `/admin`); everyone else gets a 404, enforced by `middleware.ts` and `app/dev/layout.tsx` (`lib/devGallery.ts`). Pages still call `if (!isDevGalleryEnabled()) notFound()`, which now always passes | each UI task adds its own page |
 
 Route groups: `app/(auth)/…` (no shell), `app/(app)/…` (shell + `requireUser`), `app/share/…` (public), `app/dev/…`.
 
@@ -58,6 +61,7 @@ All components are client components unless noted, props-only (no data fetching 
 |---|---|---|---|
 | `ResponsivePanel` | `components/ResponsivePanel.tsx` | `{ trigger?: ReactNode; anchor?: ReactNode; open?: boolean; onOpenChange?(open: boolean): void; title: string; children: ReactNode }` — pass `trigger` (uncontrolled, as before) or `open` + `onOpenChange` (controlled, optional `anchor`) | UI-01 |
 | `NavBar` | `components/NavBar.tsx` | `{ currentList: List \| null; onCreate(type: ListType): void; onShare(): void; canAddSong?: boolean }` (`canAddSong`: show "Add song" → `/songs/new` in the More menu; LIB-20) | UI-02 |
+| `UserMenu` | `components/NavBar.tsx` | `{ name; email; branchName; signOut; adminHref?: string \| null; bugReportHref?: string \| null }` (`adminHref`: "Admin" item, ADM-05; `bugReportHref`: "Report a bug" item linking to `bugReportHref?from=<current path>`, ADM-08) | UI-02 |
 | `EnergyChip` | `components/song/EnergyChip.tsx` | `{ energy: EnergyLevel \| null; bpm: number \| null; overridden?: boolean }` | UI-04 |
 | `KeyBadge` | `components/song/KeyBadge.tsx` | `{ value: string \| null; overridden?: boolean }` | UI-04 |
 | `TimeSigBadge` | `components/song/TimeSigBadge.tsx` | `{ value: string \| null }` | UI-04 |
@@ -69,7 +73,8 @@ All components are client components unless noted, props-only (no data fetching 
 | `UsagePanel` | `components/song/panels/UsagePanel.tsx` | `{ addedByBranchCode: string \| null; usage: BranchUsage[] }` | UI-06 |
 | `ReminderPanel` | `components/song/panels/ReminderPanel.tsx` | `{ chorusLine: string \| null; verse1Line: string \| null }` | UI-06 |
 | `ResourcesPanel` | `components/song/panels/ResourcesPanel.tsx` | `{ resources: Resource[]; keys: SongKey[]; onOpen(r: Resource): void; onShowLyrics(): void; hasLyrics?: boolean; addFilesSlot?: ReactNode }` groups: Lyrics, Sheet Music (by key), Audio (by key), Projection | UI-07 |
-| `LyricsViewer` | `components/song/LyricsViewer.tsx` | `{ lyrics: SongLyrics; arrangement: Section[]; mode?: 'arrangement' \| 'sections' }` | UI-07 |
+| `LyricsViewer` | `components/song/LyricsViewer.tsx` | `{ lyrics: SongLyrics; arrangement: Section[]; mode?: 'arrangement' \| 'sections'; chords?: SongChords \| null; textSizePx?: number }` (`chords`: LIB-22, adds a "Chords" toggle; `textSizePx`: LIST-11 text size) | UI-07 |
+| `ChordLyrics` | `components/song/ChordLyrics.tsx` | `{ text: string; className?: string; style?: CSSProperties }` (text with inline `[chords]`) | LIB-22 |
 | `PdfViewer` | `components/media/PdfViewer.tsx` | `{ url: string; title: string; onClose(): void }` | UI-08 |
 | `InlineAudio` | `components/media/InlineAudio.tsx` | `{ url: string; title: string }` | UI-08 |
 | `SearchBar` | `features/search/ui/SearchBar.tsx` | `{ value: string; fields: SearchField[]; onChange(q, fields): void; onSubmit(): void }` | SRCH-05 |
@@ -82,10 +87,20 @@ All components are client components unless noted, props-only (no data fetching 
 | `AddToListMenu` | `features/lists/ui/AddToListMenu.tsx` | `{ songId; current: List \| null; lists: List[]; onAdd(listId): Promise<ActionResult<unknown>>; onCreate(input): Promise<ActionResult<List>>; onUndo?(listId, added: unknown): Promise<ActionResult<unknown>>; songTitle?: string }` | LIST-06 |
 | `ItemOverrideEditor` | `features/lists/ui/ItemOverrideEditor.tsx` | `{ resolved: ResolvedItem; keys: SongKey[]; onChange(patch): void }` | LIST-07 |
 | `SetlistView` | `features/lists/ui/SetlistView.tsx` | `{ list: ListDetail; canEdit: boolean; songs?: SongDetail[] }` (`songs`: details of the list's songs, from `getSongs`, for row panels and override keys; CR LIST-07) | LIST-07 |
+| `SetPlayer` | `features/lists/ui/player/SetPlayer.tsx` | `{ title: string; items: ResolvedItem[]; songs?: SongDetail[]; index: number; onIndexChange(index: number): void; role: PlayerRole; onRoleChange(role: PlayerRole): void; getPdfUrl(r: Resource): Promise<string>; onOpenResource(r: Resource): void; onClose(): void }` (`index` is 0-based; `PlayerRole` = `'musician' \| 'vocalist' \| 'projectionist'` from `player/playerPrefs.ts`; `getPdfUrl` resolves a signed URL for inline charts; `onOpenResource` opens the zoomable viewer or a projection file; CR LIST-11, amended 2026-11-04) | LIST-11 |
+| `StartEventDialog` | `features/lists/ui/player/StartEventDialog.tsx` | `{ open: boolean; onOpenChange(open: boolean): void; onStart(role: PlayerRole): void }` | LIST-11 |
+
 | `PlayerBar` | `features/player/ui/PlayerBar.tsx` | `{ state: PlayerState; dispatch(e: PlayerEvent): void }` | PLAY-04 |
 | `AudioPicker` | `features/player/ui/AudioPicker.tsx` | `{ resources: Resource[]; value: UUID \| null; onChange(id: UUID \| null): void; label?: string; className?: string }` (`null` = recording cleared) | PLAY-06 |
 | `PlaylistView` | `features/player/ui/PlaylistView.tsx` | `{ list: ListDetail; canEdit: boolean; songs?: SongDetail[]; adapters?: PlayerAdapterFactories; actions?: Partial<PlaylistActions> }` (`songs`: details of the list's songs, so each row offers every audio/video resource of the song, not only the primary key's; falls back to `resolved.resources`. `adapters` / `actions`: test and gallery seams, defaulting to the real MP3 and YouTube players and the real list server actions. CR PLAY-05) | PLAY-05 |
 | `ShareDialog` | `features/sharing/ui/ShareDialog.tsx` | `{ list: List; open; onOpenChange }` | SHR-04 |
+| `BacklogTodos` | `features/admin/backlog/ui/BacklogTodos.tsx` | `{ todos: AdminTodo[]; actions?: Partial<TodoActions> }` (optimistic add / done / delete with undo) | ADM-06 |
+| `RequestList` | `features/admin/backlog/ui/RequestList.tsx` | `{ requests: FeatureRequest[]; status?: FeatureRequestStatus \| 'all'; limit?: number }` | ADM-06 |
+| `RequestForm` | `features/admin/backlog/ui/RequestForm.tsx` | `{ request?: FeatureRequestDetail; actions?: Partial<RequestActions> }` (kind, title, description, wireframe uploader: pick / drop / paste, ≤5 images) | ADM-06 |
+| `RequestDetail` | `features/admin/backlog/ui/RequestDetail.tsx` | `{ request: FeatureRequestDetail; actions?: Partial<RequestActions> }` (status selector, image grid + full-size dialog) | ADM-06 |
+| `BugReportForm` | `features/bugs/ui/BugReportForm.tsx` | `{ pagePath?: string; actions?: Partial<BugReportActions> }` (title, what happened, expected, screenshot uploader, auto-captured page/browser/screen summary) | ADM-08 |
+| `BugReportList` | `features/bugs/ui/BugReportList.tsx` | `{ reports: BugReport[]; admin?: boolean; status?: BugReportStatus \| 'all'; limit?: number }` | ADM-08 |
+| `BugReportDetail` | `features/bugs/ui/BugReportDetail.tsx` | `{ report: BugReportDetail; admin?: boolean; actions?: Partial<BugReportActions> }` | ADM-08 |
 | Song form sections | `features/songs/ui/form/*.tsx` | each `{ value: Partial<SongFormValue>; onChange(v): void; errors?: Record<string,string[]> }` | LIB-10…15 |
 | `ResourcesSection` (extra props) | `features/songs/ui/form/ResourcesSection.tsx` | form-section props plus `{ songId: UUID \| null; initialResources: Resource[]; onResourcesChange?(r: Resource[]): void; requestUpload, finalizeUpload, deleteResource, getSignedResourceUrl, addLink, updateLink` (api.md signatures)`; putFile?(uploadUrl, file, onProgress): Promise<void> }`. Resources save immediately via their own actions and are not part of `SongFormValue`; the section never calls `onChange`. | LIB-14 |
 | `UsageSection` (extra props) | `features/songs/ui/form/UsageSection.tsx` | form-section props plus `{ saved: BranchUsage[] }` (stored `SongDetail.usage`, shows derived values). `value.usage` holds **manual entries only**; build it with `usageFromSong(song)`. | LIB-15 |
@@ -95,7 +110,7 @@ All components are client components unless noted, props-only (no data fetching 
 export interface SongFormValue {
   basic: { title: string; altTitles: string[]; composers: Composer[]; sourceGroup: string|null; year: number|null };
   musical: { keys: Array<Omit<SongKey,'id'|'songId'> & { id?: UUID }>; tempoBpm: number|null; timeSignature: string|null; energyLevel: EnergyLevel|null; energyNotes: string|null };
-  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[] };
+  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[]; chords?: { key: MusicalKey|null; sections: Partial<SongLyrics> } | null };  // chords: LIB-22
   themes: Array<{ section: Section; theme: Theme }>;
   usage: Array<{ branchId: UUID; level: UsageLevel }>;
 }

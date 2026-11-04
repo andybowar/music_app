@@ -9,6 +9,7 @@
 import type {
   Composer,
   EnergyLevel,
+  MusicalKey,
   Section,
   SongDetail,
   SongKey,
@@ -33,7 +34,16 @@ export interface SongFormValue {
     energyLevel: EnergyLevel | null;
     energyNotes: string | null;
   };
-  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[] };
+  lyrics: {
+    lyrics: Partial<SongLyrics>;
+    arrangement: Section[];
+    /**
+     * Optional chords over the lyrics (LIB-22): each section's lyrics with `[chords]` inline.
+     * When set, the lyrics fields edit these and `lyrics` holds them with the chords removed.
+     * Null or absent: the song has no chords.
+     */
+    chords?: { key: MusicalKey | null; sections: Partial<SongLyrics> } | null;
+  };
   themes: Array<{ section: Section; theme: Theme }>;
   usage: Array<{ branchId: UUID; level: UsageLevel }>;
 }

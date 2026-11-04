@@ -1,6 +1,8 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { z } from 'zod';
 
+import { chordsMatchLyrics } from '@/lib/lyrics/chords';
+
 import {
   AUTH_PROVIDERS,
   CHORD_SLOTS,
@@ -248,6 +250,20 @@ describe('songs', () => {
         if (text === null) continue;
         const [, ...others] = text.split('\n').filter((l) => l.trim());
         for (const line of others) expect(line).toMatch(/^\(.*placeholder\)$/);
+      }
+    }
+  });
+});
+
+describe('chords (LIB-22)', () => {
+  it('has a song with chords, whose words match its lyrics', () => {
+    const chorded = songs.filter((s) => s.chords);
+    expect(chorded.length).toBeGreaterThan(0);
+    for (const s of chorded) {
+      for (const section of SECTIONS) {
+        expect(chordsMatchLyrics(s.chords!.sections[section], s.lyrics[section]), s.title).toBe(
+          true,
+        );
       }
     }
   });

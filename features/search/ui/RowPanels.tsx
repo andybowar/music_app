@@ -269,7 +269,7 @@ function ResourcesBody({
           <ArrowLeftIcon aria-hidden />
           Back to files
         </Button>
-        <LyricsViewer lyrics={song.lyrics} arrangement={song.arrangement} />
+        <LyricsViewer lyrics={song.lyrics} arrangement={song.arrangement} chords={song.chords} />
       </div>
     );
   }

@@ -64,6 +64,13 @@
       "when": 1793758222106,
       "tag": "0009_share_token_hash",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793798967406,
+      "tag": "0010_chord_lyrics",
+      "breakpoints": true
     }
   ]
 }

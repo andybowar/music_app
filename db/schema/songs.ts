@@ -3,6 +3,7 @@ import {
   check,
   customType,
   foreignKey,
+  jsonb,
   pgTable,
   primaryKey,
   smallint,
@@ -12,6 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { branches } from './branches';
+import type { Section } from '@/types/domain';
 import { energyLevelEnum, lyricSectionEnum, popMemberEnum } from './enums';
 import { users } from './users';
 
@@ -60,6 +62,12 @@ export const songs = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'`),
+    // chords over the lyrics (LIB-22): per section, the lyrics with [chords] inline. Only
+    // sections with text are stored; null when the song has no chords. The plain lyrics
+    // columns above stay the source for search and first lines.
+    chordLyrics: jsonb('chord_lyrics').$type<Partial<Record<Section, string>>>(),
+    /** The key the chords are written in. */
+    chordsKey: text('chords_key'),
     // derived: maintained by DB-02 triggers, never written by app code
     chorusLine: text('chorus_line'),
     verse1Line: text('verse1_line'),
@@ -79,6 +87,8 @@ export const songs = pgTable(
     check('songs_year_check', sql`${t.year} between 1000 and 2100`),
     check('songs_tempo_bpm_check', sql`${t.tempoBpm} between 20 and 300`),
     check('songs_time_signature_check', sql`${t.timeSignature} ~ '^\\d{1,2}/\\d{1,2}$'`),
+    check('songs_chords_key_check', sql`${t.chordsKey} ~ '^[A-G](#|b)?m?$'`),
+    check('songs_chord_lyrics_check', sql`jsonb_typeof(${t.chordLyrics}) = 'object'`),
     foreignKey({
       name: 'songs_added_by_branch_id_fkey',
       columns: [t.addedByBranchId],

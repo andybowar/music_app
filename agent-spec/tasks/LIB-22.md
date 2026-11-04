@@ -5,7 +5,7 @@ phase: 1
 wave: 9
 stream: fullstack
 size: M
-status: in_progress
+status: done
 human_required: false
 depends_on: ["LIB-01", "LIB-12", "LIB-16", "LIB-17", "LIB-18", "UI-07"]
 blocks: []

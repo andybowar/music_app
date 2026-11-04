@@ -12,7 +12,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type DragEvent } from 'react';
 import { toast } from 'sonner';
+import { ChordLyrics } from '@/components/song/ChordLyrics';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -24,8 +26,15 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/components/ui/utils';
-import { firstLine, parseLyrics, type ParsedLyrics } from '@/lib/lyrics/parse';
-import { SECTION_LABEL, SECTIONS, type Section, type SongDetail } from '@/types/domain';
+import { hasChords, inlineChords, stripChords } from '@/lib/lyrics/chords';
+import { firstLine, isHeadingLine, parseLyrics, type ParsedLyrics } from '@/lib/lyrics/parse';
+import {
+  SECTION_LABEL,
+  SECTIONS,
+  type MusicalKey,
+  type Section,
+  type SongDetail,
+} from '@/types/domain';
 import { errorsFor, moveItem } from './BasicInfoSection';
 import type { SongFormSectionProps, SongFormValue } from './types';
 
@@ -38,6 +47,11 @@ export interface LyricsSectionProps extends SongFormSectionProps {
 /** Limits from `songInputSchema` (lyrics ≤5000 chars per section, arrangement ≤30 entries). */
 export const LYRICS_LIMITS = { sectionMax: 5000, arrangementMax: 30 } as const;
 
+/** Limit on a section with its chords inline (`songInputSchema` `chords.sections`). */
+export const CHORDS_LIMITS = { sectionMax: 8000 } as const;
+
+export type ChordsValue = NonNullable<LyricsValue['chords']>;
+
 /** Verses 1–2 always show; 3–5 stay collapsed until used. */
 const ALWAYS_SHOWN_VERSES = 2;
 const VERSES = ['verse_1', 'verse_2', 'verse_3', 'verse_4', 'verse_5'] as const;
@@ -48,12 +62,41 @@ const FIELD_ORDER: readonly Section[] = [...VERSES, 'chorus', 'bridge'];
 
 /** A blank lyrics slice (new song). */
 export function emptyLyrics(): LyricsValue {
-  return { lyrics: {}, arrangement: [] };
+  return { lyrics: {}, arrangement: [], chords: null };
 }
 
-/** The lyrics slice of an existing song (edit form). Copies so edits don't alias. */
-export function lyricsFromSong(song: Pick<SongDetail, 'lyrics' | 'arrangement'>): LyricsValue {
-  return { lyrics: { ...song.lyrics }, arrangement: [...song.arrangement] };
+/**
+ * The lyrics slice of an existing song (edit form). Copies so edits don't alias. A section with
+ * lyrics but no stored chords starts from its plain lyrics, so no text goes missing.
+ */
+export function lyricsFromSong(
+  song: Pick<SongDetail, 'lyrics' | 'arrangement' | 'chords'>,
+): LyricsValue {
+  const chords = song.chords
+    ? {
+        key: song.chords.key,
+        sections: Object.fromEntries(
+          SECTIONS.map((s) => [s, song.chords!.sections[s] ?? song.lyrics[s] ?? null]),
+        ),
+      }
+    : null;
+  return { lyrics: { ...song.lyrics }, arrangement: [...song.arrangement], chords };
+}
+
+/** Whether any section has a chord typed in (chords may be on with none entered yet). */
+export function chordsInUse(value: LyricsValue): boolean {
+  const chords = value.chords;
+  return !!chords && SECTIONS.some((s) => hasChords(chords.sections[s]));
+}
+
+/** Turns chords on: every section starts as its plain lyrics, ready for chords to be added. */
+export function enableChords(value: LyricsValue, key: MusicalKey | null): LyricsValue {
+  return { ...value, chords: { key, sections: { ...value.lyrics } } };
+}
+
+/** Turns chords off. The plain lyrics already match the chorded text, so they stay. */
+export function disableChords(value: LyricsValue): LyricsValue {
+  return { ...value, chords: null };
 }
 
 /** Whether a section has lyrics (the same `trim()` rule `songInputSchema` uses). */
@@ -76,9 +119,29 @@ export function setSectionText(
   text: string,
 ): { value: LyricsValue; removed: number } {
   const lyrics = { ...value.lyrics, [section]: text === '' ? null : text };
-  if (text.trim()) return { value: { lyrics, arrangement: value.arrangement }, removed: 0 };
+  if (text.trim()) return { value: { ...value, lyrics }, removed: 0 };
   const arrangement = value.arrangement.filter((s) => s !== section);
-  return { value: { lyrics, arrangement }, removed: value.arrangement.length - arrangement.length };
+  return {
+    value: { ...value, lyrics, arrangement },
+    removed: value.arrangement.length - arrangement.length,
+  };
+}
+
+/**
+ * Sets one section's text with chords inline. The section's plain lyrics follow it (chords
+ * removed), with the same arrangement rule as `setSectionText`.
+ */
+export function setChordText(
+  value: LyricsValue,
+  section: Section,
+  text: string,
+): { value: LyricsValue; removed: number } {
+  const chords: ChordsValue = value.chords ?? { key: null, sections: {} };
+  const next: LyricsValue = {
+    ...value,
+    chords: { ...chords, sections: { ...chords.sections, [section]: text === '' ? null : text } },
+  };
+  return setSectionText(next, section, stripChords(text));
 }
 
 /** Appends a section to the arrangement (repeats allowed) unless it is blank or the list is full. */
@@ -94,17 +157,43 @@ export function versesInUse(value: LyricsValue, errorKeys: readonly string[] = [
   VERSES.forEach((v, i) => {
     const used =
       hasText(value.lyrics, v) ||
+      !!value.chords?.sections[v]?.trim() ||
       value.arrangement.includes(v) ||
-      errorKeys.some((k) => k === `lyrics.${v}`);
+      errorKeys.some((k) => k === `lyrics.${v}` || k === `chords.sections.${v}`);
     if (used) shown = Math.max(shown, i + 1);
   });
   return shown;
 }
 
-/** Turns a parse result into a full lyrics slice: every section set, missing ones `null`. */
-export function lyricsFromParse(parsed: ParsedLyrics): LyricsValue {
-  const lyrics = Object.fromEntries(SECTIONS.map((s) => [s, parsed.lyrics[s] ?? null]));
-  return { lyrics, arrangement: [...parsed.arrangement] };
+/**
+ * Turns a parse result into a full lyrics slice: every section set, missing ones `null`.
+ * Chords in the pasted text are kept when `chords` is given (the key they're in), and
+ * otherwise taken out, leaving plain lyrics.
+ */
+export function lyricsFromParse(
+  parsed: ParsedLyrics,
+  chords?: { key: MusicalKey | null },
+): LyricsValue {
+  const lyrics = Object.fromEntries(
+    SECTIONS.map((s) => {
+      const text = parsed.lyrics[s];
+      return [s, text == null ? null : stripChords(text) || null];
+    }),
+  );
+  const arrangement = parsed.arrangement.filter((s) => !!lyrics[s]?.trim());
+  if (!chords) return { lyrics, arrangement, chords: null };
+  const sections = Object.fromEntries(SECTIONS.map((s) => [s, parsed.lyrics[s] ?? null]));
+  return { lyrics, arrangement, chords: { key: chords.key, sections } };
+}
+
+/** Parses pasted lyrics, first moving chords written above the words inline. */
+export function parsePastedLyrics(text: string): ParsedLyrics {
+  return parseLyrics(inlineChords(text, isHeadingLine));
+}
+
+/** Whether a parse result has any chords in it. */
+export function parsedHasChords(parsed: ParsedLyrics): boolean {
+  return SECTIONS.some((s) => hasChords(parsed.lyrics[s]));
 }
 
 // ---------- Small pieces ----------
@@ -128,23 +217,33 @@ function SectionField({
   serverErrors,
   onChange,
   textareaRef,
+  chords = false,
 }: {
   section: Section;
   text: string;
   serverErrors: string[];
   onChange(text: string): void;
   textareaRef?: (el: HTMLTextAreaElement | null) => void;
+  /** The text has chords inline: higher limit, and a preview of the chords over the words. */
+  chords?: boolean;
 }) {
   const id = useId();
   const label = SECTION_LABEL[section];
-  const tooLong = text.length > LYRICS_LIMITS.sectionMax;
+  const max = chords ? CHORDS_LIMITS.sectionMax : LYRICS_LIMITS.sectionMax;
+  const plainLength = chords ? stripChords(text).length : text.length;
+  const tooLong = text.length > max;
+  const plainTooLong = chords && !tooLong && plainLength > LYRICS_LIMITS.sectionMax;
   const messages = [
-    ...(tooLong
-      ? [`${label} is ${text.length} characters; the limit is ${LYRICS_LIMITS.sectionMax}`]
+    ...(tooLong ? [`${label} is ${text.length} characters; the limit is ${max}`] : []),
+    ...(plainTooLong
+      ? [
+          `${label} without chords is ${plainLength} characters; the limit is ${LYRICS_LIMITS.sectionMax}`,
+        ]
       : []),
     ...serverErrors,
   ];
-  const nearLimit = text.length >= LYRICS_LIMITS.sectionMax * 0.9;
+  const nearLimit = text.length >= max * 0.9;
+  const preview = chords && hasChords(text);
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between gap-2">
@@ -158,7 +257,7 @@ function SectionField({
             nearLimit ? 'text-destructive' : 'text-muted-foreground',
           )}
         >
-          {text.length} / {LYRICS_LIMITS.sectionMax}
+          {text.length} / {max}
         </span>
       </div>
       <Textarea
@@ -166,13 +265,19 @@ function SectionField({
         ref={textareaRef}
         className="min-h-24"
         value={text}
-        maxLength={tooLong ? undefined : LYRICS_LIMITS.sectionMax}
+        maxLength={tooLong ? undefined : max}
         spellCheck
         aria-invalid={messages.length > 0 || undefined}
         aria-describedby={`${id}-count${messages.length ? ` ${id}-errors` : ''}`}
         onChange={(e) => onChange(e.target.value)}
       />
       <FieldErrors id={`${id}-errors`} messages={messages} />
+      {preview && (
+        <div className="space-y-1 rounded-md bg-muted/50 px-3 py-2">
+          <p className="text-xs text-muted-foreground">Preview</p>
+          <ChordLyrics text={text} />
+        </div>
+      )}
     </div>
   );
 }
@@ -441,22 +546,27 @@ function PasteLyricsDialog({
   open,
   onOpenChange,
   overwrites,
+  chordsOn,
   onApply,
 }: {
   open: boolean;
   onOpenChange(open: boolean): void;
   overwrites: boolean;
-  onApply(parsed: ParsedLyrics): void;
+  /** Chords are on for this song, so chords in the paste are always kept. */
+  chordsOn: boolean;
+  onApply(parsed: ParsedLyrics, keepChords: boolean): void;
 }) {
   const id = useId();
   const [text, setText] = useState('');
   const [step, setStep] = useState<PasteStep>('input');
   const [parsed, setParsed] = useState<ParsedLyrics | null>(null);
+  const [keepChords, setKeepChords] = useState(true);
 
   const reset = () => {
     setText('');
     setStep('input');
     setParsed(null);
+    setKeepChords(true);
   };
   const close = () => {
     onOpenChange(false);
@@ -464,7 +574,7 @@ function PasteLyricsDialog({
   };
 
   const split = () => {
-    setParsed(parseLyrics(text));
+    setParsed(parsePastedLyrics(text));
     setStep('preview');
   };
 
@@ -474,11 +584,12 @@ function PasteLyricsDialog({
       setStep('confirm');
       return;
     }
-    onApply(parsed);
+    onApply(parsed, chordsOn || keepChords);
     close();
   };
 
   const found = parsed ? SECTIONS.filter((s) => parsed.lyrics[s]?.trim()) : [];
+  const pastedChords = !!parsed && parsedHasChords(parsed);
 
   return (
     <Dialog open={open} onOpenChange={(o) => (o ? onOpenChange(true) : close())}>
@@ -487,7 +598,8 @@ function PasteLyricsDialog({
           <DialogTitle>Paste full lyrics</DialogTitle>
           <DialogDescription>
             Paste the whole song with headings like “Verse 1”, “Chorus” and “Bridge” on their own
-            lines. It will be split into sections and an order.
+            lines. It will be split into sections and an order. Chords can be in square brackets or
+            on their own line above the words.
           </DialogDescription>
         </DialogHeader>
 
@@ -516,7 +628,7 @@ function PasteLyricsDialog({
                     <li key={s} className="flex min-w-0 gap-2">
                       <span className="shrink-0 font-medium">{SECTION_LABEL[s]}:</span>
                       <span className="truncate text-muted-foreground">
-                        {firstLine(parsed.lyrics[s] ?? null)}
+                        {firstLine(stripChords(parsed.lyrics[s] ?? ''))}
                       </span>
                     </li>
                   ))}
@@ -531,6 +643,17 @@ function PasteLyricsDialog({
                 {parsed.arrangement.map((s) => SECTION_LABEL[s]).join(', ')}
               </p>
             )}
+            {pastedChords && !chordsOn && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id={`${id}-keep-chords`}
+                  checked={keepChords}
+                  onCheckedChange={(c) => setKeepChords(c === true)}
+                />
+                <label htmlFor={`${id}-keep-chords`}>Keep the chords (shown over the lyrics)</label>
+              </div>
+            )}
+            {pastedChords && chordsOn && <p>Chords found; they’ll be kept over the lyrics.</p>}
             {parsed.warnings.length > 0 && (
               <div
                 role="status"
@@ -598,7 +721,15 @@ export function LyricsSection({ value, onChange, errors, disabled }: LyricsSecti
   const [pasteOpen, setPasteOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [focusSection, setFocusSection] = useState<Section | null>(null);
+  const [confirmChordsOff, setConfirmChordsOff] = useState(false);
   const fieldRefs = useRef<Partial<Record<Section, HTMLTextAreaElement | null>>>({});
+  const chordsId = useId();
+  const chords = lyricsValue.chords ?? null;
+  const chordsOn = chords !== null;
+  const songKeys = (value.musical?.keys ?? []).map((k) => k.key);
+  const primaryKey = value.musical?.keys.find((k) => k.isPrimary)?.key ?? songKeys[0] ?? null;
+  const keyOptions =
+    chords?.key && !songKeys.includes(chords.key) ? [...songKeys, chords.key] : songKeys;
 
   const shownVerses = Math.max(revealed, versesInUse(lyricsValue, errorKeys));
   const nextVerse = VERSES[shownVerses];
@@ -612,7 +743,11 @@ export function LyricsSection({ value, onChange, errors, disabled }: LyricsSecti
   const emit = (next: LyricsValue) => onChange({ lyrics: next });
 
   const onText = (section: Section, text: string) => {
-    const { value: next, removed } = setSectionText(lyricsValue, section, text);
+    const { value: next, removed } = (chordsOn ? setChordText : setSectionText)(
+      lyricsValue,
+      section,
+      text,
+    );
     emit(next);
     if (removed > 0) setRemoval({ section, count: removed, previous: lyricsValue.arrangement });
   };
@@ -627,8 +762,12 @@ export function LyricsSection({ value, onChange, errors, disabled }: LyricsSecti
     setRemoval(null);
   };
 
-  const applyPaste = (parsed: ParsedLyrics) => {
-    const next = lyricsFromParse(parsed);
+  const applyPaste = (parsed: ParsedLyrics, keepChords: boolean) => {
+    const withChords = chordsOn || (keepChords && parsedHasChords(parsed));
+    const next = lyricsFromParse(
+      parsed,
+      withChords ? { key: chords ? chords.key : primaryKey } : undefined,
+    );
     emit(next);
     setRemoval(null);
     setRevealed(Math.max(ALWAYS_SHOWN_VERSES, versesInUse(next)));
@@ -658,12 +797,76 @@ export function LyricsSection({ value, onChange, errors, disabled }: LyricsSecti
         <p className="text-xs text-muted-foreground">Splits a whole song into the fields below.</p>
       </div>
 
+      <div className="space-y-2 rounded-md border p-3">
+        <div className="flex min-h-tap items-center gap-2">
+          <Checkbox
+            id={`${chordsId}-on`}
+            checked={chordsOn}
+            onCheckedChange={(c) => {
+              if (c === true) {
+                emit(enableChords(lyricsValue, primaryKey));
+                setAnnouncement('Chords on. Type chords in square brackets in the lyrics.');
+              } else if (chordsInUse(lyricsValue)) {
+                setConfirmChordsOff(true);
+              } else {
+                emit(disableChords(lyricsValue));
+                setAnnouncement('Chords off');
+              }
+            }}
+          />
+          <label htmlFor={`${chordsId}-on`} className={labelClass}>
+            Add chords over the lyrics{' '}
+            <span className="font-normal text-muted-foreground">(optional)</span>
+          </label>
+        </div>
+        {chordsOn && (
+          <>
+            <p className="text-xs text-muted-foreground">
+              Type each chord in square brackets just before the syllable it’s played on, e.g.{' '}
+              <code className="rounded bg-muted px-1">[G]Amazing [C]grace</code>. A line of only
+              chords, like an intro, is fine too. Search and the song’s first lines use the lyrics
+              without chords.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor={`${chordsId}-key`} className="text-sm">
+                Chords are in
+              </label>
+              <select
+                id={`${chordsId}-key`}
+                className="h-tap rounded-md border border-input bg-transparent px-2 text-sm"
+                value={chords.key ?? ''}
+                onChange={(e) =>
+                  emit({ ...lyricsValue, chords: { ...chords, key: e.target.value || null } })
+                }
+              >
+                <option value="">Not stated</option>
+                {keyOptions.map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <FieldErrors
+              id={`${chordsId}-errors`}
+              messages={[
+                ...new Set([...(errors?.chords ?? []), ...errorsFor(errors, 'chords.key')]),
+              ]}
+            />
+          </>
+        )}
+      </div>
+
       {fields.map((s) => (
         <div key={s} className="space-y-2">
           <SectionField
             section={s}
-            text={lyricsValue.lyrics[s] ?? ''}
-            serverErrors={errorsFor(errors, `lyrics.${s}`)}
+            chords={chordsOn}
+            text={(chordsOn ? chords.sections[s] : lyricsValue.lyrics[s]) ?? ''}
+            serverErrors={[
+              ...errorsFor(errors, `lyrics.${s}`),
+              ...errorsFor(errors, `chords.sections.${s}`),
+            ]}
             onChange={(text) => onText(s, text)}
             textareaRef={(el) => {
               fieldRefs.current[s] = el;
@@ -703,8 +906,41 @@ export function LyricsSection({ value, onChange, errors, disabled }: LyricsSecti
         open={pasteOpen}
         onOpenChange={setPasteOpen}
         overwrites={hasAnyLyrics(lyricsValue)}
+        chordsOn={chordsOn}
         onApply={applyPaste}
       />
+      <Dialog open={confirmChordsOff} onOpenChange={setConfirmChordsOff}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove the chords?</DialogTitle>
+            <DialogDescription>
+              The lyrics stay as they are. Only the chords are taken out of this song.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-tap"
+              onClick={() => setConfirmChordsOff(false)}
+            >
+              Keep chords
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="h-tap"
+              onClick={() => {
+                emit(disableChords(lyricsValue));
+                setConfirmChordsOff(false);
+                setAnnouncement('Chords removed');
+              }}
+            >
+              Remove chords
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <p className="sr-only" aria-live="polite">
         {announcement}
       </p>

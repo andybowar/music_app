@@ -69,6 +69,17 @@ describe('buildSeedData', () => {
     }
   });
 
+  test('maps chords over the lyrics, only the sections with text (LIB-22)', () => {
+    const chorded = songs.find((s) => s.chords)!;
+    const row = data.songs.find((r) => r.id === chorded.id)!;
+    expect(row.chordsKey).toBe(chorded.chords!.key);
+    expect(row.chordLyrics).toMatchObject({ verse_1: chorded.chords!.sections.verse_1 });
+    expect(Object.values(row.chordLyrics!).every((v) => typeof v === 'string' && v)).toBe(true);
+    const plain = data.songs.find((r) => r.id === songs.find((s) => !s.chords)!.id)!;
+    expect(plain.chordLyrics).toBeNull();
+    expect(plain.chordsKey).toBeNull();
+  });
+
   test('maps lyric sections and first chords onto their columns', () => {
     const song = songs[0]!;
     const row = data.songs.find((r) => r.id === song.id)!;

@@ -180,6 +180,17 @@ export interface Theme {
 
 export type SongLyrics = Record<Section, string | null>;
 
+/**
+ * Chords over the lyrics (LIB-22). Each section holds its lyrics with chords inline in ChordPro
+ * brackets, e.g. "[G]Amazing [C]grace". Removing the chords gives the section's `lyrics`
+ * (`stripChords` in `@/lib/lyrics/chords`). Optional: most songs have none.
+ */
+export interface SongChords {
+  /** The key the chords are written in; null when not stated. */
+  key: MusicalKey | null;
+  sections: SongLyrics;
+}
+
 export interface BranchUsage {
   branchId: UUID;
   branchCode: string;
@@ -210,6 +221,8 @@ export interface SongDetail extends SongSummary {
   composers: Composer[];
   lyrics: SongLyrics;
   arrangement: Section[];
+  /** Chords over the lyrics; null (or absent) when the song has none. LIB-22. */
+  chords?: SongChords | null;
   chorusLine: string | null;
   verse1Line: string | null;
   keys: SongKey[]; // primary first, then alphabetical

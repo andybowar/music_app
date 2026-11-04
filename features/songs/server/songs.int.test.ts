@@ -224,61 +224,6 @@ describe('updateSong', () => {
     expect(update!.diff.year).toEqual({ from: 2020, to: 2021 });
   });
 
-  test('chords over the lyrics save, read back, are audited and can be removed (LIB-22)', async () => {
-    const chords = {
-      key: 'G',
-      sections: {
-        chorus: '[G]Chorus line [C]one\nline [D]two',
-        verse_1: '[G] [C]\nVerse one [D]first line',
-      },
-    };
-    const result = await create(contributor, { chords });
-    if (!result.ok) throw new Error('create failed');
-    const id = result.data.id;
-
-    currentUser = contributor;
-    const song = (await getSong(id))!;
-    expect(song.chords).toEqual({
-      key: 'G',
-      sections: {
-        chorus: chords.sections.chorus,
-        verse_1: chords.sections.verse_1,
-        verse_2: null,
-        verse_3: null,
-        verse_4: null,
-        verse_5: null,
-        bridge: null,
-      },
-    });
-    // Search and first lines still use the plain lyrics.
-    expect(song.chorusLine).toBe('Chorus line one');
-    const [row] = await getDb()
-      .select({ chordLyrics: songsTable.chordLyrics })
-      .from(songsTable)
-      .where(eq(songsTable.id, id));
-    expect(Object.keys(row!.chordLyrics!).sort()).toEqual(['chorus', 'verse_1']);
-
-    // Chords whose words differ from the lyrics are refused.
-    const bad = await updateSong(
-      id,
-      input({ chords: { key: 'G', sections: { ...chords.sections, chorus: '[G]Other words' } } }),
-    );
-    expect(bad).toMatchObject({ ok: false, error: { code: 'VALIDATION' } });
-    if (!bad.ok) expect(bad.error.fieldErrors).toHaveProperty('chords.sections.chorus');
-
-    // Turning chords on without typing any stores nothing.
-    expect(await updateSong(id, input({ chords: { key: 'G', sections: input().lyrics } }))).toEqual(
-      { ok: true, data: undefined },
-    );
-    expect((await getSong(id))!.chords).toBeNull();
-
-    const [, update] = await auditRows(id);
-    // `title` differs too because `input()` numbers each title.
-    expect(Object.keys(update!.diff)).toContain('chords');
-    expect(Object.keys(update!.diff)).not.toContain('lyrics');
-    expect(update!.diff.chords).toMatchObject({ from: { key: 'G' }, to: null });
-  });
-
   test('member FORBIDDEN, missing song NOT_FOUND, bad input VALIDATION', async () => {
     const result = await create(contributor);
     if (!result.ok) throw new Error('create failed');

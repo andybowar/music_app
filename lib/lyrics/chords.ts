@@ -10,6 +10,7 @@
  * Many chord sheets put the chords on their own line above the words instead. `inlineChords`
  * converts that layout to inline brackets, lining each chord up with the column it sat over.
  */
+import { SECTIONS, type Section, type SongChords, type SongKey } from '@/types/domain';
 
 /** A chord written inline: `[…]`, 1–16 characters, no brackets or line breaks inside. */
 const INLINE_CHORD = /\[([^[\]\n]{1,16})\]/g;
@@ -73,12 +74,24 @@ export function stripChords(text: string): string {
   return out.join('\n');
 }
 
-/** Whether the plain lyrics of `chorded` match `lyrics` (ignoring outer whitespace). */
+/** Words for comparison: each line trimmed with runs of spaces collapsed, blank lines dropped. */
+function comparableWords(text: string): string {
+  return text
+    .split('\n')
+    .map((l) => l.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+/**
+ * Whether the plain lyrics of `chorded` match `lyrics`. Spacing doesn't count (moving a chord
+ * can leave a double space), nor do blank lines; the words and their line breaks do.
+ */
 export function chordsMatchLyrics(
   chorded: string | null | undefined,
   lyrics: string | null | undefined,
 ): boolean {
-  return stripChords(chorded ?? '').trim() === (lyrics ?? '').trim();
+  return comparableWords(stripChords(chorded ?? '')) === comparableWords(lyrics ?? '');
 }
 
 // ---------- Chords on their own line → inline ----------
@@ -154,4 +167,28 @@ export function inlineChords(text: string, isHeading: (line: string) => boolean 
     }
   }
   return out.join('\n');
+}
+
+// ---------- Per-key chord sets (LIB-23) ----------
+
+/** Whether any section of `sections` has a chord in it. */
+export function sectionsHaveChords(
+  sections: Partial<Record<Section, string | null>> | null | undefined,
+): boolean {
+  return !!sections && SECTIONS.some((s) => hasChords(sections[s]));
+}
+
+/**
+ * The keys that have typed chords, as `SongChords`, in the keys' order (primary first). With
+ * `preferKey`, that key comes first when it has chords (a setlist's key).
+ */
+export function songChordSets(
+  keys: ReadonlyArray<Pick<SongKey, 'key' | 'chords'>>,
+  preferKey?: string | null,
+): SongChords[] {
+  const sets = keys.flatMap((k) =>
+    sectionsHaveChords(k.chords) ? [{ key: k.key, sections: k.chords! }] : [],
+  );
+  const i = preferKey ? sets.findIndex((s) => s.key === preferKey) : -1;
+  return i > 0 ? [sets[i]!, ...sets.slice(0, i), ...sets.slice(i + 1)] : sets;
 }

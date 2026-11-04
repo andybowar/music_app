@@ -8,8 +8,32 @@ import { lyricsFromSong, LyricsSection } from '@/features/songs/ui/form/LyricsSe
 import { musicalInfoFromSong } from '@/features/songs/ui/form/MusicalSection';
 import type { SongFormValue } from '@/features/songs/ui/form/types';
 import { getSong, SONG_IDS } from '@/fixtures';
+import { songChordSets } from '@/lib/lyrics/chords';
+import { transposeChordText } from '@/lib/lyrics/transpose';
+import { SECTIONS, type SongDetail, type SongLyrics } from '@/types/domain';
 
-const amazingGrace = getSong(SONG_IDS.amazingGrace);
+const fixture = getSong(SONG_IDS.amazingGrace);
+const gKey = fixture.keys.find((k) => k.chords)!;
+
+/** Amazing Grace with a second key, A, whose chords are G's transposed: a two-key example. */
+const amazingGrace: SongDetail = {
+  ...fixture,
+  keys: [
+    ...fixture.keys,
+    {
+      ...gKey,
+      id: '50000000-0000-4000-8000-00000000a0a0',
+      key: 'A',
+      isPrimary: false,
+      chords: Object.fromEntries(
+        SECTIONS.map((s) => [
+          s,
+          gKey.chords![s] ? transposeChordText(gKey.chords![s]!, 'G', 'A') : null,
+        ]),
+      ) as SongLyrics,
+    },
+  ],
+};
 
 /** Made-up words, to show layout only. */
 const SAMPLE = [
@@ -51,7 +75,7 @@ function FormExample({ initial }: { initial: Partial<SongFormValue> }) {
       <details className="text-xs">
         <summary className="cursor-pointer">Form value</summary>
         <pre className="mt-2 overflow-x-auto rounded bg-muted p-2">
-          {JSON.stringify(value.lyrics, null, 2)}
+          {JSON.stringify({ lyrics: value.lyrics, keys: value.musical?.keys }, null, 2)}
         </pre>
       </details>
     </div>
@@ -78,20 +102,33 @@ export function ChordsGallery() {
 
       <Frame
         title="LyricsViewer with chords"
-        note="Fixture: Amazing Grace. Toggle chords off and on."
+        note="Fixture: Amazing Grace in G and A (A transposed from G). Switch key, or hide chords."
       >
         <LyricsViewer
           lyrics={amazingGrace.lyrics}
           arrangement={amazingGrace.arrangement}
-          chords={amazingGrace.chords}
+          chords={songChordSets(amazingGrace.keys)}
         />
       </Frame>
 
-      <Frame title="Form: editing a song with chords" note="Unticking the box asks first.">
+      <Frame
+        title="Form: editing a song with chords in two keys"
+        note="Edit the words in G and watch A follow. D has no chords yet: start it from the lyrics, or Fill from G."
+      >
         <FormExample
           initial={{
             lyrics: lyricsFromSong(amazingGrace),
-            musical: musicalInfoFromSong(amazingGrace),
+            musical: {
+              ...musicalInfoFromSong(amazingGrace),
+              keys: [
+                ...musicalInfoFromSong(amazingGrace).keys,
+                {
+                  key: 'D',
+                  isPrimary: false,
+                  firstChords: { intro: 'D', verse: 'D', chorus: 'G', bridge: null },
+                },
+              ],
+            },
           }}
         />
       </Frame>
@@ -101,7 +138,23 @@ export function ChordsGallery() {
         note="Tick the box to add chords, or paste this chord sheet into “Paste full lyrics”."
       >
         <pre className="overflow-x-auto rounded bg-muted p-2 text-xs">{SHEET}</pre>
-        <FormExample initial={{}} />
+        <FormExample
+          initial={{
+            musical: {
+              keys: [
+                {
+                  key: 'C',
+                  isPrimary: true,
+                  firstChords: { intro: null, verse: null, chorus: null, bridge: null },
+                },
+              ],
+              tempoBpm: null,
+              timeSignature: null,
+              energyLevel: null,
+              energyNotes: null,
+            },
+          }}
+        />
       </Frame>
 
       <Toaster />

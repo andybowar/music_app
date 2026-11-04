@@ -69,6 +69,14 @@ export const songKeySchema = z.strictObject({
       [K in ChordSlot]: z.ZodNullable<typeof chord>;
     },
   ),
+  chords: z
+    .strictObject(
+      Object.fromEntries(SECTIONS.map((s) => [s, z.string().max(8000).nullable()])) as {
+        [K in Section]: z.ZodNullable<z.ZodString>;
+      },
+    )
+    .nullable()
+    .optional(),
 });
 
 export const resourceSchema = z.strictObject({
@@ -90,15 +98,6 @@ const lyricsSchema = z.strictObject(
     [K in Section]: z.ZodNullable<z.ZodString>;
   },
 );
-
-const chordsSchema = z.strictObject({
-  key: musicalKey.nullable(),
-  sections: z.strictObject(
-    Object.fromEntries(SECTIONS.map((s) => [s, z.string().max(8000).nullable()])) as {
-      [K in Section]: z.ZodNullable<z.ZodString>;
-    },
-  ),
-});
 
 export const branchUsageSchema = z.strictObject({
   branchId: uuid,
@@ -124,7 +123,6 @@ export const songDetailSchema = z.strictObject({
   energyNotes: z.string().nullable(),
   lyrics: lyricsSchema,
   arrangement: z.array(section),
-  chords: chordsSchema.nullable().optional(),
   chorusLine: z.string().nullable(),
   verse1Line: z.string().nullable(),
   keys: z.array(songKeySchema),

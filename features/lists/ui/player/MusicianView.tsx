@@ -5,7 +5,8 @@ import { useState } from 'react';
 
 import { LyricsViewer } from '@/components/song/LyricsViewer';
 import { Button } from '@/components/ui/button';
-import type { ResolvedItem, Resource, SongDetail } from '@/types/domain';
+import { displayKey } from '@/components/song/KeyBadge';
+import type { ResolvedItem, Resource, SongChords, SongDetail } from '@/types/domain';
 
 import { FirstChords } from '../ItemOverrideEditor';
 import { chartOptions, hasLyrics, keyMismatch, type ChartOption } from './charts';
@@ -20,7 +21,7 @@ export interface MusicianViewProps {
 }
 
 function optionLabel(o: ChartOption): string {
-  return o.type === 'typed' && o.key ? `${o.label} (in ${o.key})` : o.label;
+  return o.type === 'typed' ? `${o.label} (in ${displayKey(o.chords.key)})` : o.label;
 }
 
 /**
@@ -79,7 +80,12 @@ export function MusicianView({
             </div>
           )}
           {chosen.type === 'typed' ? (
-            <TypedChords resolved={resolved} detail={detail!} textSizePx={textSizePx} />
+            <TypedChords
+              resolved={resolved}
+              detail={detail!}
+              chords={chosen.chords}
+              textSizePx={textSizePx}
+            />
           ) : (
             <PdfStack
               key={chosen.resource.id}
@@ -98,13 +104,15 @@ export function MusicianView({
 function TypedChords({
   resolved,
   detail,
+  chords,
   textSizePx,
 }: {
   resolved: ResolvedItem;
   detail: SongDetail;
+  chords: SongChords;
   textSizePx: number;
 }) {
-  const warning = keyMismatch(detail.chords?.key ?? null, resolved.key);
+  const warning = keyMismatch(chords.key, resolved.key);
   return (
     <>
       {warning && (
@@ -119,7 +127,7 @@ function TypedChords({
       <LyricsViewer
         lyrics={detail.lyrics}
         arrangement={detail.arrangement}
-        chords={detail.chords}
+        chords={[chords]}
         textSizePx={textSizePx}
       />
     </>

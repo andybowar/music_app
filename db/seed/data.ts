@@ -116,10 +116,9 @@ export function buildSeedData() {
     verse5Lyrics: s.lyrics.verse_5,
     bridgeLyrics: s.lyrics.bridge,
     arrangement: s.arrangement,
-    chordLyrics: s.chords
-      ? Object.fromEntries(Object.entries(s.chords.sections).filter(([, v]) => v))
-      : null,
-    chordsKey: s.chords?.key ?? null,
+    // Deprecated song-level chords (LIB-23 moved them to song_keys): always empty in the seed.
+    chordLyrics: null,
+    chordsKey: null,
     addedByBranchId: s.addedByBranchId,
     createdBy: s.createdBy,
     createdAt: new Date(s.createdAt),
@@ -140,6 +139,9 @@ export function buildSeedData() {
       verseChord: k.firstChords.verse,
       chorusChord: k.firstChords.chorus,
       bridgeChord: k.firstChords.bridge,
+      chordLyrics: k.chords
+        ? Object.fromEntries(Object.entries(k.chords).filter(([, v]) => v))
+        : null,
     })),
   );
 

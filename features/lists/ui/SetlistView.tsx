@@ -70,6 +70,7 @@ import { getSignedResourceUrl } from '@/features/resources/server/files';
 import { ShareDialog } from '@/features/sharing/ui/ShareDialog';
 import { openPlan } from '@/features/songs/ui/SongPage';
 import { resolveItemDisplay } from '@/lib/lists/resolve';
+import { songChordSets } from '@/lib/lyrics/chords';
 import { SECTIONS } from '@/types/domain';
 import type {
   ActionResult,
@@ -707,7 +708,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
           <LyricsViewer
             lyrics={currentDetail.lyrics}
             arrangement={currentDetail.arrangement}
-            chords={currentDetail.chords}
+            chords={songChordSets(currentDetail.keys, current.key)}
           />
         );
       case 'usage':

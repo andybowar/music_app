@@ -9,7 +9,6 @@
 import type {
   Composer,
   EnergyLevel,
-  MusicalKey,
   Section,
   SongDetail,
   SongKey,
@@ -28,22 +27,22 @@ export interface SongFormValue {
     year: number | null;
   };
   musical: {
-    keys: Array<Omit<SongKey, 'id' | 'songId'> & { id?: UUID }>;
+    /**
+     * `chords`: this key's chords over the lyrics (LIB-23), each section's words with
+     * `[chords]` inline. Null: none (removed on save). Absent: none loaded, left as stored.
+     */
+    keys: Array<
+      Omit<SongKey, 'id' | 'songId' | 'chords'> & {
+        id?: UUID;
+        chords?: Partial<SongLyrics> | null;
+      }
+    >;
     tempoBpm: number | null;
     timeSignature: string | null;
     energyLevel: EnergyLevel | null;
     energyNotes: string | null;
   };
-  lyrics: {
-    lyrics: Partial<SongLyrics>;
-    arrangement: Section[];
-    /**
-     * Optional chords over the lyrics (LIB-22): each section's lyrics with `[chords]` inline.
-     * When set, the lyrics fields edit these and `lyrics` holds them with the chords removed.
-     * Null or absent: the song has no chords.
-     */
-    chords?: { key: MusicalKey | null; sections: Partial<SongLyrics> } | null;
-  };
+  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[] };
   themes: Array<{ section: Section; theme: Theme }>;
   usage: Array<{ branchId: UUID; level: UsageLevel }>;
 }

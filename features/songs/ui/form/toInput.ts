@@ -11,9 +11,11 @@
  * - `tabForErrorKey`: which form tab shows a given error.
  */
 import type { ActionResult, Section, SongDetail, SongKey, UUID } from '@/types/domain';
+import { sectionsHaveChords } from '@/lib/lyrics/chords';
 import { SECTIONS } from '@/types/domain';
 import type { SongInput, SongKeyInput, UsageInput } from '@/types/validation';
 
+import { alignChordsToLyrics, chordWordErrors } from './chordKeys';
 import { emptyLyrics, lyricsFromSong } from './LyricsSection';
 import { emptyMusicalInfo, musicalInfoFromSong, validateMusical } from './MusicalSection';
 import {
@@ -41,7 +43,11 @@ export function emptySongFormValue(): SongFormValue {
 export function songFormValueFromSong(song: SongDetail): SongFormValue {
   return {
     basic: basicInfoFromSong(song),
-    musical: musicalInfoFromSong(song),
+    // Chords saved before the words last changed (an import, an older version) follow them now.
+    musical: (() => {
+      const musical = musicalInfoFromSong(song);
+      return { ...musical, keys: alignChordsToLyrics(musical.keys, song.lyrics) };
+    })(),
     lyrics: lyricsFromSong(song),
     themes: song.themes.map((t) => ({ section: t.section, theme: { ...t.theme } })),
     usage: usageFromSong(song),
@@ -80,19 +86,18 @@ export function toSongInput(value: SongFormValue): SongInput {
     energyNotes: textOrNull(musical.energyNotes),
     lyrics: text,
     arrangement: [...lyrics.arrangement],
-    chords: toChordsInput(lyrics.chords),
   };
 }
 
-/** The `chords` of the song input: each section as typed, blank ones null; null for no chords. */
-function toChordsInput(chords: SongFormValue['lyrics']['chords']): SongInput['chords'] {
-  if (!chords) return null;
-  const sections: Partial<Record<Section, string | null>> = {};
-  for (const s of SECTIONS) {
-    const raw = chords.sections[s];
-    sections[s] = raw && raw.trim() !== '' ? raw : null;
-  }
-  return { key: chords.key, sections };
+/** A key's chords for `setSongKeys`: every section as typed, blank ones null; null for none. */
+function toKeyChords(chords: SongFormValue['musical']['keys'][number]['chords']) {
+  if (!chords || !sectionsHaveChords(chords)) return null;
+  return Object.fromEntries(
+    SECTIONS.map((s) => {
+      const raw = chords[s];
+      return [s, raw && raw.trim() !== '' ? raw : null];
+    }),
+  ) as Record<Section, string | null>;
 }
 
 /** `setSongKeys` input, in form order. Existing keys echo their id so renames keep resources. */
@@ -107,6 +112,8 @@ export function toKeysInput(keys: SongFormValue['musical']['keys']): SongKeyInpu
       chorus: textOrNull(k.firstChords.chorus),
       bridge: textOrNull(k.firstChords.bridge),
     },
+    // Absent: leave the stored chords. Null or no chords typed: remove them.
+    ...(k.chords === undefined ? {} : { chords: toKeyChords(k.chords) }),
   }));
 }
 
@@ -172,6 +179,7 @@ export function validateSongForm(value: SongFormValue): SongFormErrors {
       errors[`arrangement.${i}`] = [FORM_MESSAGES.arrangement(SECTION_NAME[s])];
     }
   });
+  Object.assign(errors, chordWordErrors(value.musical.keys, value.lyrics.lyrics));
   return errors;
 }
 
@@ -202,7 +210,9 @@ export function keyErrorsToForm(error: ActionError): SongFormErrors {
   const out: SongFormErrors = {};
   if (error.code === 'VALIDATION') {
     for (const [key, messages] of Object.entries(error.fieldErrors ?? {})) {
-      add(out, /^\d+(\.|$)/.test(key) ? `keys.${key}` : 'keys', messages);
+      const chord = /^(\d+)\.chords\.(.+)$/.exec(key);
+      if (chord) add(out, `chords.${chord[1]}.${chord[2]}`, messages);
+      else add(out, /^\d+(\.|$)/.test(key) ? `keys.${key}` : 'keys', messages);
     }
   }
   if (Object.keys(out).length === 0) add(out, 'keys', [error.message]);

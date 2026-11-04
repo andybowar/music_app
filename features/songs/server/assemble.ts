@@ -18,7 +18,6 @@ import {
   type Composer,
   type Resource,
   type Section,
-  type SongChords,
   type SongDetail,
   type SongKey,
   type SongLyrics,
@@ -76,14 +75,12 @@ export function lyricsFromRow(song: SongRow): SongLyrics {
   return Object.fromEntries(SECTIONS.map((s) => [s, song[LYRIC_COLUMNS[s]] ?? null])) as SongLyrics;
 }
 
-/** The song's chords over the lyrics (LIB-22), or null when it has none. */
-export function chordsFromRow(song: SongRow): SongChords | null {
-  const stored = song.chordLyrics;
+/** A key's typed chords (LIB-23): every section, missing ones null; null when none stored. */
+export function chordsFromColumn(stored: SongKeyRow['chordLyrics']): SongLyrics | null {
   if (!stored) return null;
-  const sections = Object.fromEntries(
+  return Object.fromEntries(
     SECTIONS.map((s) => [s, typeof stored[s] === 'string' && stored[s] ? stored[s] : null]),
   ) as SongLyrics;
-  return { key: song.chordsKey ?? null, sections };
 }
 
 export function toSongKey(row: SongKeyRow): SongKey {
@@ -98,6 +95,8 @@ export function toSongKey(row: SongKeyRow): SongKey {
       chorus: row.chorusChord,
       bridge: row.bridgeChord,
     },
+    // Only keys with typed chords carry the field (most have none).
+    ...(row.chordLyrics ? { chords: chordsFromColumn(row.chordLyrics) } : {}),
   };
 }
 
@@ -191,7 +190,6 @@ export function assembleSongDetail(rows: SongDetailRows): SongDetail {
     sourceGroup: song.sourceGroup,
     energyNotes: song.energyNotes,
     lyrics: lyricsFromRow(song),
-    chords: chordsFromRow(song),
     arrangement: [...song.arrangement],
     chorusLine: song.chorusLine,
     verse1Line: song.verse1Line,

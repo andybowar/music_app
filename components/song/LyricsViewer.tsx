@@ -14,6 +14,7 @@ import {
   type SongLyrics,
 } from '@/types/domain';
 import { ChordLyrics } from './ChordLyrics';
+import { displayKey, spokenKey } from './KeyBadge';
 
 export type LyricsViewerMode = 'arrangement' | 'sections';
 
@@ -22,8 +23,11 @@ export interface LyricsViewerProps {
   arrangement: Section[];
   /** Initial view. Defaults to 'arrangement' (as sung); the reader can switch. */
   mode?: LyricsViewerMode;
-  /** Chords over the lyrics (LIB-22). When any section has chords, a "Chords" toggle shows. */
-  chords?: SongChords | null;
+  /**
+   * Chords over the lyrics, one set per key (LIB-22/23; `songChordSets`). The first is shown
+   * first; with several, the reader can switch key. Adds a "Chords" show/hide toggle.
+   */
+  chords?: SongChords[];
   /** Lyric text size in px (the set player's A−/A+, LIST-11). Defaults to the `text-lg` size. */
   textSizePx?: number;
 }
@@ -148,9 +152,13 @@ export function LyricsViewer({
   const idBase = useId();
   const [showChords, setShowChords] = useState(true);
   useEffect(() => setShowChords(readShowChords()), []);
-  const chorded = !!chords && SECTIONS.some((s) => hasChords(chords.sections[s]));
-  const chordText = (section: Section) =>
-    chorded && showChords ? chords!.sections[section] : null;
+  const sets = (chords ?? []).filter((c) => SECTIONS.some((s) => hasChords(c.sections[s])));
+  const firstKey = sets[0]?.key ?? null;
+  const [chordKey, setChordKey] = useState<string | null>(firstKey);
+  // A new first set (another song, or the setlist key changed) resets the choice.
+  useEffect(() => setChordKey(firstKey), [firstKey]);
+  const set = sets.find((c) => c.key === chordKey) ?? sets[0];
+  const chordText = (section: Section) => (set && showChords ? set.sections[section] : null);
 
   const bySection = sectionBlocks(lyrics);
   if (bySection.length === 0) {
@@ -162,7 +170,7 @@ export function LyricsViewer({
   const blocks = effective === 'arrangement' ? arrangementBlocks(lyrics, arrangement) : bySection;
   const unsung = effective === 'arrangement' ? unsungSections(lyrics, arrangement) : [];
 
-  const chordsToggle = chorded ? (
+  const chordsToggle = set ? (
     <div className="flex flex-wrap items-center gap-2">
       <Toggle
         variant="outline"
@@ -177,9 +185,32 @@ export function LyricsViewer({
         <GuitarIcon aria-hidden />
         Chords
       </Toggle>
-      {chords!.key ? (
-        <span className="text-xs text-muted-foreground">Chords in {chords!.key}</span>
-      ) : null}
+      {sets.length > 1 ? (
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          value={set.key}
+          onValueChange={(v) => {
+            if (v) setChordKey(v);
+          }}
+          aria-label="Chords in key"
+          disabled={!showChords}
+        >
+          {sets.map((c) => (
+            <ToggleGroupItem
+              key={c.key}
+              value={c.key}
+              aria-label={`Chords in ${spokenKey(c.key)}`}
+              className="min-h-tap px-3"
+            >
+              {displayKey(c.key)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      ) : (
+        <span className="text-xs text-muted-foreground">Chords in {displayKey(set.key)}</span>
+      )}
     </div>
   ) : null;
 

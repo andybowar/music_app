@@ -52,6 +52,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 - **REQ-LIB-13** Bulk import from CSV + a folder of files, with dry-run report and idempotent re-run.
 - **REQ-LIB-14** Paste-and-split helper: paste full lyrics with section headings and have them split into the 7 section fields + arrangement.
 - **REQ-LIB-15** Optional chords over the lyrics: when creating or editing a song, a contributor may add chords inline in each lyric section (ChordPro brackets, e.g. `[G]Amazing [C]grace`) and say which key they're in. Pasting a chord sheet with chords on their own lines converts them. Readers see chords above the words and can hide them. Search and first lines use the lyrics without chords. Songs without chords are unaffected.
+  - *Amended 2026-11-04 (owner, LIB-23):* chords are per key: each of the song's keys may have its own chords over the same words. Editing the words in one key changes them for every key, and the other keys' chords move to follow. A key without chords can start from the words or be **filled** by transposing another key's chords (sharps or flats by the key, switchable). A paste goes into the key being edited; the others follow the new words, with a note to check them. Readers see the event's key (else the primary) first and can switch key.
 
 ### 2.3 Navigation (REQ-NAV) — Diagram II
 

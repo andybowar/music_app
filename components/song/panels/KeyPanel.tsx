@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { CHORD_SLOTS, MISSING_CHORD, type ChordSlot, type SongKey } from '@/types/domain';
@@ -10,6 +10,11 @@ export interface KeyPanelProps {
   keys: SongKey[];
   /** Key to select first, e.g. a setlist's override key. Defaults to the primary key. */
   highlightKey?: string;
+  /**
+   * Rendered under the chords with the key currently selected, e.g. a setlist's "Use this key
+   * for the event" action. Without it the panel only previews keys.
+   */
+  footer?(selectedKey: string): ReactNode;
 }
 
 export const CHORD_SLOT_LABEL: Record<ChordSlot, string> = {
@@ -45,7 +50,7 @@ interface KeyOption {
  * A `highlightKey` with no `song_keys` row (a setlist override) is still listed, with every
  * chord "X" and a prompt to upload files for it (REQ-LIST-04).
  */
-export function KeyPanel({ keys, highlightKey }: KeyPanelProps) {
+export function KeyPanel({ keys, highlightKey, footer }: KeyPanelProps) {
   const headingId = useId();
   const [selected, setSelected] = useState<string | null>(() => initialKey(keys, highlightKey));
   const missingHighlight =
@@ -135,6 +140,7 @@ export function KeyPanel({ keys, highlightKey }: KeyPanelProps) {
           charts in this key to fill them in.
         </p>
       )}
+      {footer?.(current.key)}
     </div>
   );
 }

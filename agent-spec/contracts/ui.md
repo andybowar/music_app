@@ -68,7 +68,7 @@ All components are client components unless noted, props-only (no data fetching 
 | `ComposerName` | `components/song/ComposerName.tsx` | `{ composers: Array<{ name; popMember }>; max?: number }` | UI-04 |
 | `BranchCode` | `components/song/BranchCode.tsx` | `{ code: string \| null }` | UI-04 |
 | `SongRow` | `components/song/SongRow.tsx` | `{ song: SongSummary; resolved?: ResolvedItem; onKey(); onTitle(); onComposer(); onResources(); onUsage(); addSlot?: ReactNode; dragHandle?: ReactNode }` | UI-05 |
-| `KeyPanel` | `components/song/panels/KeyPanel.tsx` | `{ keys: SongKey[]; highlightKey?: string }` | UI-06 |
+| `KeyPanel` | `components/song/panels/KeyPanel.tsx` | `{ keys: SongKey[]; highlightKey?: string; footer?(selectedKey: string): ReactNode }` (`footer`: setlist actions under the chords, e.g. "Use A for this event"; fix for the "Can't set key on song in setlist" bug report, 2026-11-04) | UI-06 |
 | `ComposerPanel` | `components/song/panels/ComposerPanel.tsx` | `{ composers: Composer[] }` | UI-06 |
 | `UsagePanel` | `components/song/panels/UsagePanel.tsx` | `{ addedByBranchCode: string \| null; usage: BranchUsage[] }` | UI-06 |
 | `ReminderPanel` | `components/song/panels/ReminderPanel.tsx` | `{ chorusLine: string \| null; verse1Line: string \| null }` | UI-06 |

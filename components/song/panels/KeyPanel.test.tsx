@@ -59,6 +59,14 @@ describe('KeyPanel', () => {
     expect(screen.getByText('(not recorded)')).toBeInTheDocument();
   });
 
+  it('renders the footer with the selected key (setlist actions)', async () => {
+    const user = userEvent.setup();
+    render(<KeyPanel keys={keys} footer={(key) => <p>footer for {key}</p>} />);
+    expect(screen.getByText('footer for D')).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: /Key E/ }));
+    expect(screen.getByText('footer for E')).toBeInTheDocument();
+  });
+
   it('keeps a key selected when the selected key is pressed again', async () => {
     const user = userEvent.setup();
     render(<KeyPanel keys={keys} />);

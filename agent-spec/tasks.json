@@ -2802,6 +2802,7 @@
       ],
       "blocks": [
         "ADM-07",
+        "ADM-08",
         "SHR-05"
       ],
       "owns": [
@@ -2957,7 +2958,7 @@
         "REQ-NF-03"
       ],
       "file": "tasks/LIST-11.md",
-      "status": "todo"
+      "status": "blocked"
     },
     {
       "id": "ADM-07",
@@ -2971,6 +2972,7 @@
         "ADM-06"
       ],
       "blocks": [
+        "ADM-08",
         "SHR-05"
       ],
       "owns": [
@@ -2989,10 +2991,55 @@
       "status": "done"
     },
     {
+      "id": "ADM-08",
+      "title": "Report a bug from the account menu",
+      "phase": 4,
+      "wave": 13,
+      "stream": "fullstack",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "ADM-06",
+        "ADM-07"
+      ],
+      "blocks": [
+        "SHR-05"
+      ],
+      "owns": [
+        "db/migrations/0008_bug_reports.sql",
+        "features/bugs/",
+        "app/(app)/bugs/",
+        "app/(app)/admin/bugs/",
+        "app/dev/bug-report/",
+        "tests/db/bugs.int.test.ts",
+        "tests/e2e/bug-report.spec.ts"
+      ],
+      "touches": [
+        "db/migrations/meta/",
+        "db/schema/bugs.ts",
+        "db/schema/index.ts",
+        "lib/permissions.ts",
+        "lib/permissions.test.ts",
+        "tests/db/rls.test.ts",
+        "tests/db/0003_rls.int.test.ts",
+        "components/NavBar.tsx",
+        "components/NavBar.test.tsx",
+        "app/(app)/layout.tsx",
+        "app/(app)/admin/page.tsx",
+        "app/(app)/admin/page.test.tsx",
+        "features/admin/backlog/storage.ts"
+      ],
+      "reqs": [
+        "REQ-ADM-03"
+      ],
+      "file": "tasks/ADM-08.md",
+      "status": "todo"
+    },
+    {
       "id": "SHR-05",
       "title": "Store share tokens hashed",
       "phase": 4,
-      "wave": 13,
+      "wave": 14,
       "stream": "backend",
       "size": "M",
       "human": false,
@@ -3002,13 +3049,14 @@
         "SHR-03",
         "DB-08",
         "ADM-06",
-        "ADM-07"
+        "ADM-07",
+        "ADM-08"
       ],
       "blocks": [
         "SHR-04"
       ],
       "owns": [
-        "db/migrations/0008_share_token_hash.sql"
+        "db/migrations/0009_share_token_hash.sql"
       ],
       "touches": [
         "db/migrations/meta/",
@@ -3032,7 +3080,7 @@
       "id": "SHR-04",
       "title": "ShareDialog + nav Share wiring",
       "phase": 4,
-      "wave": 14,
+      "wave": 15,
       "stream": "frontend",
       "size": "S",
       "human": false,
@@ -3068,7 +3116,7 @@
       "id": "DOC-01",
       "title": "User guide",
       "phase": 5,
-      "wave": 15,
+      "wave": 16,
       "stream": "content",
       "size": "S",
       "human": false,
@@ -3092,7 +3140,7 @@
       "id": "H-05",
       "title": "End-to-end journey suite",
       "phase": 5,
-      "wave": 15,
+      "wave": 16,
       "stream": "qa",
       "size": "M",
       "human": false,
@@ -3122,7 +3170,7 @@
       "id": "PILOT-01",
       "title": "Pilot branch rollout",
       "phase": 5,
-      "wave": 16,
+      "wave": 17,
       "stream": "content",
       "size": "L",
       "human": true,

@@ -21,6 +21,8 @@
 | `/share/[token]` | Public read-only list | SHR-02 |
 | `/admin` | Admin dashboard: a card per admin area the user may open (from the account menu); for `admin:backlog`, To-dos and Enhancement requests sections | ADM-05 (backlog sections: ADM-06) |
 | `/admin/requests`, `/admin/requests/new`, `/admin/requests/[id]`, `/admin/requests/[id]/edit` | Enhancement/change requests: list, form with wireframe uploader, detail | ADM-06 |
+| `/bugs`, `/bugs/new?from=<path>`, `/bugs/[id]` | Report a bug (any approved user; from the account menu) and my reports | ADM-08 |
+| `/admin/bugs`, `/admin/bugs/[id]` | All bug reports, triage (status, note to reporter, delete) | ADM-08 |
 | `/admin/users`, `/admin/branches` | Admin | ADM-01, ADM-02 |
 | `/dev/[component]` | Component gallery with fixtures; 404 on the production deployment via `if (!isDevGalleryEnabled()) notFound()` (`lib/devGallery.ts`), served on previews | each UI task adds its own page |
 
@@ -59,6 +61,7 @@ All components are client components unless noted, props-only (no data fetching 
 |---|---|---|---|
 | `ResponsivePanel` | `components/ResponsivePanel.tsx` | `{ trigger?: ReactNode; anchor?: ReactNode; open?: boolean; onOpenChange?(open: boolean): void; title: string; children: ReactNode }` — pass `trigger` (uncontrolled, as before) or `open` + `onOpenChange` (controlled, optional `anchor`) | UI-01 |
 | `NavBar` | `components/NavBar.tsx` | `{ currentList: List \| null; onCreate(type: ListType): void; onShare(): void; canAddSong?: boolean }` (`canAddSong`: show "Add song" → `/songs/new` in the More menu; LIB-20) | UI-02 |
+| `UserMenu` | `components/NavBar.tsx` | `{ name; email; branchName; signOut; adminHref?: string \| null; bugReportHref?: string \| null }` (`adminHref`: "Admin" item, ADM-05; `bugReportHref`: "Report a bug" item linking to `bugReportHref?from=<current path>`, ADM-08) | UI-02 |
 | `EnergyChip` | `components/song/EnergyChip.tsx` | `{ energy: EnergyLevel \| null; bpm: number \| null; overridden?: boolean }` | UI-04 |
 | `KeyBadge` | `components/song/KeyBadge.tsx` | `{ value: string \| null; overridden?: boolean }` | UI-04 |
 | `TimeSigBadge` | `components/song/TimeSigBadge.tsx` | `{ value: string \| null }` | UI-04 |
@@ -92,6 +95,9 @@ All components are client components unless noted, props-only (no data fetching 
 | `RequestList` | `features/admin/backlog/ui/RequestList.tsx` | `{ requests: FeatureRequest[]; status?: FeatureRequestStatus \| 'all'; limit?: number }` | ADM-06 |
 | `RequestForm` | `features/admin/backlog/ui/RequestForm.tsx` | `{ request?: FeatureRequestDetail; actions?: Partial<RequestActions> }` (kind, title, description, wireframe uploader: pick / drop / paste, ≤5 images) | ADM-06 |
 | `RequestDetail` | `features/admin/backlog/ui/RequestDetail.tsx` | `{ request: FeatureRequestDetail; actions?: Partial<RequestActions> }` (status selector, image grid + full-size dialog) | ADM-06 |
+| `BugReportForm` | `features/bugs/ui/BugReportForm.tsx` | `{ pagePath?: string; actions?: Partial<BugReportActions> }` (title, what happened, expected, screenshot uploader, auto-captured page/browser/screen summary) | ADM-08 |
+| `BugReportList` | `features/bugs/ui/BugReportList.tsx` | `{ reports: BugReport[]; admin?: boolean; status?: BugReportStatus \| 'all'; limit?: number }` | ADM-08 |
+| `BugReportDetail` | `features/bugs/ui/BugReportDetail.tsx` | `{ report: BugReportDetail; admin?: boolean; actions?: Partial<BugReportActions> }` | ADM-08 |
 | Song form sections | `features/songs/ui/form/*.tsx` | each `{ value: Partial<SongFormValue>; onChange(v): void; errors?: Record<string,string[]> }` | LIB-10…15 |
 | `ResourcesSection` (extra props) | `features/songs/ui/form/ResourcesSection.tsx` | form-section props plus `{ songId: UUID \| null; initialResources: Resource[]; onResourcesChange?(r: Resource[]): void; requestUpload, finalizeUpload, deleteResource, getSignedResourceUrl, addLink, updateLink` (api.md signatures)`; putFile?(uploadUrl, file, onProgress): Promise<void> }`. Resources save immediately via their own actions and are not part of `SongFormValue`; the section never calls `onChange`. | LIB-14 |
 | `UsageSection` (extra props) | `features/songs/ui/form/UsageSection.tsx` | form-section props plus `{ saved: BranchUsage[] }` (stored `SongDetail.usage`, shows derived values). `value.usage` holds **manual entries only**; build it with `usageFromSong(song)`. | LIB-15 |

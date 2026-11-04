@@ -139,6 +139,9 @@ export function deriveUsageLevel(setlistCountLast365d: number): UsageLevel; // >
 | `features/admin/backlog/server.ts` | `listTodos()`; `addTodo({ title, notes? })`; `updateTodo(id, { title?, notes?, done? })`; `deleteTodo(id)` | `ActionResult<AdminTodo[] \| AdminTodo \| void>` (types in `features/admin/backlog/types.ts`) | admin:backlog | ADM-06 |
 | | `listRequests({ status? })`; `getRequest(id)` (images with signed URLs); `createRequest({ kind, title, description })`; `updateRequest(id, patch)`; `deleteRequest(id)` (also removes stored images) | `FeatureRequest[]` / `FeatureRequestDetail \| null` / `ActionResult<FeatureRequest \| void>` | admin:backlog | ADM-06 |
 | | `createRequestImageUpload(requestId, { fileName, mimeType, sizeBytes })` → `{ imageId, uploadUrl }`; `finalizeRequestImage(imageId)`; `deleteRequestImage(imageId)` (≤5 images/request; PNG/JPEG/WebP/GIF ≤ 10 MiB) | `ActionResult<…>` | admin:backlog | ADM-06 |
+| `features/bugs/server.ts` | `createBugReport({ title, description, expected?, pagePath?, userAgent?, viewport? })` (≤10/user/hour → `RATE_LIMITED`; emails admins, failure ignored); `listMyBugReports()`; `getBugReport(id)` (own, or bug:triage; images with signed URLs) | `ActionResult<BugReport>` / `BugReport[]` / `BugReportDetail \| null` (types in `features/bugs/types.ts`) | bug:report | ADM-08 |
+| | `listBugReports({ status? })`; `updateBugReport(id, { status?, adminNote? })`; `deleteBugReport(id)` (also removes stored images) | `BugReport[]` / `ActionResult<BugReport \| void>` | bug:triage | ADM-08 |
+| | `createBugImageUpload(reportId, { fileName, mimeType, sizeBytes })` → `{ pendingId, uploadUrl }`; `finalizeBugImage(pendingId)`; `deleteBugImage(imageId)` (creator within 24 h, ≤5 images; delete: bug:triage) | `ActionResult<…>` | bug:report | ADM-08 |
 | `app/api/cron/usage/route.ts` | `GET` with `Authorization: Bearer CRON_SECRET` | `{ updated: number }` | cron | BR-03 |
 
 ## Import format (IMP-01)

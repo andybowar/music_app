@@ -29,6 +29,8 @@ Disabled users (`disabled_at` not null) can do nothing. Users whose `access_stat
 | `audit:read` | | ✓ | ✓ | ✓ | |
 | `admin:users` / `admin:branches` / `admin:import` | | | | ✓ | |
 | `admin:backlog` (to-dos, enhancement/change requests and their images) | | | | ✓ | ADM-06; RLS `app_role_at_least('admin')` on `admin_todos`, `feature_requests`, `feature_request_images` and bucket `admin-attachments` |
+| `bug:report` (create a bug report, read your own) | ✓ | ✓ | ✓ | ✓ | ADM-08; RLS on `bug_reports` / `bug_report_images` (own rows) |
+| `bug:triage` (read all bug reports, set status and note, delete) | | | | ✓ | ADM-08 |
 
 ## `can()` signature
 

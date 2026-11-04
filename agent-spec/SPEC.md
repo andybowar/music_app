@@ -109,6 +109,7 @@ Branches (initial): **Servant (SV)**, **Portland (OR)**, **CO Springs (CO)**, **
 
 - **REQ-ADM-01** The admin dashboard shows a shared to-do list: admins add items, mark them done, and delete them. Admins only.
 - **REQ-ADM-02** Admins submit enhancement or change requests (kind, title, description, up to 5 wireframe images: PNG/JPEG/WebP/GIF, ≤ 10 MiB each), list them by status (new, planned, in progress, done, declined), and update or delete them. Admins only; images are stored privately.
+- **REQ-ADM-03** Any approved user can report a bug from the account menu: what went wrong, what happened, what they expected, and up to 5 screenshots; the page, browser, screen size and app version are captured automatically. Reporters see their own reports with status and an admin note; admins see all reports on the dashboard, triage them (new, confirmed, fixed, won't fix, duplicate) and get an email for each new report.
 
 ## 3. Tech stack (decided)
 

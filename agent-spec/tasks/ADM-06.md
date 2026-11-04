@@ -8,7 +8,7 @@ size: L
 status: done
 human_required: false
 depends_on: ["ADM-05", "DB-08"]
-blocks: ["SHR-05", "ADM-07"]
+blocks: ["SHR-05", "ADM-07", "ADM-08"]
 owns: ["db/migrations/0006_admin_backlog.sql", "features/admin/backlog/", "app/(app)/admin/requests/", "app/dev/admin-backlog/", "tests/db/backlog.int.test.ts", "tests/e2e/admin-backlog.spec.ts"]
 touches: ["db/migrations/meta/", "db/schema/backlog.ts", "db/schema/index.ts", "lib/permissions.ts", "lib/permissions.test.ts", "app/(app)/admin/page.tsx", "app/(app)/admin/page.test.tsx", "features/admin/adminAreas.ts", "features/admin/adminAreas.test.ts"]
 requirements: ["REQ-ADM-01", "REQ-ADM-02"]

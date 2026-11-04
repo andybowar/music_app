@@ -65,6 +65,7 @@ import { deleteList, renameList } from '@/features/lists/server/lists';
 import { removeListItem, reorderList, updateListItem } from '@/features/lists/server/items';
 import { listIndexHref } from '@/features/lists/ui/ListIndex';
 import { getSignedResourceUrl } from '@/features/resources/server/files';
+import { ShareDialog } from '@/features/sharing/ui/ShareDialog';
 import { openPlan } from '@/features/songs/ui/SongPage';
 import { resolveItemDisplay } from '@/lib/lists/resolve';
 import { SECTIONS } from '@/types/domain';
@@ -499,6 +500,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   const [panel, setPanel] = useState<{ kind: PanelKind; itemId: UUID } | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [pdf, setPdf] = useState<{ url: string; title: string } | null>(null);
   const [status, setStatus] = useState('');
 
@@ -694,7 +696,10 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
           )}
         </div>
         {canEdit && (
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button variant="outline" className="min-h-tap" onClick={() => setShareOpen(true)}>
+              Share
+            </Button>
             <Button variant="outline" className="min-h-tap" onClick={() => setRenameOpen(true)}>
               Rename
             </Button>
@@ -765,6 +770,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
 
       {canEdit && (
         <>
+          <ShareDialog list={{ ...list, ...header }} open={shareOpen} onOpenChange={setShareOpen} />
           <RenameDialog
             list={{ ...list, ...header }}
             open={renameOpen}

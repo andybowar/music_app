@@ -38,6 +38,7 @@ import { toast } from 'sonner';
 import { PdfViewer } from '@/components/media/PdfViewer';
 import { ResponsivePanel } from '@/components/ResponsivePanel';
 import { SongRow } from '@/components/song/SongRow';
+import { displayKey } from '@/components/song/KeyBadge';
 import { LyricsViewer } from '@/components/song/LyricsViewer';
 import { ComposerPanel } from '@/components/song/panels/ComposerPanel';
 import { KeyPanel } from '@/components/song/panels/KeyPanel';
@@ -672,7 +673,21 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
       case 'key':
         return (
           <div className="flex flex-col gap-3">
-            <KeyPanel keys={currentDetail.keys} highlightKey={current.key ?? undefined} />
+            <KeyPanel
+              // Remount when the event key changes, so the panel opens on the saved key.
+              key={current.key ?? ''}
+              keys={currentDetail.keys}
+              highlightKey={current.key ?? undefined}
+              footer={(selected) => (
+                <EventKeyActions
+                  resolved={current}
+                  usualKey={currentDetail.keys.find((k) => k.isPrimary)?.key ?? null}
+                  selected={selected}
+                  canEdit={canEdit}
+                  onSetKey={(overrideKey) => void override(current, { overrideKey })}
+                />
+              )}
+            />
             {current.needsUpload && current.key && (
               <UploadPrompt songId={current.song.id} songKey={current.key} linked={canEdit} />
             )}
@@ -873,6 +888,50 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
       )}
 
       {pdf && <PdfViewer url={pdf.url} title={pdf.title} onClose={() => setPdf(null)} />}
+    </div>
+  );
+}
+
+/**
+ * Under the key panel on a setlist: save the previewed key for this event, or go back to the
+ * song's usual key. View-only readers are told who can change it.
+ */
+export function EventKeyActions({
+  resolved,
+  usualKey,
+  selected,
+  canEdit,
+  onSetKey,
+}: {
+  resolved: ResolvedItem;
+  usualKey: string | null;
+  selected: string;
+  canEdit: boolean;
+  onSetKey(key: string | null): void;
+}) {
+  if (!canEdit) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Only the setlist’s owner or a music leader can change the key for this event.
+      </p>
+    );
+  }
+  const canReset = resolved.isOverridden.key && usualKey !== null;
+  // Picking the usual key while overridden is the same as "Back to the usual key".
+  const changes = selected !== resolved.key && !(canReset && selected === usualKey);
+  if (!changes && !canReset) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {changes && (
+        <Button className="min-h-tap" onClick={() => onSetKey(selected)}>
+          Use {displayKey(selected)} for this event
+        </Button>
+      )}
+      {canReset && (
+        <Button variant="outline" className="min-h-tap" onClick={() => onSetKey(null)}>
+          Back to the usual key ({displayKey(usualKey)})
+        </Button>
+      )}
     </div>
   );
 }

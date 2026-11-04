@@ -250,6 +250,48 @@ describe('SetlistView', () => {
     expect(await screen.findByRole('dialog')).toHaveTextContent('Keys and first chords');
   });
 
+  it('the key panel saves a previewed key for the event, and can go back (bug report)', async () => {
+    const { user } = setup();
+    const holy = detail.items.find((i) => i.song.title === 'Holy Spirit')!;
+    const openKeys = () =>
+      user.click(
+        within(screen.getByRole('group', { name: 'Holy Spirit' })).getByRole('button', {
+          name: /show all keys/i,
+        }),
+      );
+    await openKeys();
+    const panel = await screen.findByRole('dialog');
+    // The event key needs no button; previewing another key offers to use it.
+    expect(within(panel).queryByRole('button', { name: /for this event/ })).toBeNull();
+    await user.click(within(panel).getByRole('radio', { name: /^Key A\b/ }));
+    await user.click(within(panel).getByRole('button', { name: 'Use A for this event' }));
+    expect(actions.updateListItem).toHaveBeenCalledWith(holy.item.id, { overrideKey: 'A' });
+    // Saved: the panel now opens on A and offers the way back.
+    const back = await within(screen.getByRole('dialog')).findByRole('button', {
+      name: 'Back to the usual key (B♭)',
+    });
+    expect(within(screen.getByRole('dialog')).queryByRole('button', { name: /^Use / })).toBeNull();
+    await user.click(back);
+    expect(actions.updateListItem).toHaveBeenLastCalledWith(holy.item.id, { overrideKey: null });
+  });
+
+  it('the key panel tells view-only readers who can change the key', async () => {
+    const { user } = setup({ canEdit: false });
+    await user.click(
+      within(screen.getByRole('group', { name: 'Holy Spirit' })).getByRole('button', {
+        name: /show all keys/i,
+      }),
+    );
+    const panel = await screen.findByRole('dialog');
+    await user.click(within(panel).getByRole('radio', { name: /^Key A\b/ }));
+    expect(
+      within(panel).getByText(
+        'Only the setlist’s owner or a music leader can change the key for this event.',
+      ),
+    ).toBeVisible();
+    expect(within(panel).queryByRole('button', { name: /for this event|usual key/ })).toBeNull();
+  });
+
   it('opens the song page for row details when song details are missing', async () => {
     const { user } = setup({ songs: undefined });
     await user.click(

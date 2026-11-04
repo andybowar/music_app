@@ -177,7 +177,9 @@ If you own the setlist, or you're a music leader in its branch, you can:
 - **Reorder** songs: drag the handle, or use a song's **…** menu and choose **Move up** or
   **Move down**. With a keyboard, focus the handle, press Space, move with the arrow keys, then
   press Space again.
-- **Change key, BPM or energy** for this event, from the song's **…** menu. The changed values
+- **Change key, BPM or energy** for this event, from the song's **…** menu. For the key you can
+  also tap the song's key, pick one, and choose **Use … for this event** (or **Back to the usual
+  key**). The changed values
   are marked. If the library has no chords or files for the new key, the first chords show **X**
   and you get a link to upload files for that key.
 - **Remove from setlist**, from the song's **…** menu; **Rename** the setlist or change its date;

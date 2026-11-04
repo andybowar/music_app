@@ -35,6 +35,12 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import type { AccessStatus } from '@/types/domain';
+import {
+  isDevGalleryAdminOnly,
+  isDevGalleryPath,
+  mayOpenDevGallery,
+  type DevGalleryUserRow,
+} from '@/lib/devGallery';
 
 const LOGIN_PATH = '/login';
 const ACCOUNT_STATUS_PATH = '/account-status';
@@ -139,11 +145,15 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   const protectedRoute = !isPublicRoute(req.nextUrl.pathname);
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // On the live deployment the `/dev` galleries are for approved admins only (lib/devGallery).
+  const adminOnlyGallery =
+    isDevGalleryAdminOnly() && isDevGalleryPath(normalisePath(req.nextUrl.pathname));
 
   // NEXT_PUBLIC_* values are inlined at build time. Without them there is no session to refresh,
   // so public routes (the `/dev` gallery on unprovisioned previews, `/login`) pass straight
   // through; protected routes fail loudly rather than serve the app unguarded.
   if (!url || !anonKey) {
+    if (adminOnlyGallery) return notFound();
     if (!protectedRoute) return NextResponse.next();
     throw new Error(
       'NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set. Set them before building (see .env.example).',
@@ -178,6 +188,19 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
+
+  if (adminOnlyGallery) {
+    if (authError && isTransientAuthError(authError)) return unavailable(response, sessionHeaders);
+    if (!user) return notFound(response, sessionHeaders);
+    const { data: row, error } = await supabase
+      .from('users')
+      .select('access_status, role, disabled_at')
+      .eq('id', user.id)
+      .maybeSingle<DevGalleryUserRow>();
+    if (error) return unavailable(response, sessionHeaders);
+    // Anyone else gets the same 404 as a signed-out visitor: the galleries' existence isn't advertised.
+    return mayOpenDevGallery(row) ? response : notFound(response, sessionHeaders);
+  }
 
   if (!protectedRoute) return response;
 
@@ -226,6 +249,15 @@ function withSession(
   for (const cookie of from.cookies.getAll()) to.cookies.set(cookie);
   for (const [key, value] of Object.entries(headers)) to.headers.set(key, value);
   return to;
+}
+
+/** A plain 404 that keeps any rotated session cookies. */
+function notFound(from?: NextResponse, headers: Record<string, string> = {}): NextResponse {
+  const res = new NextResponse('Not found', {
+    status: 404,
+    headers: { 'Cache-Control': 'private, no-store', 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+  return from ? withSession(res, from, headers) : res;
 }
 
 /** A redirect that keeps the session cookies and cache headers. */

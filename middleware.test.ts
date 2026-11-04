@@ -12,7 +12,7 @@ type CookieAdapter = {
 };
 const state = {
   user: { id: USER_ID } as { id: string } | null,
-  row: { access_status: 'approved' } as { access_status: string } | null,
+  row: { access_status: 'approved' } as Record<string, unknown> | null,
   rowError: null as Error | null,
   authError: null as { name: string; status?: number; message: string } | null,
   refresh: null as { cookies: Cookie[]; headers: Record<string, string> } | null,
@@ -352,6 +352,72 @@ describe('middleware: Supabase not configured (unprovisioned preview)', () => {
   it('fails loudly on protected routes rather than serving them unguarded', async () => {
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
     await expect(middleware(request('/library'))).rejects.toThrow(/NEXT_PUBLIC_SUPABASE/);
+  });
+});
+
+describe('middleware: /dev galleries on the live deployment (admins only)', () => {
+  const ADMIN = { access_status: 'approved', role: 'admin', disabled_at: null };
+  beforeEach(() => vi.stubEnv('VERCEL_ENV', 'production'));
+  afterEach(() => vi.stubEnv('VERCEL_ENV', ''));
+
+  it.each(['/dev', '/dev/tokens', '/dev/admin-backlog'])(
+    'lets an approved admin open %s',
+    async (path) => {
+      state.row = ADMIN;
+      const res = await middleware(request(path));
+      expect(res.status).toBe(200);
+      expect(location(res)).toBeNull();
+      expect(fromTable).toHaveBeenCalledWith('users');
+    },
+  );
+
+  it.each([
+    ['signed out', () => (state.user = null)],
+    ['a music leader', () => (state.row = { ...ADMIN, role: 'music_leader' })],
+    ['a member', () => (state.row = { ...ADMIN, role: 'member' })],
+    ['a pending admin', () => (state.row = { ...ADMIN, access_status: 'pending' })],
+    ['a disabled admin', () => (state.row = { ...ADMIN, disabled_at: '2026-01-01T00:00:00Z' })],
+    ['a user with no profile row', () => (state.row = null)],
+  ])('gives %s a 404, not a redirect', async (_who, arrange) => {
+    arrange();
+    const res = await middleware(request('/dev/tokens'));
+    expect(res.status).toBe(404);
+    expect(location(res)).toBeNull();
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it('also guards encoded and dotted paths', async () => {
+    state.row = { ...ADMIN, role: 'member' };
+    for (const path of [
+      '/%64ev/tokens',
+      '/x/../dev/tokens',
+      '/dev/',
+      '/dev//tokens',
+      '/DEV/../dev',
+    ]) {
+      expect((await middleware(request(path))).status).toBe(404);
+    }
+  });
+
+  it('answers 503 when the lookup fails', async () => {
+    state.rowError = new Error('db down');
+    expect((await middleware(request('/dev/tokens'))).status).toBe(503);
+  });
+
+  it('answers 404 without Supabase configured', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
+    try {
+      expect((await middleware(request('/dev/tokens'))).status).toBe(404);
+    } finally {
+      vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
+    }
+  });
+
+  it('leaves galleries open outside production', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    state.user = null;
+    const res = await middleware(request('/dev/tokens'));
+    expect(res.status).toBe(200);
   });
 });
 

@@ -165,7 +165,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | [H-04](tasks/H-04.md) | Accessibility audit + fixes | 5 Hardening | qa | M | SRCH-09, LIST-09, PLAY-05, LIB-17 |
 | [LIB-20](tasks/LIB-20.md) | Add song entry points (library + nav) | 1 Library | frontend | S | LIB-17, SRCH-09, LIST-09, UI-02 |
 | [LIB-21](tasks/LIB-21.md) | Song page and Edit links from row panels | 1 Library | frontend | S | SRCH-09, BR-02, LIB-17, LIB-18 |
-| [LIST-11](tasks/LIST-11.md) | Play a setlist: full-screen worship mode | 5 Hardening | frontend | M | LIST-07, UI-07, UI-08, H-01 |
+| [LIST-11](tasks/LIST-11.md) | Play a setlist: full-screen worship mode | 5 Hardening | frontend | M | LIST-07, UI-07, UI-08, H-01, LIB-22 |
 
 ### Wave 12 — 1 tasks in parallel
 

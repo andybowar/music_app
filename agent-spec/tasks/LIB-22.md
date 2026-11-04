@@ -8,7 +8,7 @@ size: M
 status: done
 human_required: false
 depends_on: ["LIB-01", "LIB-12", "LIB-16", "LIB-17", "LIB-18", "UI-07"]
-blocks: []
+blocks: ["LIST-11"]
 owns: ["db/migrations/0010_chord_lyrics.sql", "components/song/ChordLyrics.tsx", "components/song/ChordLyrics.test.tsx", "app/dev/chords/"]
 touches: ["lib/lyrics/chords.ts", "lib/lyrics/chords.test.ts", "db/migrations/meta/", "db/schema/songs.ts", "db/seed/data.ts", "db/seed/data.test.ts", "types/domain.ts", "types/validation.ts", "types/validation.test.ts", "lib/lyrics/parse.ts", "features/songs/server/songs.ts", "features/songs/server/assemble.ts", "features/songs/server/assemble.test.ts", "features/songs/server/songs.int.test.ts", "features/songs/ui/form/types.ts", "features/songs/ui/form/toInput.ts", "features/songs/ui/form/toInput.test.ts", "features/songs/ui/form/LyricsSection.tsx", "features/songs/ui/form/LyricsSection.test.tsx", "components/song/LyricsViewer.tsx", "components/song/LyricsViewer.test.tsx", "features/songs/ui/SongPage.tsx", "features/search/ui/RowPanels.tsx", "fixtures/songs.json", "fixtures/schemas.ts", "fixtures/fixtures.test.ts", "docs/user-guide.md", "agent-spec/SPEC.md", "agent-spec/TODO.md", "agent-spec/contracts/schema.md", "agent-spec/contracts/types.md", "agent-spec/contracts/ui.md"]
 requirements: ["REQ-LIB-15"]

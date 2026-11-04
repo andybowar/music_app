@@ -3,13 +3,20 @@ import { join } from 'node:path';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { isDevGalleryEnabled } from '@/lib/devGallery';
+import { isDevGalleryAdminOnly, isDevGalleryEnabled } from '@/lib/devGallery';
 import { isLocalSupabase, readSupabaseConfig } from './api/supabaseConfig';
 import { discoverRoutes, type DevRoute } from './pages';
 
 export const metadata: Metadata = { title: 'Dev · index' };
 
-function RouteList({ routes }: { routes: DevRoute[] }) {
+function RouteList({ routes }: { routes: DevRoute[] | null }) {
+  if (routes === null)
+    return (
+      <p className="text-sm text-muted-foreground">
+        Couldn&apos;t list pages on this deployment. Open a gallery directly, e.g.{' '}
+        <code>/dev/tokens</code>.
+      </p>
+    );
   if (routes.length === 0) return <p className="text-sm text-muted-foreground">None yet.</p>;
   return (
     <ul className="space-y-1">
@@ -29,9 +36,17 @@ function RouteList({ routes }: { routes: DevRoute[] }) {
 export default function DevIndexPage() {
   if (!isDevGalleryEnabled()) notFound();
 
-  const routes = discoverRoutes(join(process.cwd(), 'app'));
-  const appPages = routes.filter((r) => !r.path.startsWith('/dev'));
-  const galleries = routes.filter((r) => r.path.startsWith('/dev/'));
+  // Scans app/ at request time. If the files aren't there (a bundling change), show a note
+  // rather than failing the whole page.
+  let routes: DevRoute[] | null;
+  try {
+    routes = discoverRoutes(join(process.cwd(), 'app'));
+  } catch {
+    routes = null;
+  }
+  const appPages = routes?.filter((r) => !r.path.startsWith('/dev')) ?? null;
+  const galleries = routes?.filter((r) => r.path.startsWith('/dev/')) ?? null;
+  const live = isDevGalleryAdminOnly();
   const isLocal = isLocalSupabase(readSupabaseConfig());
 
   return (
@@ -39,8 +54,13 @@ export default function DevIndexPage() {
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold">Dev index</h1>
         <p className="text-sm text-muted-foreground">
-          Every page in the app, found from the files in <code>app/</code>. Seeded users sign in
-          with the password <code>music-app-dev-password</code>.
+          Every page in the app, found from the files in <code>app/</code>.
+          {live ? null : (
+            <>
+              {' '}
+              Seeded users sign in with the password <code>music-app-dev-password</code>.
+            </>
+          )}
         </p>
       </header>
 

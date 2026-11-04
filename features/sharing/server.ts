@@ -25,16 +25,18 @@
  *   `audit_log` rows (entity `share_email`, recipient count only, never addresses); the SMTP
  *   server's own sending limit (Gmail's daily quota) is also RATE_LIMITED.
  *
- * Tokens are stored as issued, as contracts/schema.md and `Share.token` define them, so a link
- * can be shown again in the share dialog. RLS keeps `shares` readable only by users who can
- * write the list (db/migrations/0003_rls.sql).
+ * Tokens are never stored (CR SHR-01-hash-share-tokens, SHR-05): only `sha256(token)` and the
+ * first 6 characters (`tokenPrefix`, for display). The full link exists only in the `url` that
+ * `createShare` returns; `listShares` returns neither token nor url, so the share dialog shows
+ * existing links by prefix. RLS keeps `shares` readable only by users who can write the list
+ * (db/migrations/0003_rls.sql).
  */
 
 import 'server-only';
 
 import type { AppUser, ListDetail, ListItem, Resource, Share, UUID } from '@/types/domain';
 
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 import { createElement } from 'react';
 
@@ -65,12 +67,14 @@ import { resolveItemDisplay } from '@/lib/lists/resolve';
 import { reportError } from '@/lib/log';
 import { assertCan, can } from '@/lib/permissions';
 
-/** A share plus the public link to it. */
+/** A share plus the public link to it: only `createShare` returns this, once. */
 export type ShareWithUrl = Share & { url: string };
 
 const TOKEN_BYTES = 32;
 /** base64url of 32 bytes, unpadded: exactly 43 characters of [A-Za-z0-9_-]. */
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+/** Characters of the token kept for display (`Share.tokenPrefix`). */
+const TOKEN_PREFIX_LENGTH = 6;
 
 const LIST_NOT_FOUND = 'List not found.';
 const SHARE_NOT_FOUND = 'Share link not found.';
@@ -120,6 +124,11 @@ function newToken(): string {
   return randomBytes(TOKEN_BYTES).toString('base64url');
 }
 
+/** What is stored and looked up instead of the token: its sha256 (32 bytes). */
+function hashToken(token: string): Buffer {
+  return createHash('sha256').update(token, 'utf8').digest();
+}
+
 function shareUrl(token: string): string {
   return new URL(`/share/${encodeURIComponent(token)}`, env.APP_URL).toString();
 }
@@ -127,7 +136,7 @@ function shareUrl(token: string): string {
 interface ShareRow {
   id: string;
   listId: string;
-  token: string;
+  tokenPrefix: string;
   expiresAt: Date | null;
   revokedAt: Date | null;
   createdAt: Date;
@@ -136,21 +145,20 @@ interface ShareRow {
 const shareColumns = {
   id: shares.id,
   listId: shares.listId,
-  token: shares.token,
+  tokenPrefix: shares.tokenPrefix,
   expiresAt: shares.expiresAt,
   revokedAt: shares.revokedAt,
   createdAt: shares.createdAt,
 };
 
-function toShare(row: ShareRow): ShareWithUrl {
+function toShare(row: ShareRow): Share {
   return {
     id: row.id,
     listId: row.listId,
-    token: row.token,
+    tokenPrefix: row.tokenPrefix,
     expiresAt: row.expiresAt?.toISOString() ?? null,
     revokedAt: row.revokedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
-    url: shareUrl(row.token),
   };
 }
 
@@ -182,17 +190,20 @@ export const createShare = withAction(
     const data = createSchema.parse({ listId, expiresAt: options?.expiresAt });
     await assertListAccess(user, data.listId, 'share:create');
 
+    const token = newToken();
     const [row] = await getDb()
       .insert(shares)
       .values({
         listId: data.listId,
-        token: newToken(),
+        tokenHash: hashToken(token),
+        tokenPrefix: token.slice(0, TOKEN_PREFIX_LENGTH),
         createdBy: user.id,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       })
       .returning(shareColumns);
     if (!row) throw new Error('Insert returned no row');
-    return toShare(row);
+    // The only time the full link exists: it is never stored or returned again.
+    return { ...toShare(row), url: shareUrl(token) };
   },
 );
 
@@ -214,8 +225,11 @@ export const revokeShare = withAction(async (id: UUID): Promise<void> => {
     .where(and(eq(shares.id, shareId), isNull(shares.revokedAt)));
 });
 
-/** Every link of a list, newest first, revoked and expired ones included (`list:write`). */
-export const listShares = withAction(async (listId: UUID): Promise<ShareWithUrl[]> => {
+/**
+ * Every link of a list, newest first, revoked and expired ones included (`list:write`). No
+ * token or url: links are shown by `tokenPrefix`.
+ */
+export const listShares = withAction(async (listId: UUID): Promise<Share[]> => {
   const user = await requireUser();
   const id = idSchema.parse(listId);
   await assertListAccess(user, id, 'list:write');
@@ -231,7 +245,7 @@ export const listShares = withAction(async (listId: UUID): Promise<ShareWithUrl[
 /**
  * A fresh never-expiring link for an email, made by `createShare` so the email gets exactly
  * the link a user would copy. Only the returned `url` is used, never a stored token (CR
- * SHR-01-hash-share-tokens: tokens will be stored hashed). The token in the url's last path
+ * SHR-01-hash-share-tokens: only hashes are stored). The token in the url's last path
  * segment is what `/share/[token]` itself reads.
  */
 async function shareForEmail(listId: UUID): Promise<{ url: string; token: string }> {
@@ -325,7 +339,8 @@ function scrubResource(resource: Resource): Resource {
 }
 
 /**
- * The shared list for `token`, or `null` when the token is malformed, unknown, revoked or
+ * The shared list for `token` (the raw token from the share URL, looked up by its sha256), or
+ * `null` when the token is malformed, unknown, revoked or
  * expired, or the list was deleted. Needs no session. Resources come back without `url` or
  * `storagePath`.
  */
@@ -352,7 +367,7 @@ export async function getSharedList(token: string): Promise<ListDetail | null> {
     .leftJoin(branches, eq(branches.id, lists.branchId))
     .where(
       and(
-        eq(shares.token, token),
+        eq(shares.tokenHash, hashToken(token)),
         isNull(shares.revokedAt),
         or(isNull(shares.expiresAt), gt(shares.expiresAt, sql`now()`)),
         isNull(lists.deletedAt),

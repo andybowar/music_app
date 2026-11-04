@@ -5,7 +5,7 @@ phase: 4
 wave: 15
 stream: frontend
 size: S
-status: in_progress
+status: done
 human_required: false
 depends_on: ["SHR-01", "SHR-03", "LIST-09", "LIST-07", "PLAY-05", "SHR-05"]
 blocks: ["DOC-01", "H-05"]
@@ -37,11 +37,11 @@ requirements: ["REQ-NAV-04", "REQ-SHARE-01", "REQ-SHARE-02"]
 - `REQ-SHARE-02` — Share a list by email (summary + link).
 
 ## Deliverables
-- [ ] Copy link, expiry select (none/7d/30d), email recipients field, existing links with revoke
+- [x] Copy link, expiry select (none/7d/30d), email recipients field, existing links with revoke
 
 ## Acceptance criteria
-- [ ] Playwright: share link opened in fresh context shows the list
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Playwright: share link opened in fresh context shows the list
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `features/sharing/ui/`

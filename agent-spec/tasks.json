@@ -1682,7 +1682,8 @@
       ],
       "blocks": [
         "IMP-03",
-        "LIB-17"
+        "LIB-17",
+        "LIB-23"
       ],
       "owns": [
         "features/songs/server/keys.ts"
@@ -2308,7 +2309,8 @@
         "UI-07"
       ],
       "blocks": [
-        "LIST-11"
+        "LIST-11",
+        "LIB-23"
       ],
       "owns": [
         "db/migrations/0010_chord_lyrics.sql",
@@ -3010,7 +3012,9 @@
         "H-01",
         "LIB-22"
       ],
-      "blocks": [],
+      "blocks": [
+        "LIB-23"
+      ],
       "owns": [
         "features/lists/ui/player/",
         "app/dev/set-player/",
@@ -3064,6 +3068,77 @@
       ],
       "file": "tasks/ADM-07.md",
       "status": "done"
+    },
+    {
+      "id": "LIB-23",
+      "title": "Chords over the lyrics per key",
+      "phase": 1,
+      "wave": 12,
+      "stream": "fullstack",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "LIB-22",
+        "LIB-02",
+        "LIST-11"
+      ],
+      "blocks": [],
+      "owns": [
+        "db/migrations/0011_chords_per_key.sql",
+        "features/songs/ui/form/chordKeys.ts",
+        "features/songs/ui/form/chordKeys.test.ts"
+      ],
+      "touches": [
+        "lib/lyrics/chords.ts",
+        "lib/lyrics/realign.ts",
+        "lib/lyrics/realign.test.ts",
+        "lib/lyrics/transpose.ts",
+        "lib/lyrics/transpose.test.ts",
+        "db/migrations/meta/",
+        "db/schema/keys.ts",
+        "db/schema/songs.ts",
+        "db/seed/data.ts",
+        "db/seed/data.test.ts",
+        "types/domain.ts",
+        "types/validation.ts",
+        "types/validation.test.ts",
+        "features/songs/server/keys.ts",
+        "features/songs/server/keys.int.test.ts",
+        "features/songs/server/songs.ts",
+        "features/songs/server/songs.int.test.ts",
+        "features/songs/server/assemble.ts",
+        "features/songs/server/assemble.test.ts",
+        "features/songs/ui/form/LyricsSection.tsx",
+        "features/songs/ui/form/LyricsSection.test.tsx",
+        "features/songs/ui/form/MusicalSection.tsx",
+        "features/songs/ui/form/types.ts",
+        "features/songs/ui/form/toInput.ts",
+        "features/songs/ui/form/toInput.test.ts",
+        "features/songs/ui/SongPage.tsx",
+        "features/search/ui/RowPanels.tsx",
+        "features/lists/ui/SetlistView.tsx",
+        "features/lists/ui/player/charts.ts",
+        "features/lists/ui/player/charts.test.ts",
+        "features/lists/ui/player/MusicianView.tsx",
+        "components/song/LyricsViewer.tsx",
+        "components/song/LyricsViewer.test.tsx",
+        "app/dev/chords/",
+        "fixtures/songs.json",
+        "fixtures/schemas.ts",
+        "fixtures/fixtures.test.ts",
+        "docs/user-guide.md",
+        "agent-spec/SPEC.md",
+        "agent-spec/TODO.md",
+        "agent-spec/contracts/schema.md",
+        "agent-spec/contracts/types.md",
+        "agent-spec/contracts/ui.md",
+        "agent-spec/contracts/api.md"
+      ],
+      "reqs": [
+        "REQ-LIB-15"
+      ],
+      "file": "tasks/LIB-23.md",
+      "status": "in_progress"
     },
     {
       "id": "ADM-08",

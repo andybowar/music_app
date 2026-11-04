@@ -8,7 +8,7 @@ size: M
 status: done
 human_required: false
 depends_on: ["LIST-07", "UI-07", "UI-08", "H-01", "LIB-22"]
-blocks: []
+blocks: ["LIB-23"]
 owns: ["features/lists/ui/player/", "app/dev/set-player/", "tests/e2e/set-player.spec.ts"]
 touches: ["features/lists/ui/SetlistView.tsx", "features/lists/ui/SetlistView.test.tsx", "components/song/LyricsViewer.tsx", "components/song/ChordLyrics.tsx", "docs/user-guide.md", "agent-spec/SPEC.md", "agent-spec/contracts/ui.md", "agent-spec/change-requests/LIST-11-set-player.md"]
 requirements: ["REQ-LIST-09", "REQ-ROW-03", "REQ-NF-02", "REQ-NF-03"]

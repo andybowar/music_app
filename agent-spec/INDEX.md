@@ -1,6 +1,6 @@
 # Task index
 
-107 tasks · 17 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
+108 tasks · 17 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
 
 **How to use.** A task is *ready* when every task in `depends_on` is merged. All ready tasks in a wave can run at the same time — their `owns` paths never overlap (checked by `scripts/check_tasks.py`). Start a task by setting `status: in_progress` in its file; see `AGENTS.md` for the full protocol.
 
@@ -167,11 +167,12 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | [LIB-21](tasks/LIB-21.md) | Song page and Edit links from row panels | 1 Library | frontend | S | SRCH-09, BR-02, LIB-17, LIB-18 |
 | [LIST-11](tasks/LIST-11.md) | Play a setlist: full-screen worship mode | 5 Hardening | frontend | M | LIST-07, UI-07, UI-08, H-01, LIB-22 |
 
-### Wave 12 — 1 tasks in parallel
+### Wave 12 — 2 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
 | [ADM-07](tasks/ADM-07.md) | Show the open TODO.md items on the admin dashboard | 4 Sharing | backend | S | ADM-06 |
+| [LIB-23](tasks/LIB-23.md) | Chords over the lyrics per key | 1 Library | fullstack | L | LIB-22, LIB-02, LIST-11 |
 
 ### Wave 13 — 1 tasks in parallel
 
@@ -215,7 +216,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | content | CNT-01, CNT-02, CNT-03, DOC-01, PILOT-01 |
 | data | DB-01, DB-02, DB-04, DB-07, DB-08, IMP-01, IMP-02, IMP-03 |
 | frontend | ADM-01, ADM-02, ADM-05, BR-02, BR-04, H-01, LIB-10, LIB-11, LIB-12, LIB-13, LIB-14, LIB-15, LIB-17, LIB-18, LIB-19, LIB-20, LIB-21, LIST-04, LIST-05, LIST-06, LIST-07, LIST-08, LIST-09, LIST-10, LIST-11, PLAY-01, PLAY-02, PLAY-03, PLAY-04, PLAY-05, PLAY-06, SHR-02, SHR-04, SRCH-04, SRCH-05, SRCH-06, SRCH-07, SRCH-08, SRCH-09, UI-01, UI-02, UI-04, UI-05, UI-06, UI-07, UI-08 |
-| fullstack | ADM-06, ADM-08, LIB-22 |
+| fullstack | ADM-06, ADM-08, LIB-22, LIB-23 |
 | ops | OPS-01, OPS-02, OPS-03 |
 | platform | DB-06, F-01, F-02, F-03, F-04, F-05 |
 | qa | H-04, H-05 |
@@ -253,7 +254,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | REQ-LIB-12 | DB-06, LIB-01, LIB-19 |
 | REQ-LIB-13 | IMP-01, IMP-02, IMP-03 |
 | REQ-LIB-14 | LIB-16, LIB-12 |
-| REQ-LIB-15 | LIB-22 |
+| REQ-LIB-15 | LIB-22, LIB-23 |
 | REQ-LIST-01 | LIST-04, LIST-05, LIST-01, LIST-09 |
 | REQ-LIST-02 | LIST-06, LIST-02, LIST-09, H-05 |
 | REQ-LIST-03 | LIST-02, LIST-01, LIST-07 |

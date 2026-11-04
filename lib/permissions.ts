@@ -24,7 +24,9 @@ export type Action =
   | 'admin:users'
   | 'admin:branches'
   | 'admin:import'
-  | 'admin:backlog';
+  | 'admin:backlog'
+  | 'bug:report'
+  | 'bug:triage';
 
 export interface PermCtx {
   list?: Pick<List, 'type' | 'ownerId' | 'branchId'>;
@@ -50,6 +52,8 @@ const MIN_ROLE = {
   'admin:branches': 'admin',
   'admin:import': 'admin',
   'admin:backlog': 'admin',
+  'bug:report': 'member',
+  'bug:triage': 'admin',
 } as const satisfies Record<Exclude<Action, ListScopedAction>, Role>;
 
 type ListScopedAction = 'list:read' | 'list:write' | 'share:create' | 'share:revoke';

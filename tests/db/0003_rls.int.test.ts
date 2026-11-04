@@ -79,6 +79,10 @@ const PUBLIC_TABLES = [
  *  tests/db/backlog.int.test.ts. CR ADM-06-rls-test-touches. */
 const BACKLOG_TABLES = ['admin_todos', 'feature_requests', 'feature_request_images'] as const;
 
+/** ADM-08's bug report tables (0008_bug_reports.sql); their policies are tested in
+ *  tests/db/bugs.int.test.ts. */
+const BUG_TABLES = ['bug_reports', 'bug_report_images'] as const;
+
 const ROLLBACK = Symbol('rollback');
 
 /** Run `fn` as `who` inside a transaction that is always rolled back. */
@@ -246,7 +250,7 @@ describe('coverage', () => {
               where p.schemaname = 'public' and p.tablename = t.tablename) as policies
       from pg_tables t where t.schemaname = 'public'`;
     expect(rows.map((r) => r.tablename).sort()).toEqual(
-      [...PUBLIC_TABLES, ...BACKLOG_TABLES].sort(),
+      [...PUBLIC_TABLES, ...BACKLOG_TABLES, ...BUG_TABLES].sort(),
     );
     for (const row of rows) {
       expect(row, row.tablename).toMatchObject({ rowsecurity: true });

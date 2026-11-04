@@ -41,6 +41,8 @@ const MATRIX: readonly Row[] = [
   ['admin:branches', null, ['', '', '', '✓']],
   ['admin:import', null, ['', '', '', '✓']],
   ['admin:backlog', null, ['', '', '', '✓']],
+  ['bug:report', null, ['✓', '✓', '✓', '✓']],
+  ['bug:triage', null, ['', '', '', '✓']],
 ];
 
 /** Every Action; the type assertion below fails to compile if one is missing. */
@@ -67,6 +69,8 @@ const ACTIONS = [
   'admin:branches',
   'admin:import',
   'admin:backlog',
+  'bug:report',
+  'bug:triage',
 ] as const satisfies readonly Action[];
 type MissingAction = Exclude<Action, (typeof ACTIONS)[number]>;
 const allActionsListed: [MissingAction] extends [never] ? true : false = true;

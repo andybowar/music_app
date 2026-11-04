@@ -5,7 +5,7 @@ phase: 5
 wave: 16
 stream: content
 size: S
-status: todo
+status: done
 human_required: false
 depends_on: ["SRCH-09", "LIST-09", "SHR-04"]
 blocks: ["PILOT-01"]
@@ -27,11 +27,11 @@ requirements: []
 - Output of `SHR-04` (merged on main)
 
 ## Deliverables
-- [ ] Short guide with screenshots: search, setlists, playlists, sharing, quick lookup
+- [x] Short guide with screenshots: search, setlists, playlists, sharing, quick lookup
 
 ## Acceptance criteria
 - [ ] Reviewed by one music leader
-- [ ] Definition of Done in `AGENTS.md` §5 is satisfied
+- [x] Definition of Done in `AGENTS.md` §5 is satisfied
 
 ## Boundaries
 - **Owns** (create/modify freely): `docs/user-guide.md`

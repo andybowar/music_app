@@ -258,10 +258,12 @@ export function SongForm({ song, user, branches, actions, initialTab, notice }: 
       )}
 
       <Tabs value={tab} onValueChange={(t) => setTab(t as FormTab)} className="min-w-0 gap-4">
-        <div className="-mx-4 overflow-x-auto px-4">
+        {/* Scrolls sideways on phones. The list must grow to its tabs' height (the base
+            `h-9` would win over a plain `h-auto`), or the strip also scrolls vertically. */}
+        <div className="-mx-4 overflow-x-auto overflow-y-hidden px-4">
           <TabsList
             aria-label="Song form sections"
-            className="h-auto w-max min-w-full justify-start"
+            className="w-max min-w-full justify-start group-data-[orientation=horizontal]/tabs:h-auto"
           >
             {FORM_TABS.map((t) => {
               const hasError = errorTabs.includes(t);

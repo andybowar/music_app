@@ -55,7 +55,8 @@
       "human": true,
       "deps": [],
       "blocks": [
-        "OPS-03"
+        "OPS-03",
+        "OPS-04"
       ],
       "owns": [
         "docs/ops/environments.md"
@@ -1248,7 +1249,9 @@
         "F-01",
         "DB-06"
       ],
-      "blocks": [],
+      "blocks": [
+        "OPS-04"
+      ],
       "owns": [
         "sentry.*.config.ts",
         "instrumentation.ts",
@@ -1517,6 +1520,50 @@
       "reqs": [],
       "file": "tasks/DB-05.md",
       "status": "done"
+    },
+    {
+      "id": "OPS-04",
+      "title": "Move hosting from Vercel to Google Cloud Run (keep Supabase)",
+      "phase": 5,
+      "wave": 6,
+      "stream": "ops",
+      "size": "L",
+      "human": false,
+      "deps": [
+        "OPS-01",
+        "OPS-02"
+      ],
+      "blocks": [],
+      "owns": [
+        "Dockerfile",
+        ".dockerignore",
+        "deploy/",
+        "docs/ops/google-cloud.md"
+      ],
+      "touches": [
+        ".github/workflows/deploy.yml",
+        "next.config.ts",
+        "lib/env.ts",
+        ".env.example",
+        "features/auth/authOrigin.ts",
+        "features/auth/authOrigin.test.ts",
+        "middleware.ts",
+        "lib/devGallery.ts",
+        "features/bugs/server.ts",
+        "sentry.server.config.ts",
+        "sentry.edge.config.ts",
+        "instrumentation-client.ts",
+        ".github/workflows/e2e.yml",
+        "scripts/vercel-build.sh",
+        "vercel.json",
+        "agent-spec/HUMAN-TASKS.md",
+        "docs/ops/environments.md"
+      ],
+      "reqs": [
+        "REQ-NF-04"
+      ],
+      "file": "tasks/OPS-04.md",
+      "status": "todo"
     },
     {
       "id": "SRCH-08",

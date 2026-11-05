@@ -298,3 +298,31 @@ Prerequisites: H-05, DOC-01, OPS-03, CNT-03 done; production environment set up 
 5. At week 4, decide go or no-go for all branches. Record the decision and reasons.
 
 Verify: four weeks of use, triage notes kept, and a recorded go/no-go. Tick: `tasks/PILOT-01.md` deliverables and the Phase 5 exit criterion.
+
+## 15. OPS-04: Google Cloud setup (request for the IT/cloud team) (`tasks/OPS-04.md`)
+
+Moving hosting from Vercel to Cloud Run. Supabase stays. You can send the list below to your IT/cloud team as is. Ask them to share the resulting names and IDs (the last bullet) with you, then add them to `docs/ops/environments.md` or give them to the agent working on OPS-04.
+
+**Please set up, in our Google Cloud organization:**
+- **Two projects** (or one, with clearly separate services): `music-app-staging` and `music-app-prod`, with billing attached.
+- **Region:** one region close to our users that's allowed by our org policy (e.g. `us-central1`). It should be close to the Supabase projects' region to keep database latency low.
+- **APIs enabled:** Cloud Run, Artifact Registry, Cloud Build, Secret Manager, Cloud Scheduler, IAM Credentials.
+- **Artifact Registry:** a Docker repository, e.g. `music-app`, in that region.
+- **Runtime service account** (per project), e.g. `music-app-run@…`: `roles/secretmanager.secretAccessor` on the app's secrets. Nothing else.
+- **Deploy service account**, e.g. `music-app-deploy@…`: `roles/run.admin`, `roles/artifactregistry.writer`, and `roles/iam.serviceAccountUser` on the runtime service account.
+- **Workload Identity Federation** for GitHub Actions: a pool and provider trusting `token.actions.githubusercontent.com`, restricted to the repository `andybowar/music_app` (and the `main` / `staging` branches), allowed to impersonate the deploy service account. No JSON keys.
+- **Cloud Scheduler:** permission for the deploy account to create one job per environment (or IT creates it): daily at 09:00 UTC, `GET https://<app address>/api/cron/usage` with header `Authorization: Bearer <CRON_SECRET>`.
+- **Public access:** the Cloud Run services must be **publicly reachable** (`allUsers` as invoker). Members of our community sign in from personal devices. If org policy blocks public services (Domain Restricted Sharing / `iam.allowedPolicyMemberDomains`), we need an exception for these two services.
+- **Custom domain:** e.g. `music.<our-domain>` for production and `music-staging.<our-domain>` for staging, mapped to Cloud Run (domain mapping or a load balancer), with Google-managed TLS.
+- **Send back:** project IDs, region, Artifact Registry path, both service account emails, the WIF provider resource name, and the final domain names.
+
+**Then you (owner):**
+1. Add the app's secrets to Secret Manager in each project, with the same values as in Vercel today:
+   - `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`
+   - the SMTP/Resend settings
+   - the Sentry auth token and DSNs
+   - the Google and Microsoft OAuth values used by the app (if any)
+2. In GitHub (repository → Settings → Secrets and variables → Actions), add the non-secret IDs from the IT team as **variables**: `GCP_PROJECT_STAGING`, `GCP_PROJECT_PROD`, `GCP_REGION`, `GCP_WIF_PROVIDER`, `GCP_DEPLOY_SA`, `GCP_ARTIFACT_REPO`.
+3. Once staging works on Cloud Run: update each Supabase project's **URL configuration** (§3): the Site URL and redirect URLs point at the new addresses. Keep the old ones until the switch is done.
+4. At cut-over: switch DNS, check sign-in and a setlist, then **pause** (don't delete) the Vercel project for two weeks.
+

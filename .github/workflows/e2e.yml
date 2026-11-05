@@ -1,14 +1,13 @@
-# F-02 · Playwright e2e against the Vercel preview of a PR.
-# Vercel sends a `repository_dispatch` event (`vercel.deployment.success`) when a
-# deployment is ready; `client_payload` carries its `url`, `environment` and `git.sha`.
-# Dispatch events only trigger the copy of this file on the default branch.
+# F-02 · Playwright e2e against a deployed URL, run by hand (Actions → E2E → Run workflow).
+# PR e2e now runs against a local production build in ci.yml (job "E2E (local build)"): running
+# it on every Vercel preview used most of the Vercel plan's monthly request allowance.
+# The `repository_dispatch` trigger (Vercel's `vercel.deployment.success`) was removed on
+# 2026-11-05 for that reason; the dispatch-related steps below are kept for a manual re-enable.
 # Production deployments are skipped: the dev galleries some specs use 404 there.
 # The result is posted as an "E2E (Vercel preview)" commit status so it shows on the PR.
 name: E2E
 
 on:
-  repository_dispatch:
-    types: ['vercel.deployment.success']
   workflow_dispatch:
     inputs:
       base_url:

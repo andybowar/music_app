@@ -1,7 +1,10 @@
 # F-02 · CI pipeline. Every PR (and every push to main) runs:
 #   checks       install (cached) → typecheck → lint → prettier → unit tests → build
 #   integration  local Supabase stack → migrations (when they exist) → pnpm test:int
-# Playwright e2e runs against Vercel previews in e2e.yml.
+#   e2e          local Supabase → migrations + seed → production build → Playwright (next start)
+# e2e used to run against each PR's Vercel preview (e2e.yml); that load (thousands of requests
+# per run, dozens of runs a day) used most of the Vercel plan's monthly request allowance, so
+# it now runs against a local build here. e2e.yml stays for manual runs against a deployed URL.
 name: CI
 
 on:
@@ -137,6 +140,85 @@ jobs:
 
       - name: Integration tests
         run: pnpm test:int
+
+      - name: Stop Supabase
+        if: always()
+        run: pnpm exec supabase stop --no-backup
+
+  e2e:
+    name: E2E (local build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Same services as the integration job: login and the middleware talk to Auth.
+      - name: Start Supabase
+        run: pnpm exec supabase start -x studio,imgproxy,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta
+
+      - name: Export Supabase env
+        run: |
+          pnpm exec supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          get() { sed -n "s/^$1=\"\{0,1\}\([^\"]*\)\"\{0,1\}$/\1/p" "$RUNNER_TEMP/supabase.env"; }
+          api_url="$(get API_URL)"
+          anon="$(get ANON_KEY)"
+          service="$(get SERVICE_ROLE_KEY)"
+          db_url="$(get DB_URL)"
+          for v in api_url anon service db_url; do
+            if [ -z "${!v}" ]; then echo "::error::supabase status did not print a value for $v"; exit 1; fi
+          done
+          echo "::add-mask::$service"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$api_url"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$anon"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$service"
+            echo "DATABASE_URL=$db_url"
+          } >> "$GITHUB_ENV"
+
+      - name: Migrate and seed
+        run: |
+          pnpm db:migrate
+          pnpm db:seed
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-e2e-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.ts', '**/*.tsx', '**/*.css') }}
+          restore-keys: |
+            nextjs-e2e-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      # A production build, so the service worker and offline specs run as deployed.
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # No PLAYWRIGHT_BASE_URL: playwright.config.ts starts `next start` on port 3000 (APP_URL).
+      # No E2E_* test accounts yet, so the signed-in specs skip themselves, as they did on
+      # Vercel previews.
+      - name: Run Playwright
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
 
       - name: Stop Supabase
         if: always()

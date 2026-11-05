@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
@@ -104,5 +104,55 @@ describe('GET /auth/callback', () => {
     expect(location).toBe(`https://app.example.test/login?error=${code}`);
     expect(spy).toHaveBeenCalledTimes(error instanceof ActionError ? 0 : 1);
     spy.mockRestore();
+  });
+});
+
+describe('GET /auth/callback on a preview address (bug report 2026-11-05)', () => {
+  const PREVIEW = 'music-ab12cd-team.vercel.app';
+  const onPreview = (query: string, cookie?: string) =>
+    GET(
+      new NextRequest(`https://${PREVIEW}/auth/callback${query}`, {
+        headers: { host: PREVIEW, ...(cookie ? { cookie } : {}) },
+      }),
+    );
+
+  beforeEach(() => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_URL', PREVIEW);
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('sends the user on from the address sign-in started on, not APP_URL', async () => {
+    const res = await onPreview('?code=ok&next=%2Flists');
+    expect(res.headers.get('location')).toBe(`https://${PREVIEW}/lists`);
+  });
+
+  it('production still always uses APP_URL', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    const res = await onPreview('?code=ok');
+    expect(res.headers.get('location')).toBe('https://app.example.test/library');
+  });
+
+  it('logs why a sign-in failed, with the address and whether the PKCE cookie was there', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    auth.exchangeCodeForSession.mockResolvedValue({
+      data: { user: null, session: null },
+      error: new Error('code verifier not found'),
+    });
+    const res = await onPreview('?code=bad');
+    expect(res.headers.get('location')).toBe(`https://${PREVIEW}/login?error=sso_failed`);
+    expect(warn).toHaveBeenCalledWith('[auth/callback] sign-in failed', {
+      reason: 'exchange_failed',
+      detail: 'code verifier not found',
+      host: PREVIEW,
+      appHost: 'app.example.test',
+      hasVerifierCookie: false,
+    });
+    await onPreview('?code=bad', 'sb-ref-auth-token-code-verifier=abc');
+    expect(warn).toHaveBeenLastCalledWith(
+      '[auth/callback] sign-in failed',
+      expect.objectContaining({ hasVerifierCookie: true }),
+    );
+    warn.mockRestore();
   });
 });

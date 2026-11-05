@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('server-only', () => ({}));
 
 const auth = {

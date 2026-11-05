@@ -12,6 +12,8 @@
 
 import 'server-only';
 
+import { headers } from 'next/headers';
+
 import type { AuthError, SupabaseClient } from '@supabase/supabase-js';
 
 import { eq } from 'drizzle-orm';
@@ -25,6 +27,8 @@ import { startSamlSignIn } from '@/features/auth/saml';
 import { ActionError, withAction } from '@/lib/action';
 import { getDb } from '@/lib/db';
 import { env } from '@/lib/env';
+
+import { authOriginFor } from './authOrigin';
 import { createServerSupabase } from '@/lib/supabase/server';
 
 const INVALID_CREDENTIALS = 'Incorrect email or password.';
@@ -217,7 +221,8 @@ export const signInWithOidc = withAction(
       throw new ActionError('FORBIDDEN', 'This sign-in option is not available.');
     }
 
-    const redirectTo = new URL('/auth/callback', env.APP_URL);
+    // Back to the address sign-in started on, so the callback can read the PKCE cookie.
+    const redirectTo = new URL('/auth/callback', authOriginFor(await headers(), env.APP_URL));
     redirectTo.searchParams.set('next', safeNext(input.next));
 
     const supabase = await createServerSupabase();

@@ -11,6 +11,7 @@ const signInWithOidc =
   >();
 const signInWithSaml =
   vi.fn<(emailOrDomain: string, next?: string) => Promise<ActionResult<{ url: string }>>>();
+vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('@/features/auth/actions', () => ({ signInWithOidc, signInWithSaml }));
 
 const { SsoButtons, ssoErrorMessage } = await import('./SsoButtons');

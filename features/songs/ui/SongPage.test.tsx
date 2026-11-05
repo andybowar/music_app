@@ -316,3 +316,71 @@ describe('SongPageSkeleton and SongPageError', () => {
     expect(screen.getByRole('link', { name: 'Try again' })).toHaveAttribute('href', '/songs/abc');
   });
 });
+
+describe('SongPage keys and typed chords', () => {
+  const amazing = getSong(SONG_IDS.amazingGrace); // keys G (primary, typed chords) and F (none)
+  const keysPanel = () => screen.getByRole('radiogroup', { name: 'Keys' });
+  const verse1Chords = () => document.querySelector('[data-section="verse_1"] [data-chords]');
+
+  it('shows the primary key’s chords; choosing a key without chords says so', async () => {
+    const user = userEvent.setup();
+    renderPage({ song: amazing });
+    expect(verse1Chords()).toHaveTextContent(/^G/);
+    expect(screen.queryByText(/No typed chords in/)).toBeNull();
+
+    await user.click(within(keysPanel()).getByRole('radio', { name: /^Key F/ }));
+    expect(
+      screen.getByText('No typed chords in F, so the lyrics show without chords. Typed chords: G.'),
+    ).toBeVisible();
+    expect(verse1Chords()).toBeNull();
+
+    await user.click(within(keysPanel()).getByRole('radio', { name: /^Key G/ }));
+    expect(verse1Chords()).toHaveTextContent(/^G/);
+  });
+
+  it('switches the lyrics to another key’s typed chords, and the lyrics’ key buttons move the panel', async () => {
+    const user = userEvent.setup();
+    const g = amazing.keys.find((k) => k.key === 'G')!;
+    const withF: SongDetail = {
+      ...amazing,
+      keys: amazing.keys.map((k) =>
+        k.key === 'F'
+          ? { ...k, chords: { ...g.chords!, verse_1: g.chords!.verse_1!.replace(/\[G\]/g, '[F]') } }
+          : k,
+      ),
+    };
+    renderPage({ song: withF });
+    await user.click(within(keysPanel()).getByRole('radio', { name: /^Key F/ }));
+    expect(verse1Chords()).toHaveTextContent(/^F/);
+    await user.click(screen.getByRole('radio', { name: 'Chords in G' }));
+    expect(within(keysPanel()).getByRole('radio', { name: /^Key G/ })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
+  it('a song without typed chords says so under the keys', () => {
+    renderPage({ song: full });
+    expect(screen.getByText('No typed chords in D yet.')).toBeVisible();
+  });
+});
+
+describe('SongPage autoscroll', () => {
+  afterEach(() => window.localStorage.clear());
+
+  it('offers autoscroll over the lyrics, with the song’s speed shared with Start event', async () => {
+    window.localStorage.setItem(`set-player:speed:${full.id}`, '7');
+    const user = userEvent.setup();
+    renderPage({ song: full });
+    const toggle = screen.getByRole('button', { name: 'Autoscroll' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('slider', { name: /Speed/ })).toHaveValue('7');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('has no autoscroll when the song has no lyrics', () => {
+    renderPage({ song: { ...empty, lyrics: { ...empty.lyrics, chorus: null, verse_1: null } } });
+    expect(screen.queryByRole('button', { name: 'Autoscroll' })).toBeNull();
+  });
+});

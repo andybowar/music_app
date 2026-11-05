@@ -15,6 +15,12 @@ export interface KeyPanelProps {
    * for the event" action. Without it the panel only previews keys.
    */
   footer?(selectedKey: string): ReactNode;
+  /**
+   * Controlled selection (the song page keeps it in step with the lyrics' chords). Without it
+   * the panel keeps its own, starting from `highlightKey`.
+   */
+  selectedKey?: string;
+  onSelectedChange?(key: string): void;
 }
 
 export const CHORD_SLOT_LABEL: Record<ChordSlot, string> = {
@@ -50,9 +56,20 @@ interface KeyOption {
  * A `highlightKey` with no `song_keys` row (a setlist override) is still listed, with every
  * chord "X" and a prompt to upload files for it (REQ-LIST-04).
  */
-export function KeyPanel({ keys, highlightKey, footer }: KeyPanelProps) {
+export function KeyPanel({
+  keys,
+  highlightKey,
+  footer,
+  selectedKey,
+  onSelectedChange,
+}: KeyPanelProps) {
   const headingId = useId();
-  const [selected, setSelected] = useState<string | null>(() => initialKey(keys, highlightKey));
+  const [own, setOwn] = useState<string | null>(() => initialKey(keys, highlightKey));
+  const selected = selectedKey ?? own;
+  const setSelected = (key: string) => {
+    setOwn(key);
+    onSelectedChange?.(key);
+  };
   const missingHighlight =
     highlightKey !== undefined && highlightKey !== '' && !keys.some((k) => k.key === highlightKey);
 

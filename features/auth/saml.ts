@@ -16,6 +16,8 @@
 
 import 'server-only';
 
+import { headers } from 'next/headers';
+
 import type { AuthError, User } from '@supabase/supabase-js';
 
 import { z } from 'zod';
@@ -23,6 +25,8 @@ import { z } from 'zod';
 import { safeNext } from '@/app/(auth)/login/safeNext';
 import { ActionError } from '@/lib/action';
 import { env } from '@/lib/env';
+
+import { authOriginFor } from './authOrigin';
 import { createServerSupabase } from '@/lib/supabase/server';
 
 export const SAML_UNAVAILABLE_MESSAGE = 'Sign-in with your organization is not available.';
@@ -107,7 +111,8 @@ export async function startSamlSignIn(
   if (!isSamlEnabled()) throw new ActionError('FORBIDDEN', SAML_UNAVAILABLE_MESSAGE);
   const input = samlSchema.parse({ emailOrDomain, next });
 
-  const redirectTo = new URL('/auth/callback', env.APP_URL);
+  // Back to the address sign-in started on, so the callback can read the PKCE cookie.
+  const redirectTo = new URL('/auth/callback', authOriginFor(await headers(), env.APP_URL));
   redirectTo.searchParams.set('next', safeNext(input.next));
 
   const supabase = await createServerSupabase();

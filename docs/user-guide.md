@@ -187,10 +187,11 @@ If you own the setlist, or you're a music leader in its branch, you can:
 
 Everyone else can view setlists but not change them.
 
-### Starting an event
+### Playing a setlist
 
-On a setlist, tap **Start event** and choose what you're doing. You're asked every time, and you
-can switch from the menu at the top of the player.
+On a setlist, tap **▶ Play** on any song and choose what you're doing. The player opens on that
+song, and **Previous** / **Next** move through the rest of the set. You're asked every time, and
+you can switch from the menu at the top of the player.
 
 - **Musician:** the first chords for the setlist's key, then a chart. If the song has more than
   one (typed chords, chord charts, lead sheets or scores), you pick one each time the song comes
@@ -292,7 +293,7 @@ song** on its page or row panel. The form has six tabs:
     lyrics stay either way.
   - On the song page, choosing a key under **Keys and first chords** shows that key's chords over
     the lyrics (or says there are none for it), and the key buttons next to **Chords** do the
-    same. The **Chords** button shows or hides them. In **Start event**, musicians get the
+    same. The **Chords** button shows or hides them. In the player, musicians get the
     setlist's key first.
   - The song page also has **Autoscroll** above the lyrics, with the same 1–10 **Speed** as Start
     event. The speed is remembered for each song on your device, in both places.

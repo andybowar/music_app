@@ -223,9 +223,20 @@ interface ItemRowProps {
   onPanel(kind: PanelKind): void;
   onMove(to: number): void;
   onRemove(): void;
+  /** Opens the player at this song (LIST-11: the role is asked first). */
+  onPlay(): void;
 }
 
-function ItemRow({ resolved, index, total, canEdit, onPanel, onMove, onRemove }: ItemRowProps) {
+function ItemRow({
+  resolved,
+  index,
+  total,
+  canEdit,
+  onPanel,
+  onMove,
+  onRemove,
+  onPlay,
+}: ItemRowProps) {
   const { item, song } = resolved;
   const {
     attributes,
@@ -319,7 +330,20 @@ function ItemRow({ resolved, index, total, canEdit, onPanel, onMove, onRemove }:
         onResources={() => onPanel('resources')}
         onUsage={() => onPanel('usage')}
         dragHandle={handle}
-        addSlot={actions}
+        addSlot={
+          <div className="flex items-center">
+            <button
+              type="button"
+              aria-label={`Play ${song.title}`}
+              data-play-item={item.id}
+              onClick={onPlay}
+              className="inline-flex min-h-tap min-w-tap items-center justify-center rounded-md outline-none hover:bg-row-foreground/10 focus-visible:ring-2 focus-visible:ring-row-foreground"
+            >
+              <PlayIcon aria-hidden="true" className="size-4 fill-current" />
+            </button>
+            {actions}
+          </div>
+        }
       />
       <div className="flex flex-col gap-1 px-2 pt-1 pb-2">
         <FirstChords chords={resolved.firstChords} className="text-xs" />
@@ -515,7 +539,6 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   const [play, setPlay] = useState<{ index: number; role: PlayerRole } | null>(null);
   /** The role question; `index` is where the player opens once a role is picked. */
   const [asking, setAsking] = useState<{ index: number } | null>(null);
-  const startRef = useRef<HTMLButtonElement>(null);
 
   // A refresh brings new server data: adopt it.
   useEffect(() => setItems(list.items), [list.items]);
@@ -546,8 +569,12 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   }
 
   function closePlayer() {
+    const at = play ? items[play.index]?.item.id : undefined;
     showPlayer(null);
-    requestAnimationFrame(() => startRef.current?.focus());
+    // Back to the Play button of the song the player was on.
+    requestAnimationFrame(() =>
+      document.querySelector<HTMLButtonElement>(`[data-play-item="${at}"]`)?.focus(),
+    );
   }
 
   async function signedPdfUrl(r: Resource): Promise<string> {
@@ -763,12 +790,6 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
           )}
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
-          {items.length > 0 && (
-            <Button ref={startRef} className="min-h-tap" onClick={() => setAsking({ index: 0 })}>
-              <PlayIcon aria-hidden />
-              Start event
-            </Button>
-          )}
           {canEdit && (
             <>
               <Button variant="outline" className="min-h-tap" onClick={() => setShareOpen(true)}>
@@ -824,6 +845,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
                   onPanel={(kind) => openPanel(resolved, kind)}
                   onMove={(to) => void move(index, to)}
                   onRemove={() => void remove(resolved)}
+                  onPlay={() => setAsking({ index })}
                 />
               ))}
             </ol>
@@ -865,6 +887,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
       )}
 
       <StartEventDialog
+        songTitle={asking ? items[asking.index]?.song.title : undefined}
         open={asking !== null}
         onOpenChange={(open) => !open && setAsking(null)}
         onStart={(role) => {

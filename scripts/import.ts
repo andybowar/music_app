@@ -361,7 +361,10 @@ export function supabaseStorage(supabaseUrl: string, serviceRoleKey: string): St
 // ----- Database work ----------------------------------------------------------------------
 
 export function createDb(databaseUrl: string): DB {
-  return drizzle(postgres(databaseUrl, { max: 1, onnotice: () => {} }), { schema }) as DB;
+  // prepare: false: the URL may be Supabase's transaction pooler (see lib/db.ts).
+  return drizzle(postgres(databaseUrl, { max: 1, prepare: false, onnotice: () => {} }), {
+    schema,
+  }) as DB;
 }
 
 export class ActorError extends Error {

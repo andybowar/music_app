@@ -9,7 +9,7 @@
 import { chordsMatchLyrics, sectionsHaveChords, stripChords } from '@/lib/lyrics/chords';
 import type { ParsedLyrics } from '@/lib/lyrics/parse';
 import { realignChords } from '@/lib/lyrics/realign';
-import { transposeChordText, type Spelling } from '@/lib/lyrics/transpose';
+import { canTranspose, transposeChordText, type Spelling } from '@/lib/lyrics/transpose';
 import { SECTION_LABEL, SECTIONS, type Section, type SongLyrics } from '@/types/domain';
 
 import type { SongFormValue } from './types';
@@ -56,6 +56,8 @@ export function fillChordsFrom(
 ): KeyRow[] {
   const from = state.keys[fromIndex]!;
   const to = state.keys[index]!;
+  // Major only into major, minor only into minor (the UI only offers those).
+  if (!canTranspose(from.key, to.key)) return state.keys;
   const chords = Object.fromEntries(
     SECTIONS.map((s) => {
       const source = from.chords?.[s] ?? state.lyrics.lyrics[s] ?? null;

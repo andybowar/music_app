@@ -55,14 +55,20 @@ describe('chord state', () => {
     const started = startChords(s, 2)[2]!.chords!;
     expect(started.verse_1).toBe('Amazing grace how sweet');
     expect(started.verse_5).toBeNull();
-    const filled = fillChordsFrom(s, 2, 0, 'sharp')[2]!.chords!;
+    const filled = fillChordsFrom(s, 2, 0, 'key')[2]!.chords!;
     expect(filled.verse_1).toBe('[D]Amazing [G]grace how [D]sweet');
     expect(filled.chorus).toBe('[D]My chains are [G]gone');
     // A section the source never chorded starts from the words.
-    expect(fillChordsFrom(s, 2, 1, 'sharp')[2]!.chords!.chorus).toBe('My chains are gone');
+    expect(fillChordsFrom(s, 2, 1, 'key')[2]!.chords!.chorus).toBe('My chains are gone');
     expect(
       fillChordsFrom({ ...s, keys: [s.keys[0]!, row('F')] }, 1, 0, 'flat')[1]!.chords!.chorus,
     ).toBe('[F]My chains are [Bb]gone');
+  });
+
+  it('never fills across major and minor', () => {
+    const s = state();
+    const keys = [s.keys[0]!, row('Em')];
+    expect(fillChordsFrom({ ...s, keys }, 1, 0, 'key')).toBe(keys);
   });
 
   it('removes one key’s chords, or all', () => {

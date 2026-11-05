@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { createEvent, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, createEvent, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
@@ -423,8 +423,7 @@ describe('LyricsSection chords per key', () => {
     const { user, changes } = setup({ initial: twoKeys() });
     await user.click(keyButton(/^D/));
     expect(screen.getByText('No chords in D yet.')).toBeVisible();
-    expect(screen.getByRole('radio', { name: /sharps/ })).toBeChecked();
-    await user.click(screen.getByRole('radio', { name: /flats/ }));
+    expect(screen.getByRole('radio', { name: 'Spell by the key' })).toBeChecked();
     await user.click(screen.getByRole('button', { name: 'Fill from G' }));
     expect(lastKeys(changes)![2]!.chords!.verse_1).toBe(
       '[D]Amazing [D7]grace, how [G]sweet the [D]sound\n(verse 1 [A]placeholder)',
@@ -433,6 +432,61 @@ describe('LyricsSection chords per key', () => {
       '[D]Amazing [D7]grace, how [G]sweet the [D]sound\n(verse 1 [A]placeholder)',
     );
     expect(screen.getByText(/^Editing the chords in/, { selector: 'p' })).toHaveTextContent('D.');
+  });
+
+  it('spells transposed notes by the key, or all sharps / all flats when chosen', async () => {
+    const lyrics = { lyrics: { chorus: 'Sing it now' }, arrangement: ['chorus' as const] };
+    const keysWith = () =>
+      musicalOf([
+        {
+          key: 'G',
+          isPrimary: true,
+          firstChords: blankChords,
+          chords: { chorus: '[G]Sing [F]it [D]now' },
+        },
+        { key: 'C', isPrimary: false, firstChords: blankChords },
+      ]);
+    const first = setup({ initial: { lyrics, musical: keysWith() } });
+    await first.user.click(keyButton(/^C/));
+    expect(screen.getByText(/rather than A♯ in C/)).toBeVisible();
+    await first.user.click(screen.getByRole('button', { name: 'Fill from G' }));
+    expect(lastKeys(first.changes)![1]!.chords!.chorus).toBe('[C]Sing [Bb]it [G]now');
+    cleanup();
+
+    const second = setup({ initial: { lyrics, musical: keysWith() } });
+    await second.user.click(keyButton(/^C/));
+    await second.user.click(screen.getByRole('radio', { name: 'All sharps (♯)' }));
+    await second.user.click(screen.getByRole('button', { name: 'Fill from G' }));
+    expect(lastKeys(second.changes)![1]!.chords!.chorus).toBe('[C]Sing [A#]it [G]now');
+  });
+
+  it('only fills from a key of the same kind, saying why for the others', async () => {
+    const { user } = setup({
+      initial: {
+        lyrics: { lyrics: { chorus: 'Sing it now' }, arrangement: ['chorus'] },
+        musical: musicalOf([
+          {
+            key: 'G',
+            isPrimary: true,
+            firstChords: blankChords,
+            chords: { chorus: '[G]Sing it now' },
+          },
+          {
+            key: 'Em',
+            isPrimary: false,
+            firstChords: blankChords,
+            chords: { chorus: '[Em]Sing it now' },
+          },
+          { key: 'F#m', isPrimary: false, firstChords: blankChords },
+        ]),
+      },
+    });
+    await user.click(keyButton(/^F sharp minor|^F♯m|^F#m/));
+    expect(screen.getByRole('button', { name: 'Fill from Em' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Fill from G' })).toBeNull();
+    expect(
+      screen.getByText('G is major and F♯m is minor, so its chords can’t be transposed into F♯m.'),
+    ).toBeVisible();
   });
 
   it('starts a key from the plain words', async () => {

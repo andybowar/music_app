@@ -28,6 +28,12 @@ export interface LyricsViewerProps {
    * first; with several, the reader can switch key. Adds a "Chords" show/hide toggle.
    */
   chords?: SongChords[];
+  /**
+   * Controlled chord key (the song page follows its key panel). A key with no set shows the
+   * lyrics without chords. Without it the viewer starts on the first set.
+   */
+  chordsKey?: string | null;
+  onChordsKeyChange?(key: string): void;
   /** Lyric text size in px (the set player's A−/A+, LIST-11). Defaults to the `text-lg` size. */
   textSizePx?: number;
 }
@@ -145,6 +151,8 @@ export function LyricsViewer({
   arrangement,
   mode = 'arrangement',
   chords,
+  chordsKey: controlledKey,
+  onChordsKeyChange,
   textSizePx,
 }: LyricsViewerProps) {
   const [view, setView] = useState<LyricsViewerMode>(mode);
@@ -157,7 +165,14 @@ export function LyricsViewer({
   const [chordKey, setChordKey] = useState<string | null>(firstKey);
   // A new first set (another song, or the setlist key changed) resets the choice.
   useEffect(() => setChordKey(firstKey), [firstKey]);
-  const set = sets.find((c) => c.key === chordKey) ?? sets[0];
+  const controlled = controlledKey !== undefined;
+  const set = controlled
+    ? sets.find((c) => c.key === controlledKey)
+    : (sets.find((c) => c.key === chordKey) ?? sets[0]);
+  const pickKey = (key: string) => {
+    setChordKey(key);
+    onChordsKeyChange?.(key);
+  };
   const chordText = (section: Section) => (set && showChords ? set.sections[section] : null);
 
   const bySection = sectionBlocks(lyrics);
@@ -170,49 +185,52 @@ export function LyricsViewer({
   const blocks = effective === 'arrangement' ? arrangementBlocks(lyrics, arrangement) : bySection;
   const unsung = effective === 'arrangement' ? unsungSections(lyrics, arrangement) : [];
 
-  const chordsToggle = set ? (
-    <div className="flex flex-wrap items-center gap-2">
-      <Toggle
-        variant="outline"
-        size="sm"
-        className="min-h-tap px-3"
-        pressed={showChords}
-        onPressedChange={(on) => {
-          setShowChords(on);
-          writeShowChords(on);
-        }}
-      >
-        <GuitarIcon aria-hidden />
-        Chords
-      </Toggle>
-      {sets.length > 1 ? (
-        <ToggleGroup
-          type="single"
+  // With a chosen key that has no chords, keep the key buttons (if there are several sets) so
+  // the reader can pick one; the caller says that this key has none.
+  const chordsToggle =
+    set || (controlled && sets.length > 1) ? (
+      <div className="flex flex-wrap items-center gap-2">
+        <Toggle
           variant="outline"
           size="sm"
-          value={set.key}
-          onValueChange={(v) => {
-            if (v) setChordKey(v);
+          className="min-h-tap px-3"
+          pressed={showChords}
+          onPressedChange={(on) => {
+            setShowChords(on);
+            writeShowChords(on);
           }}
-          aria-label="Chords in key"
-          disabled={!showChords}
         >
-          {sets.map((c) => (
-            <ToggleGroupItem
-              key={c.key}
-              value={c.key}
-              aria-label={`Chords in ${spokenKey(c.key)}`}
-              className="min-h-tap px-3"
-            >
-              {displayKey(c.key)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      ) : (
-        <span className="text-xs text-muted-foreground">Chords in {displayKey(set.key)}</span>
-      )}
-    </div>
-  ) : null;
+          <GuitarIcon aria-hidden />
+          Chords
+        </Toggle>
+        {sets.length > 1 ? (
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            size="sm"
+            value={set?.key ?? ''}
+            onValueChange={(v) => {
+              if (v) pickKey(v);
+            }}
+            aria-label="Chords in key"
+            disabled={!showChords}
+          >
+            {sets.map((c) => (
+              <ToggleGroupItem
+                key={c.key}
+                value={c.key}
+                aria-label={`Chords in ${spokenKey(c.key)}`}
+                className="min-h-tap px-3"
+              >
+                {displayKey(c.key)}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        ) : (
+          <span className="text-xs text-muted-foreground">Chords in {displayKey(set!.key)}</span>
+        )}
+      </div>
+    ) : null;
 
   return (
     <article className="flex flex-col gap-4" aria-label="Lyrics">

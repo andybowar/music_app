@@ -23,6 +23,7 @@ requirements: ["REQ-LIB-15"]
 - Chords attach to the song's keys (Keys & tempo); removing a key removes its chords.
 - Editing works like LIB-22 with a key switcher. The words are shared: editing them in one key changes them for every key, and the other keys' chords move to follow.
 - A key without chords can start from the words or be filled by transposing another key's chords (TODO #2 as a starting point). Sharps or flats follow the target key's signature, switchable.
+- *Follow-up 2026-11-05 (owner's music-theory notes):* fill only between keys of the same kind (major/major, minor/minor), naming the others with the reason; spell each note by its place in the target key's scale (flat 2/3/6/7, sharp 4 outside the key; E♯, B♭♭ and the like swapped for plain names), with "All sharps" / "All flats" overrides.
 - Paste goes into the key being edited; the other keys follow the new words, with a note to check them.
 - Display: the event's key (set player) or the primary key (song page) first, switchable.
 

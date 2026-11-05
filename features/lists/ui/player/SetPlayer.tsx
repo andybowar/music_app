@@ -32,25 +32,21 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Toggle } from '@/components/ui/toggle';
 import type { ResolvedItem, Resource, SongDetail } from '@/types/domain';
 
+import { AutoscrollControls } from './AutoscrollControls';
 import { MusicianView } from './MusicianView';
 import {
   PLAYER_ROLES,
   ROLE_LABEL,
-  SPEED_MAX,
-  SPEED_MIN,
   TEXT_SIZES,
   parseRole,
-  readSpeed,
   readTextStep,
-  writeSpeed,
   writeTextStep,
   type PlayerRole,
 } from './playerPrefs';
 import { ProjectionistView } from './ProjectionistView';
-import { pageStep, scrollBox, useAutoscroll } from './scrolling';
+import { pageStep, scrollBox } from './scrolling';
 import { VocalistView } from './VocalistView';
 import { useScreenWakeLock } from './wakeLock';
 
@@ -122,25 +118,15 @@ export function SetPlayer({
   const songId = resolved?.song.id ?? '';
 
   const [textStep, setTextStep] = useState(0);
-  const [autoscroll, setAutoscroll] = useState(false);
-  const [speed, setSpeed] = useState(3);
   const scrolls = role !== 'projectionist';
 
   useScreenWakeLock(true);
   useEffect(() => setTextStep(readTextStep()), []);
 
-  // Each song starts at the top, with autoscroll off and that song's own speed.
+  // Each song starts at the top (AutoscrollControls turns autoscroll off and loads its speed).
   useEffect(() => {
     if (scrollRef.current && role !== 'projectionist') scrollRef.current.scrollTop = 0;
-    setAutoscroll(false);
-    setSpeed(readSpeed(songId));
   }, [songId, at, role]);
-
-  useAutoscroll(scrollRef, {
-    on: autoscroll && scrolls,
-    speed,
-    onEnd: () => setAutoscroll(false),
-  });
 
   // Full screen where the browser allows it (not iPhone Safari); the fixed overlay is enough there.
   useEffect(() => {
@@ -284,34 +270,12 @@ export function SetPlayer({
                   <PlusIcon aria-hidden />
                 </Button>
               </div>
-              <Toggle
-                variant="outline"
-                className="min-h-tap px-3"
-                pressed={autoscroll}
-                onPressedChange={setAutoscroll}
-              >
-                Autoscroll
-              </Toggle>
-              <label className="flex items-center gap-2 text-sm">
-                Speed
-                <input
-                  type="range"
-                  min={SPEED_MIN}
-                  max={SPEED_MAX}
-                  step={1}
-                  value={speed}
-                  aria-valuetext={`${speed} of ${SPEED_MAX}`}
-                  className="h-tap w-28 accent-foreground"
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    setSpeed(value);
-                    writeSpeed(songId, value);
-                  }}
-                />
-                <span className="w-5 tabular-nums" aria-hidden>
-                  {speed}
-                </span>
-              </label>
+              <AutoscrollControls
+                songId={songId}
+                target={scrollRef}
+                resetKey={`${at}-${role}`}
+                className="contents"
+              />
             </div>
           )}
 

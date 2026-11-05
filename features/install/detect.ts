@@ -28,17 +28,11 @@ export function appleBrowser(userAgent: string): AppleBrowser {
   return OTHER_BROWSERS.test(userAgent) ? 'other' : 'safari';
 }
 
-/** How long ✕ hides the banner on a device. */
-export const DISMISS_DAYS = 30;
+/**
+ * Where ✕ is remembered. Any non-empty value means dismissed for good, including the ISO times
+ * written when ✕ hid the banner for 30 days only.
+ */
 export const DISMISS_STORAGE_KEY = 'install-hint:dismissed-at';
-
-/** Whether a dismissal (an ISO time, or nothing) still hides the banner at `now`. */
-export function stillDismissed(dismissedAt: string | null, now: Date): boolean {
-  if (!dismissedAt) return false;
-  const at = Date.parse(dismissedAt);
-  if (Number.isNaN(at)) return false;
-  return now.getTime() - at < DISMISS_DAYS * 24 * 60 * 60 * 1000;
-}
 
 export interface InstallHint {
   device: AppleDevice;
@@ -47,15 +41,15 @@ export interface InstallHint {
 
 /**
  * The hint to show, or null: only on an iPad or iPhone, never inside the installed app
- * (`standalone`), and not while dismissed.
+ * (`standalone`), and never again once dismissed (`dismissed`: any value stored under
+ * `DISMISS_STORAGE_KEY`).
  */
 export function installHint(input: {
   device: DeviceInfo;
   standalone: boolean;
-  dismissedAt: string | null;
-  now: Date;
+  dismissed: string | null;
 }): InstallHint | null {
   const device = appleDevice(input.device);
-  if (!device || input.standalone || stillDismissed(input.dismissedAt, input.now)) return null;
+  if (!device || input.standalone || input.dismissed) return null;
   return { device, browser: appleBrowser(input.device.userAgent) };
 }

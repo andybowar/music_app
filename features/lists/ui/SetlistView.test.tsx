@@ -374,18 +374,18 @@ describe('SetlistView', () => {
 describe('Start event (LIST-11)', () => {
   afterEach(() => window.history.replaceState(null, '', '/'));
 
-  it('shows Start event to every reader, not on an empty list', () => {
-    const { unmount } = render(<SetlistView list={detail} canEdit={false} songs={songs} />);
-    expect(screen.getByRole('button', { name: 'Start event' })).toBeVisible();
-    unmount();
-    render(<SetlistView list={{ ...detail, items: [], itemCount: 0 }} canEdit songs={songs} />);
+  it('has a Play button on every song for every reader, and no Start event button', () => {
+    render(<SetlistView list={detail} canEdit={false} songs={songs} />);
     expect(screen.queryByRole('button', { name: 'Start event' })).toBeNull();
+    for (const title of titles) {
+      expect(screen.getByRole('button', { name: `Play ${title}` })).toBeVisible();
+    }
   });
 
-  it('asks for a role every time, opens the player and keeps it in the URL', async () => {
+  it('Play asks for a role every time, opens the player at that song and keeps it in the URL', async () => {
     const { user } = setup();
-    await user.click(screen.getByRole('button', { name: 'Start event' }));
-    const ask = screen.getByRole('dialog', { name: 'Start event' });
+    await user.click(screen.getByRole('button', { name: `Play ${titles[2]}` }));
+    const ask = screen.getByRole('dialog', { name: `Play “${titles[2]}”` });
     expect(
       within(ask)
         .getAllByRole('button')
@@ -399,19 +399,22 @@ describe('Start event (LIST-11)', () => {
     ]);
     await user.click(within(ask).getByRole('button', { name: /^Vocalist/ }));
     const player = screen.getByRole('dialog', { name: new RegExp(detail.name) });
-    expect(player).toHaveTextContent(`Song 1 of ${titles.length}`);
-    expect(window.location.search).toBe('?play=1&as=vocalist');
+    expect(player).toHaveTextContent(`Song 3 of ${titles.length}`);
+    expect(window.location.search).toBe('?play=3&as=vocalist');
 
     await user.click(within(player).getByRole('button', { name: /^Next/ }));
-    expect(window.location.search).toBe('?play=2&as=vocalist');
+    expect(window.location.search).toBe('?play=4&as=vocalist');
 
     await user.click(within(player).getByRole('button', { name: 'Close the player' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(window.location.search).toBe('');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Start event' })).toHaveFocus());
+    // Focus goes back to the Play button of the song the player was on.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: `Play ${titles[3]}` })).toHaveFocus(),
+    );
 
-    await user.click(screen.getByRole('button', { name: 'Start event' }));
-    expect(screen.getByRole('dialog', { name: 'Start event' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: `Play ${titles[0]}` }));
+    expect(screen.getByRole('dialog', { name: `Play “${titles[0]}”` })).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -428,7 +431,7 @@ describe('Start event (LIST-11)', () => {
     window.history.replaceState(null, '', '/?play=99');
     const { user } = setup();
     await user.click(
-      within(screen.getByRole('dialog', { name: 'Start event' })).getByRole('button', {
+      within(screen.getByRole('dialog', { name: /^Play “/ })).getByRole('button', {
         name: /^Musician/,
       }),
     );

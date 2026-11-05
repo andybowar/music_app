@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// LIST-11 · Start event: the full-screen set player (REQ-LIST-09).
+// LIST-11 · Play from a setlist song: the full-screen set player (REQ-LIST-09).
 //
 //  1. `/dev/set-player` gallery: fixture songs and generated sample PDFs. Runs locally and on
 //     every Vercel preview; skips itself where the gallery 404s (production).
@@ -12,11 +12,18 @@ const SEEDED_LIST = '/lists/80000000-0000-4000-8000-000000000001';
 
 const player = (page: Page) => page.getByRole('dialog', { name: /BG 4\/19\/26/ });
 
-/** Clicks Start event (retrying until hydrated) and picks a role. */
-async function start(page: Page, role: 'Musician' | 'Vocalist' | 'Projectionist') {
-  const ask = page.getByRole('dialog', { name: 'Start event' });
+/**
+ * Clicks a Play button (retrying until hydrated) and picks a role. `play` is the gallery's Play
+ * button, or a setlist row's "Play <title>" (the first song's by default).
+ */
+async function start(
+  page: Page,
+  role: 'Musician' | 'Vocalist' | 'Projectionist',
+  play = page.getByRole('button', { name: /^Play\b/ }).first(),
+) {
+  const ask = page.getByRole('dialog', { name: /^Play “/ });
   await expect(async () => {
-    if (!(await ask.isVisible())) await page.getByRole('button', { name: 'Start event' }).click();
+    if (!(await ask.isVisible())) await play.click();
     await expect(ask).toBeVisible({ timeout: 2_000 });
   }).toPass();
   await ask.getByRole('button', { name: new RegExp(`^${role}`) }).click();

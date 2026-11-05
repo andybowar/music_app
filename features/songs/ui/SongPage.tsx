@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { PencilIcon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -11,6 +11,7 @@ import { ComposerName } from '@/components/song/ComposerName';
 import { BranchCode } from '@/components/song/BranchCode';
 import { EnergyChip } from '@/components/song/EnergyChip';
 import { KeyBadge } from '@/components/song/KeyBadge';
+import { displayKey } from '@/components/song/KeyBadge';
 import { LyricsViewer, LyricsViewerSkeleton } from '@/components/song/LyricsViewer';
 import { songChordSets } from '@/lib/lyrics/chords';
 import { TimeSigBadge } from '@/components/song/TimeSigBadge';
@@ -326,6 +327,10 @@ export function SongPage({
   }, [lyricsId]);
 
   const primaryKey = song.keys.find((k) => k.isPrimary)?.key ?? song.primaryKey ?? undefined;
+  // One key for the key panel and the lyrics' chords, so choosing a key in either moves both.
+  const [shownKey, setShownKey] = useState<string | undefined>(primaryKey);
+  useEffect(() => setShownKey(primaryKey), [song.id, primaryKey]);
+  const chordSets = songChordSets(song.keys);
 
   const details = (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -334,7 +339,9 @@ export function SongPage({
           <LyricsViewer
             lyrics={song.lyrics}
             arrangement={song.arrangement}
-            chords={songChordSets(song.keys)}
+            chords={chordSets}
+            chordsKey={chordSets.length > 0 ? (shownKey ?? null) : undefined}
+            onChordsKeyChange={setShownKey}
           />
         </Panel>
         <Panel title="Themes">
@@ -386,7 +393,22 @@ export function SongPage({
           </div>
         </Panel>
         <Panel title="Keys and first chords">
-          <KeyPanel keys={song.keys} highlightKey={primaryKey} />
+          <KeyPanel
+            keys={song.keys}
+            highlightKey={primaryKey}
+            selectedKey={shownKey}
+            onSelectedChange={setShownKey}
+            footer={(key) =>
+              chordSets.some((c) => c.key === key) ? null : (
+                <p role="note" className="text-sm text-muted-foreground">
+                  No typed chords in {displayKey(key)}
+                  {chordSets.length > 0
+                    ? `, so the lyrics show without chords. Typed chords: ${chordSets.map((c) => displayKey(c.key)).join(', ')}.`
+                    : ' yet.'}
+                </p>
+              )
+            }
+          />
         </Panel>
         <Panel title="Composers">
           <ComposerPanel composers={song.composers} />

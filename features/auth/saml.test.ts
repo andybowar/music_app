@@ -1,6 +1,7 @@
 import { AuthError } from '@supabase/supabase-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('server-only', () => ({}));
 
 const auth = { signInWithSSO: vi.fn() };

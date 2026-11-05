@@ -279,8 +279,13 @@ song** on its page or row panel. The form has six tabs:
     tempo). The words are shared: change them in one key and they change in every key, with that
     key's chords moved to follow. Check them after big edits.
   - A key with no chords yet can **Start from the lyrics**, or **Fill from** another key, which
-    transposes that key's chords as a starting point. Choose sharps or flats first; it follows
-    the key's signature unless you change it.
+    transposes that key's chords as a starting point: every chord moves by the same number of
+    half steps and keeps its type (Em in G becomes F♯m in A). You can only fill a major key from a
+    major key, and a minor key from a minor key.
+  - Before filling, choose how notes are named. **Spell by the key** (the default) names each
+    note the way the new key's scale does, so in C a chord a whole step below C is **B♭**, not
+    A♯. **All sharps** or **All flats** write every raised or lowered note one way, if your
+    band's charts prefer that.
   - **Paste full lyrics** puts the paste (and any chords in it) into the key you're editing. A
     chord sheet with the chords on their own lines above the words works too.
   - **Remove chords in G** removes one key's chords; unticking the box removes them all. The

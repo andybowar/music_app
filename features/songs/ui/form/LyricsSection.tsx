@@ -29,7 +29,7 @@ import { cn } from '@/components/ui/utils';
 import { displayKey, spokenKey } from '@/components/song/KeyBadge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { hasChords, inlineChords, sectionsHaveChords, stripChords } from '@/lib/lyrics/chords';
-import { keySpelling, type Spelling } from '@/lib/lyrics/transpose';
+import { canTranspose, isMinorKey, SPELLING_LABEL, type Spelling } from '@/lib/lyrics/transpose';
 import { firstLine, isHeadingLine, parseLyrics, type ParsedLyrics } from '@/lib/lyrics/parse';
 import { SECTION_LABEL, SECTIONS, type Section, type SongDetail } from '@/types/domain';
 import { errorsFor, moveItem } from './BasicInfoSection';
@@ -1058,7 +1058,11 @@ function KeyChordsPicker({
   );
 }
 
-/** A key without chords yet: start from the words, or transpose another key's chords. */
+/**
+ * A key without chords yet: start from the words, or transpose another key's chords. Only keys
+ * of the same kind (major to major, minor to minor) can be filled from; the others are named
+ * with the reason.
+ */
 function NoChordsYet({
   target,
   sources,
@@ -1071,8 +1075,11 @@ function NoChordsYet({
   onFill(fromIndex: number, spelling: Spelling): void;
 }) {
   const id = useId();
-  const [spelling, setSpelling] = useState<Spelling>(() => keySpelling(target.key));
-  useEffect(() => setSpelling(keySpelling(target.key)), [target.key]);
+  const [spelling, setSpelling] = useState<Spelling>('key');
+  useEffect(() => setSpelling('key'), [target.key]);
+  const usable = sources.filter((s) => canTranspose(s.key, target.key));
+  const otherKind = sources.filter((s) => !canTranspose(s.key, target.key));
+  const kind = (key: string) => (isMinorKey(key) ? 'minor' : 'major');
   return (
     <div className="space-y-2 rounded-md bg-muted/50 p-3">
       <p className="text-sm">No chords in {displayKey(target.key)} yet.</p>
@@ -1080,7 +1087,7 @@ function NoChordsYet({
         <Button type="button" variant="outline" className="h-tap" onClick={onStart}>
           Start from the lyrics
         </Button>
-        {sources.map((s) => (
+        {usable.map((s) => (
           <Button
             key={s.key}
             type="button"
@@ -1092,14 +1099,14 @@ function NoChordsYet({
           </Button>
         ))}
       </div>
-      {sources.length > 0 && (
+      {usable.length > 0 && (
         <div
           role="radiogroup"
           aria-labelledby={`${id}-spelling`}
-          className="flex flex-wrap items-center gap-2 text-sm"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
         >
-          <span id={`${id}-spelling`}>Transposed chords use</span>
-          {(['sharp', 'flat'] as const).map((sp) => (
+          <span id={`${id}-spelling`}>Name the notes:</span>
+          {SPELLINGS.map((sp) => (
             <label key={sp} className="flex min-h-tap items-center gap-1">
               <input
                 type="radio"
@@ -1107,14 +1114,29 @@ function NoChordsYet({
                 checked={spelling === sp}
                 onChange={() => setSpelling(sp)}
               />
-              {sp === 'sharp' ? 'sharps (♯)' : 'flats (♭)'}
+              {SPELLING_LABEL[sp]}
             </label>
           ))}
+          <p className="w-full text-xs text-muted-foreground">
+            {spelling === 'key'
+              ? `Notes are named as ${displayKey(target.key)}'s scale names them (e.g. B♭ rather than A♯ in C).`
+              : spelling === 'sharp'
+                ? 'Every raised or lowered note is written as a sharp.'
+                : 'Every raised or lowered note is written as a flat.'}
+          </p>
         </div>
       )}
+      {otherKind.map((s) => (
+        <p key={s.key} className="text-xs text-muted-foreground">
+          {displayKey(s.key)} is {kind(s.key)} and {displayKey(target.key)} is {kind(target.key)},
+          so its chords can’t be transposed into {displayKey(target.key)}.
+        </p>
+      ))}
     </div>
   );
 }
+
+const SPELLINGS: readonly Spelling[] = ['key', 'sharp', 'flat'];
 
 /** Loading placeholder while the song being edited is fetched. */
 export function LyricsSectionSkeleton() {

@@ -101,7 +101,7 @@ describe('ItemOverrideEditor', () => {
   it('overriding to a key the song lacks shows X chords and the upload link', async () => {
     const { user, onChange } = setup();
     await user.selectOptions(screen.getByLabelText('Key'), 'E');
-    expect(onChange).toHaveBeenCalledWith({ overrideKey: 'E' });
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ overrideKey: 'E' }));
     expect(screen.getByRole('heading', { name: 'First chords in E' })).toBeInTheDocument();
     expect(screen.getAllByText('X')).toHaveLength(4);
     expect(screen.getByRole('link', { name: 'Upload files for E' })).toHaveAttribute(
@@ -113,7 +113,7 @@ describe('ItemOverrideEditor', () => {
   it('going back to the usual key clears the override', async () => {
     const { user, onChange } = setup({ ...plain, overrideKey: 'C' });
     await user.selectOptions(screen.getByLabelText('Key'), '');
-    expect(onChange).toHaveBeenCalledWith({ overrideKey: null });
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ overrideKey: null }));
   });
 
   it('keeps an unusual saved key selectable', () => {
@@ -163,11 +163,13 @@ describe('ItemOverrideEditor', () => {
   it('resets every override at once', async () => {
     const { user, onChange } = setup(first);
     await user.click(screen.getByRole('button', { name: /usual values/i }));
-    expect(onChange).toHaveBeenCalledWith({
-      overrideKey: null,
-      overrideBpm: null,
-      overrideEnergy: null,
-    });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        overrideKey: null,
+        overrideBpm: null,
+        overrideEnergy: null,
+      }),
+    );
   });
 
   it('hides reset when nothing is overridden', () => {

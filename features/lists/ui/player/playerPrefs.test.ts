@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_SPEED,
   clampInt,
-  parseRole,
   readSpeed,
   readTextStep,
   writeSpeed,
@@ -16,13 +15,6 @@ afterEach(() => {
 });
 
 describe('playerPrefs', () => {
-  it('parses roles', () => {
-    expect(parseRole('musician')).toBe('musician');
-    expect(parseRole('projectionist')).toBe('projectionist');
-    expect(parseRole('drummer')).toBeNull();
-    expect(parseRole(null)).toBeNull();
-  });
-
   it('clamps whole numbers and falls back on junk', () => {
     expect(clampInt('7', 1, 10, 3)).toBe(7);
     expect(clampInt(12, 1, 10, 3)).toBe(10);

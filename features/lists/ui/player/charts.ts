@@ -1,7 +1,6 @@
 /**
- * What each role can see for one setlist song (LIST-11). Pure, exported for tests.
+ * What the set player can show for one setlist song (LIST-11). Pure, exported for tests.
  */
-import { firstLine } from '@/lib/lyrics/parse';
 import { songChordSets } from '@/lib/lyrics/chords';
 import { openPlan } from '@/features/songs/ui/SongPage';
 import { SECTIONS } from '@/types/domain';
@@ -10,7 +9,6 @@ import type {
   ResolvedItem,
   Resource,
   ResourceKind,
-  Section,
   SongChords,
   SongDetail,
 } from '@/types/domain';
@@ -87,32 +85,4 @@ export function keyMismatch(
 
 export function hasLyrics(detail: SongDetail | undefined): boolean {
   return !!detail && SECTIONS.some((s) => !!detail.lyrics[s]?.trim());
-}
-
-/** Short section names for the projectionist's running order. */
-export const SECTION_SHORT: Record<Section, string> = {
-  chorus: 'C',
-  verse_1: 'V1',
-  verse_2: 'V2',
-  verse_3: 'V3',
-  verse_4: 'V4',
-  verse_5: 'V5',
-  bridge: 'B',
-};
-
-/**
- * Each section in the order it's first sung, with its first line, for finding the right slide.
- * Sections with lyrics that aren't in the arrangement come after, in storage order.
- */
-export function sectionCues(detail: SongDetail): Array<{ section: Section; line: string }> {
-  const order = [...new Set([...detail.arrangement, ...SECTIONS])];
-  return order.flatMap((section) => {
-    const line = firstLine(detail.lyrics[section]);
-    return line ? [{ section, line }] : [];
-  });
-}
-
-/** The song's projection files and links. */
-export function projectionResources(resolved: ResolvedItem): Resource[] {
-  return resolved.resources.filter((r) => r.kind === 'projection');
 }

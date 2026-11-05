@@ -1,4 +1,3 @@
-import { InstallBanner } from '@/features/install/InstallBanner';
 import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { redirect, unstable_rethrow } from 'next/navigation';
@@ -120,7 +119,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
               />
             </div>
           </header>
-          <InstallBanner />
           {/* Bottom padding keeps content clear of the fixed mobile tab bar (h-14 + safe area). */}
           <main
             id="main"

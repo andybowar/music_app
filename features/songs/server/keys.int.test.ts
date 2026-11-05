@@ -244,6 +244,68 @@ describe('setSongKeys', () => {
   });
 });
 
+describe('setSongKeys chords per key (LIB-23)', () => {
+  beforeEach(async () => {
+    await getDb()
+      .update(songs)
+      .set({ chorusLyrics: 'Sing it now\nAll day', verse1Lyrics: 'First line' })
+      .where(eq(songs.id, songId));
+  });
+
+  const chorus = (text: string) => ({ chorus: text, verse_1: 'First line' });
+
+  test('saves chords per key, keeps them when omitted, removes them with null, and audits', async () => {
+    const saved = await save([
+      { ...k('G', true), chords: chorus('[G]Sing it [C]now\nAll [D]day') },
+      { ...k('A'), chords: chorus('[A]Sing it [D]now\nAll [E]day') },
+      k('D'),
+    ]);
+    const byKey = Object.fromEntries(saved.map((x) => [x.key, x]));
+    expect(byKey.G!.chords?.chorus).toBe('[G]Sing it [C]now\nAll [D]day');
+    expect(byKey.A!.chords?.chorus).toBe('[A]Sing it [D]now\nAll [E]day');
+    expect(byKey.D).not.toHaveProperty('chords');
+    // Only sections with chords' text are stored; a section without chords keeps its words.
+    const rowG = (await keyRows()).find((r) => r.key === 'G')!;
+    expect(Object.keys(rowG.chordLyrics!).sort()).toEqual(['chorus', 'verse_1']);
+
+    // Not sent: left as stored (e.g. another caller that doesn't know about chords).
+    const kept = await save([
+      { id: byKey.G!.id, ...k('G', true) },
+      { id: byKey.A!.id, ...k('A') },
+      { id: byKey.D!.id, ...k('D') },
+    ]);
+    expect(kept.find((x) => x.key === 'A')!.chords?.chorus).toBe('[A]Sing it [D]now\nAll [E]day');
+
+    // Null, or a set with no chords typed: removed.
+    const removed = await save([
+      { id: byKey.G!.id, ...k('G', true), chords: chorus('Sing it now\nAll day') },
+      { id: byKey.A!.id, ...k('A'), chords: null },
+      { id: byKey.D!.id, ...k('D') },
+    ]);
+    expect(removed.every((x) => !('chords' in x))).toBe(true);
+
+    const trail = await getDb()
+      .select()
+      .from(auditLog)
+      .where(and(eq(auditLog.entity, 'song_key'), eq(auditLog.entityId, byKey.A!.id)));
+    const update = trail.find((t) => t.action === 'update')!;
+    expect(update.diff).toHaveProperty('chordLyrics');
+  });
+
+  test('refuses chords whose words differ from the lyrics, naming the key and section', async () => {
+    const res = await setSongKeys(songId, [
+      { ...k('G', true), chords: chorus('[G]Sing it [C]now\nAll day') },
+      { ...k('A'), chords: chorus('[A]Sing it later\nAll day') },
+    ]);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.error.code).toBe('VALIDATION');
+      expect(Object.keys(res.error.fieldErrors ?? {})).toEqual(['1.chords.chorus']);
+    }
+    expect(await keyRows()).toHaveLength(0);
+  });
+});
+
 describe('setSongKeys with ids (CR LIB-02-song-key-input-id)', () => {
   const withId = (id: string, key: string, isPrimary = false) => ({ ...k(key, isPrimary), id });
   const idOf = (list: Array<{ id: string; key: string }>, key: string) =>

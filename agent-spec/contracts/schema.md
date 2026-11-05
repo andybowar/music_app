@@ -86,8 +86,8 @@ create table songs (
   bridge_lyrics    text,
   arrangement      lyric_section[] not null default '{}',   -- e.g. {verse_1,chorus,verse_2,chorus,bridge,chorus}
   -- chords over the lyrics (LIB-22, migration 0010); null = no chords
-  chord_lyrics     jsonb check (jsonb_typeof(chord_lyrics) = 'object'),  -- { section: lyrics with [chords] inline }, sections with text only
-  chords_key       text check (chords_key ~ '^[A-G](#|b)?m?$'),          -- key the chords are written in
+  chord_lyrics     jsonb check (jsonb_typeof(chord_lyrics) = 'object'),  -- DEPRECATED (LIB-23): moved to song_keys.chord_lyrics by 0011; no longer written; to be dropped
+  chords_key       text check (chords_key ~ '^[A-G](#|b)?m?$'),          -- DEPRECATED (LIB-23), as above
   -- derived (maintained by triggers in DB-02; never written by app code)
   chorus_line      text,         -- first non-empty line of chorus_lyrics
   verse1_line      text,         -- first non-empty line of verse_1_lyrics
@@ -119,6 +119,7 @@ create table song_keys (
   verse_chord   text,
   chorus_chord  text,
   bridge_chord  text,
+  chord_lyrics  jsonb check (jsonb_typeof(chord_lyrics) = 'object'),  -- LIB-23: { section: lyrics with [chords] inline } for this key, sections with text only; null = none
   unique (song_id, key)
 );
 create unique index song_keys_one_primary on song_keys (song_id) where is_primary;

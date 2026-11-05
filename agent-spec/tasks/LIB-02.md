@@ -8,7 +8,7 @@ size: S
 status: done
 human_required: false
 depends_on: ["DB-06", "AUTH-04", "AUTH-05"]
-blocks: ["IMP-03", "LIB-17"]
+blocks: ["IMP-03", "LIB-17", "LIB-23"]
 owns: ["features/songs/server/keys.ts"]
 touches: []
 requirements: ["REQ-LIB-08"]

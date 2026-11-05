@@ -12,6 +12,7 @@ import { BranchCode } from '@/components/song/BranchCode';
 import { EnergyChip } from '@/components/song/EnergyChip';
 import { KeyBadge } from '@/components/song/KeyBadge';
 import { LyricsViewer, LyricsViewerSkeleton } from '@/components/song/LyricsViewer';
+import { songChordSets } from '@/lib/lyrics/chords';
 import { TimeSigBadge } from '@/components/song/TimeSigBadge';
 import { ComposerPanel } from '@/components/song/panels/ComposerPanel';
 import { KeyPanel } from '@/components/song/panels/KeyPanel';
@@ -330,7 +331,11 @@ export function SongPage({
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="flex min-w-0 flex-col gap-4">
         <Panel title="Lyrics" id={lyricsId}>
-          <LyricsViewer lyrics={song.lyrics} arrangement={song.arrangement} chords={song.chords} />
+          <LyricsViewer
+            lyrics={song.lyrics}
+            arrangement={song.arrangement}
+            chords={songChordSets(song.keys)}
+          />
         </Panel>
         <Panel title="Themes">
           <ThemesList themes={song.themes} />

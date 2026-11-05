@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { getSong, SONG_IDS, thousandHallelujahs } from '@/fixtures';
+import { songChordSets } from '@/lib/lyrics/chords';
 import type { SongLyrics } from '@/types/domain';
 import {
   LyricsViewer,
@@ -146,19 +147,24 @@ describe('LyricsViewerSkeleton', () => {
   });
 });
 
-describe('LyricsViewer chords (LIB-22)', () => {
+describe('LyricsViewer chords (LIB-22/23)', () => {
   const chorded = getSong(SONG_IDS.amazingGrace);
+  const sets = songChordSets(chorded.keys);
+  const g = sets[0]!;
+  const a = {
+    key: 'A',
+    sections: {
+      ...g.sections,
+      verse_1: '[A]Amazing grace, how sweet the sound\n(verse 1 placeholder)',
+    },
+  };
 
   afterEach(() => window.localStorage.clear());
 
   it('shows chords over the lyrics with a toggle and the key', async () => {
     const user = userEvent.setup();
     render(
-      <LyricsViewer
-        lyrics={chorded.lyrics}
-        arrangement={chorded.arrangement}
-        chords={chorded.chords}
-      />,
+      <LyricsViewer lyrics={chorded.lyrics} arrangement={chorded.arrangement} chords={sets} />,
     );
     const toggle = screen.getByRole('button', { name: 'Chords' });
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
@@ -174,14 +180,33 @@ describe('LyricsViewer chords (LIB-22)', () => {
   it('remembers hidden chords', () => {
     window.localStorage.setItem(SHOW_CHORDS_STORAGE_KEY, 'false');
     render(
-      <LyricsViewer
-        lyrics={chorded.lyrics}
-        arrangement={chorded.arrangement}
-        chords={chorded.chords}
-      />,
+      <LyricsViewer lyrics={chorded.lyrics} arrangement={chorded.arrangement} chords={sets} />,
     );
     expect(screen.getByRole('button', { name: 'Chords' })).toHaveAttribute('aria-pressed', 'false');
     expect(document.querySelector('[data-chords]')).toBeNull();
+  });
+
+  it('switches between keys, starting on the first set', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <LyricsViewer lyrics={chorded.lyrics} arrangement={chorded.arrangement} chords={[g, a]} />,
+    );
+    const verse1 = () => document.querySelector('[data-section="verse_1"] [data-chords]');
+    expect(screen.getByRole('radio', { name: 'Chords in G' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(verse1()).toHaveTextContent(/^G/);
+    await user.click(screen.getByRole('radio', { name: 'Chords in A' }));
+    expect(verse1()).toHaveTextContent(/^A/);
+    // A new first set (e.g. the setlist key) takes over.
+    rerender(
+      <LyricsViewer lyrics={chorded.lyrics} arrangement={chorded.arrangement} chords={[a, g]} />,
+    );
+    expect(screen.getByRole('radio', { name: 'Chords in A' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 
   it('shows plain lyrics for sections without chords, and no toggle without any chords', () => {
@@ -189,17 +214,19 @@ describe('LyricsViewer chords (LIB-22)', () => {
       <LyricsViewer
         lyrics={chorded.lyrics}
         arrangement={chorded.arrangement}
-        chords={{ key: null, sections: { ...blank, verse_1: chorded.chords!.sections.verse_1 } }}
+        chords={[{ key: 'G', sections: { ...blank, verse_1: g.sections.verse_1 } }]}
       />,
     );
-    expect(screen.queryByText(/Chords in/)).toBeNull();
-    expect(document.querySelectorAll('[data-chords]')).toHaveLength(1);
+    expect(
+      document.querySelectorAll('[data-section="verse_1"] [data-chords]').length,
+    ).toBeGreaterThan(0);
+    expect(document.querySelector('[data-section="chorus"] [data-chords]')).toBeNull();
     unmount();
     render(
       <LyricsViewer
         lyrics={lyrics}
         arrangement={arrangement}
-        chords={{ key: 'D', sections: { ...lyrics } }}
+        chords={[{ key: 'D', sections: { ...lyrics } }]}
       />,
     );
     expect(screen.queryByRole('button', { name: 'Chords' })).toBeNull();

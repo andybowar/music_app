@@ -255,15 +255,13 @@ describe('songs', () => {
   });
 });
 
-describe('chords (LIB-22)', () => {
-  it('has a song with chords, whose words match its lyrics', () => {
-    const chorded = songs.filter((s) => s.chords);
+describe('chords (LIB-22/23)', () => {
+  it('has a key with chords, whose words match its song lyrics', () => {
+    const chorded = songs.flatMap((s) => s.keys.filter((k) => k.chords).map((k) => ({ s, k })));
     expect(chorded.length).toBeGreaterThan(0);
-    for (const s of chorded) {
+    for (const { s, k } of chorded) {
       for (const section of SECTIONS) {
-        expect(chordsMatchLyrics(s.chords!.sections[section], s.lyrics[section]), s.title).toBe(
-          true,
-        );
+        expect(chordsMatchLyrics(k.chords![section], s.lyrics[section]), s.title).toBe(true);
       }
     }
   });

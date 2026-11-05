@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { createEvent, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, createEvent, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
@@ -8,10 +8,7 @@ import { parseLyrics } from '@/lib/lyrics/parse';
 import type { Section } from '@/types/domain';
 import {
   addToArrangement,
-  chordsInUse,
-  disableChords,
   emptyLyrics,
-  enableChords,
   hasAnyLyrics,
   lyricsFromParse,
   lyricsFromSong,
@@ -19,7 +16,6 @@ import {
   LyricsSectionSkeleton,
   parsedHasChords,
   parsePastedLyrics,
-  setChordText,
   setSectionText,
   versesInUse,
   type LyricsSectionProps,
@@ -337,182 +333,245 @@ describe('LyricsSection', () => {
   });
 });
 
-// ---------- Chords over the lyrics (LIB-22) ----------
+// ---------- Chords over the lyrics, per key (LIB-22/23) ----------
 
-const musicalWithKeys: SongFormValue['musical'] = {
-  keys: [
-    {
-      key: 'D',
-      isPrimary: false,
-      firstChords: { intro: null, verse: null, chorus: null, bridge: null },
-    },
-    {
-      key: 'G',
-      isPrimary: true,
-      firstChords: { intro: null, verse: null, chorus: null, bridge: null },
-    },
-  ],
+const amazing = getSong(SONG_IDS.amazingGrace);
+const blankChords = { intro: null, verse: null, chorus: null, bridge: null };
+const musicalOf = (keys: SongFormValue['musical']['keys']): SongFormValue['musical'] => ({
+  keys,
   tempoBpm: null,
   timeSignature: null,
   energyLevel: null,
   energyNotes: null,
-};
-
-const chordsBox = () => screen.getByRole('checkbox', { name: /Add chords over the lyrics/ });
-
-describe('chords helpers', () => {
-  it('setChordText keeps the chords and derives the plain lyrics and arrangement', () => {
-    const start = enableChords(song(), 'D');
-    const typed = setChordText(start, 'chorus', '[D]With a [G]thousand');
-    expect(typed.value.chords?.sections.chorus).toBe('[D]With a [G]thousand');
-    expect(typed.value.lyrics.chorus).toBe('With a thousand');
-    expect(typed.value.arrangement).toEqual(start.arrangement);
-    const chordOnly = setChordText(start, 'chorus', '[D] [G]');
-    expect(chordOnly.value.lyrics.chorus).toBeNull();
-    expect(chordOnly.removed).toBe(3);
-    expect(setChordText(start, 'chorus', '').value.chords?.sections.chorus).toBeNull();
-    // Works when chords were never set up.
-    expect(setChordText(song(), 'bridge', '[C]x').value.chords).toEqual({
-      key: null,
-      sections: { bridge: '[C]x' },
-    });
-  });
-
-  it('enableChords copies the lyrics; disableChords keeps them; chordsInUse needs a chord', () => {
-    const on = enableChords(song(), 'G');
-    expect(on.chords).toEqual({ key: 'G', sections: song().lyrics });
-    expect(chordsInUse(on)).toBe(false);
-    expect(chordsInUse(setChordText(on, 'chorus', '[G]la').value)).toBe(true);
-    expect(chordsInUse(emptyLyrics())).toBe(false);
-    const off = disableChords(setChordText(on, 'chorus', '[G]la').value);
-    expect(off.chords).toBeNull();
-    expect(off.lyrics.chorus).toBe('la');
-  });
-
-  it('lyricsFromSong fills sections the stored chords lack from the lyrics', () => {
-    const amazing = getSong(SONG_IDS.amazingGrace);
-    const value = lyricsFromSong({
-      ...amazing,
-      chords: { key: 'G', sections: { ...amazing.chords!.sections, verse_5: null } },
-    });
-    expect(value.chords?.sections.verse_1).toBe(amazing.chords!.sections.verse_1);
-    expect(value.chords?.sections.verse_5).toBe(amazing.lyrics.verse_5);
-    expect(lyricsFromSong(thousandHallelujahs).chords).toBeNull();
-  });
-
-  it('lyricsFromParse keeps or strips chords; parsePastedLyrics moves chords inline', () => {
-    const parsed = parsePastedLyrics('Chorus\nG    C\nSing it now\n\nBridge\nD  G');
-    expect(parsedHasChords(parsed)).toBe(true);
-    expect(parsedHasChords(parseLyrics('Chorus\nla'))).toBe(false);
-    const kept = lyricsFromParse(parsed, { key: 'G' });
-    expect(kept.chords?.key).toBe('G');
-    expect(kept.chords?.sections.chorus).toBe('[G]Sing [C]it now');
-    expect(kept.lyrics.chorus).toBe('Sing it now');
-    // The bridge has only chords, so it has no lyrics and leaves the order.
-    expect(kept.lyrics.bridge).toBeNull();
-    expect(kept.arrangement).toEqual(['chorus']);
-    const stripped = lyricsFromParse(parsed);
-    expect(stripped.chords).toBeNull();
-    expect(stripped.lyrics.chorus).toBe('Sing it now');
-  });
-
-  it('versesInUse counts a verse that only has chords, or has chord errors', () => {
-    const value = setChordText(enableChords(emptyLyrics(), null), 'verse_4', '[G] [C]').value;
-    expect(versesInUse(value)).toBe(4);
-    expect(versesInUse(emptyLyrics(), ['chords.sections.verse_3'])).toBe(3);
-  });
 });
+/** Amazing Grace with chords in G (primary) and A, and a key D without chords. */
+const twoKeys = () => {
+  const lyrics = lyricsFromSong(amazing);
+  const g = amazing.keys.find((k) => k.key === 'G')!.chords!;
+  return {
+    lyrics,
+    musical: musicalOf([
+      { key: 'G', isPrimary: true, firstChords: blankChords, chords: { ...g } },
+      {
+        key: 'A',
+        isPrimary: false,
+        firstChords: blankChords,
+        chords: {
+          ...g,
+          verse_1: '[A]Amazing [A7]grace, how [D]sweet the [A]sound\n(verse 1 [E]placeholder)',
+        },
+      },
+      { key: 'D', isPrimary: false, firstChords: blankChords },
+    ]),
+  };
+};
+const chordsBox = () => screen.getByRole('checkbox', { name: /Add chords over the lyrics/ });
+const lastKeys = (changes: Array<Partial<SongFormValue>>) =>
+  [...changes].reverse().find((c) => c.musical)?.musical?.keys;
+const keyButton = (name: RegExp) =>
+  within(screen.getByRole('radiogroup', { name: 'Chords for' })).getByRole('radio', { name });
 
-describe('LyricsSection chords', () => {
-  it('is off by default and optional', () => {
+describe('LyricsSection chords per key', () => {
+  it('is off by default, optional, and needs a key first', () => {
     setup({ initial: { lyrics: song() } });
     expect(chordsBox()).not.toBeChecked();
-    expect(screen.queryByLabelText('Chords are in')).toBeNull();
+    expect(chordsBox()).toBeDisabled();
+    expect(screen.getByText(/Add a key under Keys & tempo first/)).toBeVisible();
   });
 
-  it('turns on with the primary key, edits chorded text and previews it', async () => {
-    const { user, last } = setup({ initial: { lyrics: song(), musical: musicalWithKeys } });
+  it('turns on for the primary key and edits its chords with a preview', async () => {
+    const { user, changes, last } = setup({
+      initial: {
+        lyrics: song(),
+        musical: musicalOf([{ key: 'D', isPrimary: true, firstChords: blankChords }]),
+      },
+    });
     await user.click(chordsBox());
-    expect(chordsBox()).toBeChecked();
-    const keySelect = screen.getByLabelText('Chords are in');
-    expect(keySelect).toHaveValue('G');
-    expect(
-      within(keySelect)
-        .getAllByRole('option')
-        .map((o) => o.textContent),
-    ).toEqual(['Not stated', 'D', 'G']);
-    await user.selectOptions(keySelect, 'D');
-    expect(last()?.chords?.key).toBe('D');
-
+    expect(lastKeys(changes)![0]!.chords).toEqual(
+      expect.objectContaining({ chorus: song().lyrics.chorus }),
+    );
+    expect(screen.getByText(/^Editing the chords in/, { selector: 'p' })).toHaveTextContent(
+      'Editing the chords in D.',
+    );
     await user.clear(field('Chorus'));
     await user.click(field('Chorus'));
     await user.paste('[D]Made-up [G]chorus');
-    expect(last()?.chords?.sections.chorus).toBe('[D]Made-up [G]chorus');
+    expect(lastKeys(changes)![0]!.chords!.chorus).toBe('[D]Made-up [G]chorus');
     expect(last()?.lyrics.chorus).toBe('Made-up chorus');
-    expect(field('Chorus')).toHaveValue('[D]Made-up [G]chorus');
     expect(screen.getByText('Preview')).toBeVisible();
-    expect(document.querySelector('[data-chords]')).toHaveTextContent('DMade-up Gchorus');
-    expect(screen.getAllByText(/\/ 8000$/).length).toBeGreaterThan(0);
   });
 
-  it('shows the song keys plus a stored key that is no longer one of them', () => {
-    setup({
+  it('switches key; editing words in one key moves the other key’s chords', async () => {
+    const { user, changes, last } = setup({ initial: twoKeys() });
+    expect(keyButton(/^G/)).toHaveAttribute('aria-checked', 'true');
+    expect(keyButton(/^A, has chords/)).toBeInTheDocument();
+    await user.click(keyButton(/^A/));
+    expect(field('Verse 1')).toHaveValue(
+      '[A]Amazing [A7]grace, how [D]sweet the [A]sound\n(verse 1 [E]placeholder)',
+    );
+    await user.click(keyButton(/^G/));
+    await user.clear(field('Verse 1'));
+    await user.click(field('Verse 1'));
+    await user.paste('[G]Amazing [G7]love, how [C]sweet the [G]sound\n(verse 1 [D]placeholder)');
+    expect(last()?.lyrics.verse_1).toBe('Amazing love, how sweet the sound\n(verse 1 placeholder)');
+    expect(lastKeys(changes)![1]!.chords!.verse_1).toBe(
+      '[A]Amazing [A7]love, how [D]sweet the [A]sound\n(verse 1 [E]placeholder)',
+    );
+  });
+
+  it('a key without chords can start from the words or be filled by transposing', async () => {
+    const { user, changes } = setup({ initial: twoKeys() });
+    await user.click(keyButton(/^D/));
+    expect(screen.getByText('No chords in D yet.')).toBeVisible();
+    expect(screen.getByRole('radio', { name: 'Spell by the key' })).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Fill from G' }));
+    expect(lastKeys(changes)![2]!.chords!.verse_1).toBe(
+      '[D]Amazing [D7]grace, how [G]sweet the [D]sound\n(verse 1 [A]placeholder)',
+    );
+    expect(field('Verse 1')).toHaveValue(
+      '[D]Amazing [D7]grace, how [G]sweet the [D]sound\n(verse 1 [A]placeholder)',
+    );
+    expect(screen.getByText(/^Editing the chords in/, { selector: 'p' })).toHaveTextContent('D.');
+  });
+
+  it('spells transposed notes by the key, or all sharps / all flats when chosen', async () => {
+    const lyrics = { lyrics: { chorus: 'Sing it now' }, arrangement: ['chorus' as const] };
+    const keysWith = () =>
+      musicalOf([
+        {
+          key: 'G',
+          isPrimary: true,
+          firstChords: blankChords,
+          chords: { chorus: '[G]Sing [F]it [D]now' },
+        },
+        { key: 'C', isPrimary: false, firstChords: blankChords },
+      ]);
+    const first = setup({ initial: { lyrics, musical: keysWith() } });
+    await first.user.click(keyButton(/^C/));
+    expect(screen.getByText(/rather than A♯ in C/)).toBeVisible();
+    await first.user.click(screen.getByRole('button', { name: 'Fill from G' }));
+    expect(lastKeys(first.changes)![1]!.chords!.chorus).toBe('[C]Sing [Bb]it [G]now');
+    cleanup();
+
+    const second = setup({ initial: { lyrics, musical: keysWith() } });
+    await second.user.click(keyButton(/^C/));
+    await second.user.click(screen.getByRole('radio', { name: 'All sharps (♯)' }));
+    await second.user.click(screen.getByRole('button', { name: 'Fill from G' }));
+    expect(lastKeys(second.changes)![1]!.chords!.chorus).toBe('[C]Sing [A#]it [G]now');
+  });
+
+  it('only fills from a key of the same kind, saying why for the others', async () => {
+    const { user } = setup({
       initial: {
-        lyrics: { ...song(), chords: { key: 'Eb', sections: song().lyrics } },
-        musical: musicalWithKeys,
+        lyrics: { lyrics: { chorus: 'Sing it now' }, arrangement: ['chorus'] },
+        musical: musicalOf([
+          {
+            key: 'G',
+            isPrimary: true,
+            firstChords: blankChords,
+            chords: { chorus: '[G]Sing it now' },
+          },
+          {
+            key: 'Em',
+            isPrimary: false,
+            firstChords: blankChords,
+            chords: { chorus: '[Em]Sing it now' },
+          },
+          { key: 'F#m', isPrimary: false, firstChords: blankChords },
+        ]),
       },
     });
-    const options = within(screen.getByLabelText('Chords are in')).getAllByRole('option');
-    expect(options.map((o) => o.textContent)).toEqual(['Not stated', 'D', 'G', 'Eb']);
+    await user.click(keyButton(/^F sharp minor|^F♯m|^F#m/));
+    expect(screen.getByRole('button', { name: 'Fill from Em' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Fill from G' })).toBeNull();
+    expect(
+      screen.getByText('G is major and F♯m is minor, so its chords can’t be transposed into F♯m.'),
+    ).toBeVisible();
   });
 
-  it('turns off straight away when no chords were typed', async () => {
-    const { user, last } = setup({ initial: { lyrics: song() } });
-    await user.click(chordsBox());
-    expect(last()?.chords).toEqual({ key: null, sections: song().lyrics });
-    await user.click(chordsBox());
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(last()?.chords).toBeNull();
+  it('starts a key from the plain words', async () => {
+    const { user, changes } = setup({ initial: twoKeys() });
+    await user.click(keyButton(/^D/));
+    await user.click(screen.getByRole('button', { name: 'Start from the lyrics' }));
+    expect(lastKeys(changes)![2]!.chords!.verse_1).toBe(amazing.lyrics.verse_1);
   });
 
-  it('asks before removing typed chords, and keeps the lyrics', async () => {
-    const amazing = lyricsFromSong(getSong(SONG_IDS.amazingGrace));
-    const { user, last } = setup({ initial: { lyrics: amazing } });
-    expect(chordsBox()).toBeChecked();
-    await user.click(chordsBox());
-    const dialog = within(screen.getByRole('dialog', { name: 'Remove the chords?' }));
-    await user.click(dialog.getByRole('button', { name: 'Keep chords' }));
-    expect(chordsBox()).toBeChecked();
+  it('removes one key’s chords after asking, and all chords from the checkbox', async () => {
+    const { user, changes } = setup({ initial: twoKeys() });
+    await user.click(keyButton(/^A/));
+    await user.click(screen.getByRole('button', { name: 'Remove chords in A' }));
+    const ask = screen.getByRole('dialog', { name: 'Remove the chords in A?' });
+    await user.click(within(ask).getByRole('button', { name: 'Remove chords' }));
+    expect(lastKeys(changes)![1]!.chords).toBeNull();
+    expect(lastKeys(changes)![0]!.chords).not.toBeNull();
 
+    await user.click(chordsBox());
+    const all = screen.getByRole('dialog', { name: 'Remove all the chords?' });
+    await user.click(within(all).getByRole('button', { name: 'Keep chords' }));
+    expect(chordsBox()).toBeChecked();
     await user.click(chordsBox());
     await user.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Remove chords' }),
     );
-    expect(last()?.chords).toBeNull();
-    expect(last()?.lyrics.verse_1).toBe(amazing.lyrics.verse_1);
-    expect(field('Verse 1')).toHaveValue(amazing.lyrics.verse_1);
+    expect(lastKeys(changes)!.map((k) => k.chords ?? null)).toEqual([null, null, null]);
+    expect(chordsBox()).not.toBeChecked();
   });
 
-  it('pasting a chord sheet offers to keep the chords and turns chords on', async () => {
-    const { user, last } = setup();
+  it('turns off without asking when no chords were typed', async () => {
+    const { user, changes } = setup({
+      initial: {
+        lyrics: song(),
+        musical: musicalOf([{ key: 'D', isPrimary: true, firstChords: blankChords }]),
+      },
+    });
+    await user.click(chordsBox());
+    await user.click(chordsBox());
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(lastKeys(changes)![0]!.chords).toBeNull();
+  });
+
+  it('pastes into the key being edited, moves the other keys and says so', async () => {
+    const { user, changes, last } = setup({ initial: twoKeys() });
+    await user.click(keyButton(/^A/));
+    await user.click(screen.getByRole('button', { name: 'Paste full lyrics' }));
+    const dialog = within(screen.getByRole('dialog'));
+    await user.click(dialog.getByLabelText('Lyrics with headings'));
+    await user.paste(
+      'Verse 1\n[A]Amazing grace, how sweet the sound\n\nChorus\nMy chains are gone',
+    );
+    await user.click(dialog.getByRole('button', { name: 'Split into sections' }));
+    expect(dialog.getByText(/they’ll go into A/)).toBeVisible();
+    await user.click(dialog.getByRole('button', { name: 'Use these lyrics' }));
+    await user.click(screen.getByRole('button', { name: 'Replace lyrics' }));
+    expect(last()?.lyrics.verse_1).toBe('Amazing grace, how sweet the sound');
+    expect(lastKeys(changes)![1]!.chords!.verse_1).toBe('[A]Amazing grace, how sweet the sound');
+    expect(lastKeys(changes)![0]!.chords!.verse_1).toBe(
+      '[G]Amazing [G7]grace, how [C]sweet the [G]sound',
+    );
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /Chords in G were moved to follow the new words/,
+    );
+  });
+
+  it('pasting a chord sheet with chords off turns them on for the primary key', async () => {
+    const { user, changes } = setup({
+      initial: { musical: musicalOf([{ key: 'C', isPrimary: true, firstChords: blankChords }]) },
+    });
     await user.click(screen.getByRole('button', { name: 'Paste full lyrics' }));
     const dialog = within(screen.getByRole('dialog'));
     await user.click(dialog.getByLabelText('Lyrics with headings'));
     await user.paste('Chorus\nG    C\nSing it now');
     await user.click(dialog.getByRole('button', { name: 'Split into sections' }));
-    expect(dialog.getByRole('list', { name: 'Sections found' })).toHaveTextContent(
-      'Chorus:Sing it now',
-    );
-    const keep = dialog.getByRole('checkbox', { name: /Keep the chords/ });
-    expect(keep).toBeChecked();
+    expect(dialog.getByRole('checkbox', { name: /Keep the chords/ })).toBeChecked();
     await user.click(dialog.getByRole('button', { name: 'Use these lyrics' }));
-    expect(last()?.chords?.sections.chorus).toBe('[G]Sing [C]it now');
-    expect(last()?.lyrics.chorus).toBe('Sing it now');
+    expect(lastKeys(changes)![0]!.chords!.chorus).toBe('[G]Sing [C]it now');
     expect(chordsBox()).toBeChecked();
   });
 
-  it('pasting a chord sheet without keeping chords stores plain lyrics', async () => {
-    const { user, last } = setup();
+  it('pasting without keeping chords stores plain lyrics', async () => {
+    const { user, changes, last } = setup({
+      initial: { musical: musicalOf([{ key: 'C', isPrimary: true, firstChords: blankChords }]) },
+    });
     await user.click(screen.getByRole('button', { name: 'Paste full lyrics' }));
     const dialog = within(screen.getByRole('dialog'));
     await user.click(dialog.getByLabelText('Lyrics with headings'));
@@ -520,44 +579,50 @@ describe('LyricsSection chords', () => {
     await user.click(dialog.getByRole('button', { name: 'Split into sections' }));
     await user.click(dialog.getByRole('checkbox', { name: /Keep the chords/ }));
     await user.click(dialog.getByRole('button', { name: 'Use these lyrics' }));
-    expect(last()?.chords).toBeNull();
     expect(last()?.lyrics.chorus).toBe('Sing it now');
+    expect(lastKeys(changes)?.[0]?.chords).toBeUndefined();
     expect(chordsBox()).not.toBeChecked();
   });
 
-  it('keeps chords on when pasting while chords are on, with or without chords', async () => {
-    const { user, last } = setup({ initial: { lyrics: enableChords(emptyLyrics(), 'A') } });
-    await user.click(screen.getByRole('button', { name: 'Paste full lyrics' }));
-    const dialog = within(screen.getByRole('dialog'));
-    await user.click(dialog.getByLabelText('Lyrics with headings'));
-    await user.paste('Chorus\n[A]Sing');
-    await user.click(dialog.getByRole('button', { name: 'Split into sections' }));
-    expect(dialog.queryByRole('checkbox')).toBeNull();
-    expect(dialog.getByText(/Chords found/)).toBeVisible();
-    await user.click(dialog.getByRole('button', { name: 'Use these lyrics' }));
-    expect(last()?.chords).toMatchObject({ key: 'A', sections: { chorus: '[A]Sing' } });
-  });
-
-  it('shows chord errors from the server under the section and the chords box', () => {
-    setup({
-      initial: { lyrics: enableChords(song(), 'G') },
-      errors: {
-        'chords.sections.chorus': ['Chorus with its chords taken out doesn’t match its lyrics'],
-        'chords.key': ['Invalid key'],
-      },
+  it('shows chord errors for the key being edited', async () => {
+    const { user } = setup({
+      initial: twoKeys(),
+      errors: { 'chords.1.chorus': ['Chorus in A has different words from the lyrics'] },
     });
-    expect(
-      screen.getByText('Chorus with its chords taken out doesn’t match its lyrics'),
-    ).toBeVisible();
-    expect(screen.getByText('Invalid key')).toBeVisible();
+    expect(screen.queryByText('Chorus in A has different words from the lyrics')).toBeNull();
+    await user.click(keyButton(/^A/));
+    expect(screen.getByText('Chorus in A has different words from the lyrics')).toBeVisible();
   });
 
   it('flags chorded text whose lyrics alone pass 5000 characters', async () => {
-    const { user } = setup({ initial: { lyrics: enableChords(emptyLyrics(), null) } });
+    const { user } = setup({
+      initial: {
+        lyrics: emptyLyrics(),
+        musical: musicalOf([{ key: 'G', isPrimary: true, firstChords: blankChords, chords: {} }]),
+      },
+    });
     await user.click(field('Chorus'));
     await user.paste(`[G]${'a'.repeat(5001)}`);
     expect(
       screen.getByText('Chorus without chords is 5001 characters; the limit is 5000'),
     ).toBeVisible();
+  });
+
+  it('versesInUse counts a verse with chords in any key, or chord errors', () => {
+    expect(
+      versesInUse(
+        emptyLyrics(),
+        [],
+        [{ key: 'G', isPrimary: true, firstChords: blankChords, chords: { verse_4: '[G] [C]' } }],
+      ),
+    ).toBe(4);
+    expect(versesInUse(emptyLyrics(), ['chords.0.verse_3'])).toBe(3);
+  });
+
+  it('parsePastedLyrics moves chords written above the words inline', () => {
+    const parsed = parsePastedLyrics('Chorus\nG    C\nSing it now');
+    expect(parsedHasChords(parsed)).toBe(true);
+    expect(parsed.lyrics.chorus).toBe('[G]Sing [C]it now');
+    expect(lyricsFromParse(parsed).lyrics.chorus).toBe('Sing it now');
   });
 });

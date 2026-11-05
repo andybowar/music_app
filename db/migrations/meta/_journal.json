@@ -71,6 +71,13 @@
       "when": 1793798967406,
       "tag": "0010_chord_lyrics",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793808579672,
+      "tag": "0011_chords_per_key",
+      "breakpoints": true
     }
   ]
 }

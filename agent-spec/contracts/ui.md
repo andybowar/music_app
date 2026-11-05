@@ -68,12 +68,12 @@ All components are client components unless noted, props-only (no data fetching 
 | `ComposerName` | `components/song/ComposerName.tsx` | `{ composers: Array<{ name; popMember }>; max?: number }` | UI-04 |
 | `BranchCode` | `components/song/BranchCode.tsx` | `{ code: string \| null }` | UI-04 |
 | `SongRow` | `components/song/SongRow.tsx` | `{ song: SongSummary; resolved?: ResolvedItem; onKey(); onTitle(); onComposer(); onResources(); onUsage(); addSlot?: ReactNode; dragHandle?: ReactNode }` | UI-05 |
-| `KeyPanel` | `components/song/panels/KeyPanel.tsx` | `{ keys: SongKey[]; highlightKey?: string }` | UI-06 |
+| `KeyPanel` | `components/song/panels/KeyPanel.tsx` | `{ keys: SongKey[]; highlightKey?: string; footer?(selectedKey: string): ReactNode }` (`footer`: setlist actions under the chords, e.g. "Use A for this event"; fix for the "Can't set key on song in setlist" bug report, 2026-11-04) | UI-06 |
 | `ComposerPanel` | `components/song/panels/ComposerPanel.tsx` | `{ composers: Composer[] }` | UI-06 |
 | `UsagePanel` | `components/song/panels/UsagePanel.tsx` | `{ addedByBranchCode: string \| null; usage: BranchUsage[] }` | UI-06 |
 | `ReminderPanel` | `components/song/panels/ReminderPanel.tsx` | `{ chorusLine: string \| null; verse1Line: string \| null }` | UI-06 |
 | `ResourcesPanel` | `components/song/panels/ResourcesPanel.tsx` | `{ resources: Resource[]; keys: SongKey[]; onOpen(r: Resource): void; onShowLyrics(): void; hasLyrics?: boolean; addFilesSlot?: ReactNode }` groups: Lyrics, Sheet Music (by key), Audio (by key), Projection | UI-07 |
-| `LyricsViewer` | `components/song/LyricsViewer.tsx` | `{ lyrics: SongLyrics; arrangement: Section[]; mode?: 'arrangement' \| 'sections'; chords?: SongChords \| null; textSizePx?: number }` (`chords`: LIB-22, adds a "Chords" toggle; `textSizePx`: LIST-11 text size) | UI-07 |
+| `LyricsViewer` | `components/song/LyricsViewer.tsx` | `{ lyrics: SongLyrics; arrangement: Section[]; mode?: 'arrangement' \| 'sections'; chords?: SongChords[]; textSizePx?: number }` (`chords`: one set per key, the first shown first, with a key switcher when there are several, plus a "Chords" toggle (LIB-22/23); `textSizePx`: LIST-11 text size) | UI-07 |
 | `ChordLyrics` | `components/song/ChordLyrics.tsx` | `{ text: string; className?: string; style?: CSSProperties }` (text with inline `[chords]`) | LIB-22 |
 | `PdfViewer` | `components/media/PdfViewer.tsx` | `{ url: string; title: string; onClose(): void }` | UI-08 |
 | `InlineAudio` | `components/media/InlineAudio.tsx` | `{ url: string; title: string }` | UI-08 |
@@ -109,8 +109,9 @@ All components are client components unless noted, props-only (no data fetching 
 ```ts
 export interface SongFormValue {
   basic: { title: string; altTitles: string[]; composers: Composer[]; sourceGroup: string|null; year: number|null };
-  musical: { keys: Array<Omit<SongKey,'id'|'songId'> & { id?: UUID }>; tempoBpm: number|null; timeSignature: string|null; energyLevel: EnergyLevel|null; energyNotes: string|null };
-  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[]; chords?: { key: MusicalKey|null; sections: Partial<SongLyrics> } | null };  // chords: LIB-22
+  musical: { keys: Array<Omit<SongKey,'id'|'songId'|'chords'> & { id?: UUID; chords?: Partial<SongLyrics> | null }>;  // chords: LIB-23, null = remove on save, absent = keep
+            tempoBpm: number|null; timeSignature: string|null; energyLevel: EnergyLevel|null; energyNotes: string|null };
+  lyrics: { lyrics: Partial<SongLyrics>; arrangement: Section[] };
   themes: Array<{ section: Section; theme: Theme }>;
   usage: Array<{ branchId: UUID; level: UsageLevel }>;
 }

@@ -71,7 +71,7 @@ The account button (top right) shows who you're signed in as and your branch. It
 
 ### Using it on your phone
 
-On an iPad or iPhone, a banner at the top of the app offers to show you how to add it to your Home Screen (Share, then **Add to Home Screen**, then **Add**). Once you've added it, open it from the new icon and sign in again: the Home Screen app keeps its own sign-in. Tap ✕ on the banner to hide it for 30 days.
+On an iPad or iPhone, a banner at the top of the app offers to show you how to add it to your Home Screen (Share, then **Add to Home Screen**, then **Add**). Once you've added it, open it from the new icon and sign in again: the Home Screen app keeps its own sign-in. Tap ✕ on the banner to hide it for good on that device.
 
 The app works on any phone from 360 pixels wide. To get an icon on your home screen, use your
 browser's **Add to Home Screen** or **Install app** option.
@@ -191,27 +191,22 @@ Everyone else can view setlists but not change them.
 
 ### Playing a setlist
 
-On a setlist, tap **▶ Play** on any song and choose what you're doing. The player opens on that
-song, and **Previous** / **Next** move through the rest of the set. You're asked every time, and
-you can switch from the menu at the top of the player.
+On a setlist, tap **▶ Play** on any song. The player opens full screen on that song, and
+**Previous** / **Next** move through the rest of the set.
 
-- **Musician:** the first chords for the setlist's key, then a chart. If the song has more than
-  one (typed chords, chord charts, lead sheets or scores), you pick one each time the song comes
-  up; **Choose another chart** goes back to the list. PDFs show full width with every page one
-  under another, and **Zoom** opens the page-by-page viewer. With no chart, you get the lyrics
-  and first chords. If typed chords are in a different key from the setlist, a warning says so.
-- **Vocalist:** the lyrics in the order they're sung. **A−** and **A+** change the text size.
-- **Projectionist:** the whole running order with the current song marked, each song's section
-  order (V1 · C · V2 …), the first line of each section, and its projection files to open in
-  ProPresenter or PowerPoint.
+Each song shows its key, BPM and the first chords for the setlist's key, then a chart. If the
+song has more than one (typed chords, chord charts, lead sheets or scores), you pick one each time
+the song comes up; **Choose another chart** goes back to the list. PDFs show full width with every
+page one under another, and **Zoom** opens the page-by-page viewer. With no chart, you get the
+lyrics and first chords. If typed chords are in a different key from the setlist, a warning says
+so. **A−** and **A+** change the text size of lyrics and typed chords.
 
-Musicians and vocalists can turn on **Autoscroll** and set its **Speed** from 1 (slow) to 10. The
-speed is remembered for each song on your device, and autoscroll turns off when you move to
-another song.
+Turn on **Autoscroll** and set its **Speed** from 1 (slow) to 10. The speed is remembered for each
+song on your device, and autoscroll turns off when you move to another song.
 
 Move between songs with **Previous** and **Next**, by swiping sideways, or with the arrow or Page
-Up/Page Down keys, which is what most Bluetooth page-turner pedals send. For musicians, a pedal
-press first scrolls the chart down a screen, and moves to the next song once you're at the end.
+Up/Page Down keys, which is what most Bluetooth page-turner pedals send. A pedal press first
+scrolls the song down a screen, and moves to the next song once you're at the end.
 The screen stays on while the player is open, and setlists you've opened before still work
 offline.
 

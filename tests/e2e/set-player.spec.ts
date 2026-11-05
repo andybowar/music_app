@@ -13,21 +13,14 @@ const SEEDED_LIST = '/lists/80000000-0000-4000-8000-000000000001';
 const player = (page: Page) => page.getByRole('dialog', { name: /BG 4\/19\/26/ });
 
 /**
- * Clicks a Play button (retrying until hydrated) and picks a role. `play` is the gallery's Play
- * button, or a setlist row's "Play <title>" (the first song's by default).
+ * Clicks a Play button (retrying until hydrated), which opens the player straight away. `play` is
+ * the gallery's Play button, or a setlist row's "Play <title>" (the first song's by default).
  */
-async function start(
-  page: Page,
-  role: 'Musician' | 'Vocalist' | 'Projectionist',
-  play = page.getByRole('button', { name: /^Play\b/ }).first(),
-) {
-  const ask = page.getByRole('dialog', { name: /^Play “/ });
+async function start(page: Page, play = page.getByRole('button', { name: /^Play\b/ }).first()) {
   await expect(async () => {
-    if (!(await ask.isVisible())) await play.click();
-    await expect(ask).toBeVisible({ timeout: 2_000 });
+    if (!(await player(page).isVisible())) await play.click();
+    await expect(player(page)).toBeVisible({ timeout: 2_000 });
   }).toPass();
-  await ask.getByRole('button', { name: new RegExp(`^${role}`) }).click();
-  await expect(player(page)).toBeVisible();
 }
 
 test.describe('set player gallery', () => {
@@ -37,8 +30,8 @@ test.describe('set player gallery', () => {
     await page.goto(GALLERY);
   });
 
-  test('musician: asks which chart, pages through it, then moves on', async ({ page }) => {
-    await start(page, 'Musician');
+  test('asks which chart, pages through it, then moves on', async ({ page }) => {
+    await start(page);
     const p = player(page);
     await expect(p.locator('header').getByText('Song 1 of 6')).toBeVisible();
     await expect(p.getByRole('heading', { name: 'Which chart?' })).toBeVisible();
@@ -63,8 +56,9 @@ test.describe('set player gallery', () => {
   });
 
   test('autoscroll moves the page and switches off on the next song', async ({ page }) => {
-    await start(page, 'Vocalist');
+    await start(page);
     const p = player(page);
+    await p.getByRole('button', { name: 'Typed chords (in G)' }).click();
     await p.getByRole('button', { name: 'Larger text' }).click();
     await p.getByRole('button', { name: 'Larger text' }).click();
     await p.getByRole('slider').fill('10');
@@ -79,23 +73,13 @@ test.describe('set player gallery', () => {
     await expect(p.getByRole('slider')).toHaveValue('3');
   });
 
-  test('projectionist sees the running order; the role can be switched; Escape exits', async ({
-    page,
-  }) => {
-    await start(page, 'Projectionist');
+  test('has no role picker or menu; Escape exits', async ({ page }) => {
+    await start(page);
     const p = player(page);
-    const order = p.getByRole('list', { name: 'Running order' });
-    await expect(order.getByRole('listitem')).toHaveCount(6);
-    await expect(order.locator('[aria-current="step"]')).toContainText('Amazing Grace');
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await expect(p.getByRole('button', { name: /Change role/ })).toHaveCount(0);
     await page.keyboard.press('ArrowRight');
-    await expect(order.locator('[aria-current="step"]')).toContainText('Be Exalted');
-
-    await p.getByRole('button', { name: /Change role/ }).click();
-    await page.getByRole('menuitemradio', { name: 'Vocalist' }).click();
     await expect(p.locator('header').getByText('Song 2 of 6')).toBeVisible();
-    await expect(order).toBeHidden();
-    await expect(page.getByRole('menu')).toBeHidden();
-
     await page.keyboard.press('Escape');
     await expect(player(page)).toBeHidden();
   });
@@ -112,7 +96,7 @@ test.describe('set player on a seeded stack', () => {
     );
   });
 
-  test('start, move on, reload in place, switch role, exit', async ({ page }) => {
+  test('play, move on, reload in place, exit', async ({ page }) => {
     test.setTimeout(90_000);
     await page.goto(`/login?next=${encodeURIComponent(SEEDED_LIST)}`);
     await page.getByLabel('Email').fill(member.email!);
@@ -120,19 +104,20 @@ test.describe('set player on a seeded stack', () => {
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL((url) => url.pathname === SEEDED_LIST);
 
-    await start(page, 'Vocalist');
+    await start(page);
     await expect(
       player(page)
         .locator('header')
         .getByText(/Song 1 of \d+/),
     ).toBeVisible();
-    await page.keyboard.press('ArrowRight');
+    // The Next button (the pedal would scroll a long song first).
+    await player(page).getByRole('button', { name: /^Next/ }).click();
     await expect(
       player(page)
         .locator('header')
         .getByText(/Song 2 of \d+/),
     ).toBeVisible();
-    await expect(page).toHaveURL(/\?play=2&as=vocalist$/);
+    await expect(page).toHaveURL(/\?play=2$/);
 
     await page.reload();
     await expect(
@@ -141,12 +126,7 @@ test.describe('set player on a seeded stack', () => {
         .getByText(/Song 2 of \d+/),
     ).toBeVisible();
 
-    await player(page)
-      .getByRole('button', { name: /Change role/ })
-      .click();
-    await page.getByRole('menuitemradio', { name: 'Musician' }).click();
-    await expect(player(page).getByText('First chords')).toBeVisible();
-    await expect(page.getByRole('menu')).toBeHidden();
+    await expect(player(page).getByRole('button', { name: /Change role/ })).toHaveCount(0);
 
     await page.keyboard.press('Escape');
     await expect(player(page)).toBeHidden();

@@ -25,9 +25,9 @@ function readDismissed(): string | null {
   }
 }
 
-function writeDismissed(at: Date): void {
+function writeDismissed(): void {
   try {
-    window.localStorage.setItem(DISMISS_STORAGE_KEY, at.toISOString());
+    window.localStorage.setItem(DISMISS_STORAGE_KEY, new Date().toISOString());
   } catch {
     // Not saved: the banner comes back next visit.
   }
@@ -44,8 +44,7 @@ function useInstallHint(): InstallHint | null {
         standalone:
           nav.standalone === true ||
           window.matchMedia?.('(display-mode: standalone)').matches === true,
-        dismissedAt: readDismissed(),
-        now: new Date(),
+        dismissed: readDismissed(),
       }),
     );
   }, []);
@@ -59,8 +58,8 @@ export interface InstallBannerProps {
 
 /**
  * "Add Worship Library to your Home Screen" for iPad and iPhone, which have no install prompt
- * (REQ-NF-02). Shown on signed-in pages, never inside the installed app; ✕ hides it for 30
- * days on the device. "Show me how" walks through the three steps for the browser in use.
+ * (REQ-NF-02). Shown on signed-in pages, never inside the installed app; ✕ hides it for good
+ * on the device. "Show me how" walks through the three steps for the browser in use.
  */
 export function InstallBanner({ hint: forced }: InstallBannerProps) {
   const detected = useInstallHint();
@@ -85,9 +84,9 @@ export function InstallBanner({ hint: forced }: InstallBannerProps) {
         <Button
           variant="ghost"
           size="icon-lg"
-          aria-label="Dismiss for 30 days"
+          aria-label="Dismiss"
           onClick={() => {
-            writeDismissed(new Date());
+            writeDismissed();
             setDismissed(true);
           }}
         >

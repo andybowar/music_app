@@ -71,7 +71,7 @@ The account button (top right) shows who you're signed in as and your branch. It
 
 ### Using it on your phone
 
-On an iPad or iPhone, a banner at the top of the app offers to show you how to add it to your Home Screen (Share, then **Add to Home Screen**, then **Add**). Once you've added it, open it from the new icon and sign in again: the Home Screen app keeps its own sign-in. Tap ✕ on the banner to hide it for 30 days.
+On an iPad or iPhone, a banner at the top of the app offers to show you how to add it to your Home Screen (Share, then **Add to Home Screen**, then **Add**). Once you've added it, open it from the new icon and sign in again: the Home Screen app keeps its own sign-in. Tap ✕ on the banner to hide it for good on that device.
 
 The app works on any phone from 360 pixels wide. To get an icon on your home screen, use your
 browser's **Add to Home Screen** or **Install app** option.

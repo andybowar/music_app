@@ -21,9 +21,9 @@ export function InstallBannerGallery() {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Install banner</h1>
         <p className="text-sm text-muted-foreground">
-          Shown on iPad and iPhone only, never in the installed app; ✕ hides it for 30 days. These
-          examples are forced; on this device the real banner shows only if it&apos;s an iPad or
-          iPhone.
+          Shown on iPad and iPhone only, never in the installed app; ✕ hides it for good on that
+          device. These examples are forced; on this device the real banner shows only if it&apos;s
+          an iPad or iPhone.
         </p>
       </header>
       <section className="space-y-2">

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { appleBrowser, appleDevice, installHint, stillDismissed } from './detect';
+import { appleBrowser, appleDevice, installHint } from './detect';
 
 const UA = {
   ipadSafari:
@@ -41,36 +41,38 @@ describe('appleBrowser', () => {
 });
 
 describe('installHint', () => {
-  const now = new Date('2026-11-05T12:00:00Z');
   const ipad = { userAgent: UA.ipadSafari, maxTouchPoints: 5 };
 
   it('shows on an iPad or iPhone in the browser', () => {
-    expect(installHint({ device: ipad, standalone: false, dismissedAt: null, now })).toEqual({
+    expect(installHint({ device: ipad, standalone: false, dismissed: null })).toEqual({
       device: 'ipad',
       browser: 'safari',
     });
   });
 
-  it('hides in the installed app, on other devices, and for 30 days after ✕', () => {
-    expect(installHint({ device: ipad, standalone: true, dismissedAt: null, now })).toBeNull();
+  it('hides in the installed app and on other devices', () => {
+    expect(installHint({ device: ipad, standalone: true, dismissed: null })).toBeNull();
     expect(
       installHint({
         device: { userAgent: UA.android, maxTouchPoints: 5 },
         standalone: false,
-        dismissedAt: null,
-        now,
+        dismissed: null,
       }),
     ).toBeNull();
-    expect(
-      installHint({ device: ipad, standalone: false, dismissedAt: '2026-10-20T12:00:00Z', now }),
-    ).toBeNull();
-    expect(
-      installHint({ device: ipad, standalone: false, dismissedAt: '2026-10-01T12:00:00Z', now }),
-    ).not.toBeNull();
   });
 
-  it('treats a missing or broken dismissal as none', () => {
-    expect(stillDismissed(null, now)).toBe(false);
-    expect(stillDismissed('not a date', now)).toBe(false);
+  it('hides for good once dismissed, whatever was stored', () => {
+    // An old timestamp from when ✕ hid it for 30 days only, long past those 30 days.
+    expect(
+      installHint({ device: ipad, standalone: false, dismissed: '2020-01-01T00:00:00Z' }),
+    ).toBeNull();
+    expect(
+      installHint({ device: ipad, standalone: false, dismissed: '2026-11-05T12:00:00.000Z' }),
+    ).toBeNull();
+    expect(installHint({ device: ipad, standalone: false, dismissed: 'not a date' })).toBeNull();
+  });
+
+  it('treats an empty stored value as not dismissed', () => {
+    expect(installHint({ device: ipad, standalone: false, dismissed: '' })).not.toBeNull();
   });
 });

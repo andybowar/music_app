@@ -203,6 +203,7 @@ export const updateListItem = withAction(
     // TEMPORARY (2026-11-05): diagnosing "the key flips back" on hosted environments: the
     // override key never reaches the database while BPM does. Remove once found.
     const diag: Record<string, unknown> = {
+      source: (patch as { _source?: unknown } | null)?._source ?? 'untagged',
       itemId: id,
       sent: Object.keys(patch ?? {}),
       parsed: data,

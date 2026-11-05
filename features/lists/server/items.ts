@@ -25,7 +25,7 @@ import { z } from 'zod';
 import { listItems, lists, resources, songs } from '@/db/schema';
 import { ActionError, withAction } from '@/lib/action';
 import { requireUser } from '@/lib/auth';
-import { type Tx, withTx } from '@/lib/db';
+import { getDb, type Tx, withTx } from '@/lib/db';
 import { assertCan, can } from '@/lib/permissions';
 import { listItemPatchSchema } from '@/types/validation';
 
@@ -200,8 +200,20 @@ export const updateListItem = withAction(
     const id = idSchema.parse(itemId);
     const data = listItemPatchSchema.parse(patch);
 
-    return withTx(async (tx) => {
+    // TEMPORARY (2026-11-05): diagnosing "the key flips back" on hosted environments: the
+    // override key never reaches the database while BPM does. Remove once found.
+    const diag: Record<string, unknown> = {
+      itemId: id,
+      sent: Object.keys(patch ?? {}),
+      parsed: data,
+    };
+    const result = await withTx(async (tx) => {
       const item = await lockItemForWrite(tx, user, id);
+      diag.before = { overrideKey: item.overrideKey, overrideBpm: item.overrideBpm };
+      const [conn] = await tx.execute<{ pid: number; txid: string }>(
+        sql`select pg_backend_pid() as pid, txid_current()::text as txid`,
+      );
+      diag.tx = conn;
 
       if (data.resourceId) {
         const [resource] = await tx
@@ -224,6 +236,7 @@ export const updateListItem = withAction(
       if (data.overrideEnergy !== undefined) set.overrideEnergy = data.overrideEnergy;
       if (data.resourceId !== undefined) set.resourceId = data.resourceId;
       if (data.notes !== undefined) set.notes = data.notes;
+      diag.wrote = set;
       if (Object.keys(set).length === 0) return toListItem(item);
 
       const [row] = await tx
@@ -232,9 +245,20 @@ export const updateListItem = withAction(
         .where(eq(listItems.id, item.id))
         .returning();
       if (!row) throw new ActionError('NOT_FOUND', ITEM_NOT_FOUND);
+      diag.returned = { overrideKey: row.overrideKey, overrideBpm: row.overrideBpm };
 
       await touchList(tx, item.listId);
       return toListItem(row);
     });
+    const [after] = await getDb().execute<{
+      override_key: string | null;
+      override_bpm: number | null;
+      pid: number;
+    }>(
+      sql`select override_key, override_bpm, pg_backend_pid() as pid from list_items where id = ${id}`,
+    );
+    diag.afterCommit = after;
+    console.info('[lists] updateListItem diag', JSON.stringify(diag));
+    return result;
   },
 );

@@ -364,3 +364,23 @@ describe('SongPage keys and typed chords', () => {
     expect(screen.getByText('No typed chords in D yet.')).toBeVisible();
   });
 });
+
+describe('SongPage autoscroll', () => {
+  afterEach(() => window.localStorage.clear());
+
+  it('offers autoscroll over the lyrics, with the song’s speed shared with Start event', async () => {
+    window.localStorage.setItem(`set-player:speed:${full.id}`, '7');
+    const user = userEvent.setup();
+    renderPage({ song: full });
+    const toggle = screen.getByRole('button', { name: 'Autoscroll' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('slider', { name: /Speed/ })).toHaveValue('7');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('has no autoscroll when the song has no lyrics', () => {
+    renderPage({ song: { ...empty, lyrics: { ...empty.lyrics, chorus: null, verse_1: null } } });
+    expect(screen.queryByRole('button', { name: 'Autoscroll' })).toBeNull();
+  });
+});

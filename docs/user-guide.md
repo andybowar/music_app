@@ -285,8 +285,12 @@ song** on its page or row panel. The form has six tabs:
     chord sheet with the chords on their own lines above the words works too.
   - **Remove chords in G** removes one key's chords; unticking the box removes them all. The
     lyrics stay either way.
-  - On the song page, the **Chords** button shows or hides them, and the key buttons next to it
-    switch key. In **Start event**, musicians get the setlist's key first.
+  - On the song page, choosing a key under **Keys and first chords** shows that key's chords over
+    the lyrics (or says there are none for it), and the key buttons next to **Chords** do the
+    same. The **Chords** button shows or hides them. In **Start event**, musicians get the
+    setlist's key first.
+  - The song page also has **Autoscroll** above the lyrics, with the same 1–10 **Speed** as Start
+    event. The speed is remembered for each song on your device, in both places.
 - **Themes**: tag each lyric section with themes from the shared list. You can create a new theme
   if none fits.
 - **Branch usage**: how often each branch sings the song (high, low, rare or none). Usage is

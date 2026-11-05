@@ -13,6 +13,7 @@ import { EnergyChip } from '@/components/song/EnergyChip';
 import { KeyBadge } from '@/components/song/KeyBadge';
 import { displayKey } from '@/components/song/KeyBadge';
 import { LyricsViewer, LyricsViewerSkeleton } from '@/components/song/LyricsViewer';
+import { AutoscrollControls } from '@/features/lists/ui/player/AutoscrollControls';
 import { songChordSets } from '@/lib/lyrics/chords';
 import { TimeSigBadge } from '@/components/song/TimeSigBadge';
 import { ComposerPanel } from '@/components/song/panels/ComposerPanel';
@@ -331,11 +332,24 @@ export function SongPage({
   const [shownKey, setShownKey] = useState<string | undefined>(primaryKey);
   useEffect(() => setShownKey(primaryKey), [song.id, primaryKey]);
   const chordSets = songChordSets(song.keys);
+  // Autoscroll moves the page itself.
+  const pageRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    pageRef.current = (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
+  }, []);
 
   const details = (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="flex min-w-0 flex-col gap-4">
         <Panel title="Lyrics" id={lyricsId}>
+          {hasLyrics(song) && (
+            // Stays in view below the app header while the page scrolls.
+            <AutoscrollControls
+              songId={song.id}
+              target={pageRef}
+              className="sticky top-[57px] z-10 -mx-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-background/95 px-4 py-2 backdrop-blur xl:top-[65px]"
+            />
+          )}
           <LyricsViewer
             lyrics={song.lyrics}
             arrangement={song.arrangement}

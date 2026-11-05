@@ -97,7 +97,7 @@ export function SetPlayerGallery() {
           </select>
         </label>
         <Button className="min-h-tap" onClick={() => setAsking(true)}>
-          Start event
+          Play
         </Button>
       </div>
       {play && <p className="text-sm">Open as {ROLE_LABEL[play.role]}.</p>}
@@ -108,6 +108,7 @@ export function SetPlayerGallery() {
       )}
 
       <StartEventDialog
+        songTitle={items[start]?.song.title}
         open={asking}
         onOpenChange={setAsking}
         onStart={(role) => {

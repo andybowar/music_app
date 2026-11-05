@@ -24,15 +24,22 @@ export interface StartEventDialogProps {
   open: boolean;
   onOpenChange(open: boolean): void;
   onStart(role: PlayerRole): void;
+  /** The song the player opens on, for the title ("Play “Holy Spirit”"). */
+  songTitle?: string;
 }
 
 /** Asks who's playing before the set player opens (LIST-11). Asked every time, no default. */
-export function StartEventDialog({ open, onOpenChange, onStart }: StartEventDialogProps) {
+export function StartEventDialog({
+  open,
+  onOpenChange,
+  onStart,
+  songTitle,
+}: StartEventDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Start event</DialogTitle>
+          <DialogTitle>{songTitle ? `Play “${songTitle}”` : 'Start event'}</DialogTitle>
           <DialogDescription>What are you doing in this set?</DialogDescription>
         </DialogHeader>
         <ul className="flex flex-col gap-2">

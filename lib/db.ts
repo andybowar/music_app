@@ -11,7 +11,7 @@
 
 import 'server-only';
 
-import { type ExtractTablesWithRelations } from 'drizzle-orm';
+import { type ExtractTablesWithRelations, sql } from 'drizzle-orm';
 import {
   drizzle,
   type PostgresJsDatabase,
@@ -38,7 +38,14 @@ const globalForDb = globalThis as typeof globalThis & { __musicAppDb?: DB };
  * `env.DATABASE_URL` throws in the browser by design.
  */
 export function getDb(): DB {
-  globalForDb.__musicAppDb ??= drizzle(postgres(env.DATABASE_URL, { max: 10 }), { schema });
+  // `prepare: false`: hosted DATABASE_URL is Supabase's transaction pooler (port 6543), which
+  // can hand consecutive statements to different server connections. Prepared statements then
+  // break, and inside a transaction that silently turned COMMIT into a rollback: saves said
+  // "Updated" but never stuck (setlist key bug, 2026-11-05). Supabase and Drizzle both require
+  // it for transaction mode; direct local connections don't need it but aren't hurt by it.
+  globalForDb.__musicAppDb ??= drizzle(postgres(env.DATABASE_URL, { max: 10, prepare: false }), {
+    schema,
+  });
   return globalForDb.__musicAppDb;
 }
 
@@ -64,5 +71,12 @@ export const db: DB = new Proxy({} as DB, {
  * transaction commits on resolve and rolls back on throw.
  */
 export async function withTx<T>(fn: (tx: Tx) => Promise<T> | T): Promise<T> {
-  return getDb().transaction(async (tx) => fn(tx));
+  return getDb().transaction(async (tx) => {
+    const result = await fn(tx);
+    // Safety net: if the transaction was aborted by an error nobody saw, Postgres turns COMMIT
+    // into a silent ROLLBACK and the caller would report success. Any statement in an aborted
+    // transaction fails (25P02), so this makes that case throw instead.
+    await tx.execute(sql`select 1`);
+    return result;
+  });
 }

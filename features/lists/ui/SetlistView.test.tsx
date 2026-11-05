@@ -382,28 +382,16 @@ describe('Start event (LIST-11)', () => {
     }
   });
 
-  it('Play asks for a role every time, opens the player at that song and keeps it in the URL', async () => {
+  it('Play opens the player straight at that song and keeps it in the URL', async () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: `Play ${titles[2]}` }));
-    const ask = screen.getByRole('dialog', { name: `Play “${titles[2]}”` });
-    expect(
-      within(ask)
-        .getAllByRole('button')
-        .map((b) => b.textContent),
-    ).toEqual([
-      expect.stringMatching(/^Musician/),
-      expect.stringMatching(/^Vocalist/),
-      expect.stringMatching(/^Projectionist/),
-      'Cancel',
-      'Close',
-    ]);
-    await user.click(within(ask).getByRole('button', { name: /^Vocalist/ }));
     const player = screen.getByRole('dialog', { name: new RegExp(detail.name) });
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
     expect(player).toHaveTextContent(`Song 3 of ${titles.length}`);
-    expect(window.location.search).toBe('?play=3&as=vocalist');
+    expect(window.location.search).toBe('?play=3');
 
     await user.click(within(player).getByRole('button', { name: /^Next/ }));
-    expect(window.location.search).toBe('?play=4&as=vocalist');
+    expect(window.location.search).toBe('?play=4');
 
     await user.click(within(player).getByRole('button', { name: 'Close the player' }));
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -412,29 +400,20 @@ describe('Start event (LIST-11)', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: `Play ${titles[3]}` })).toHaveFocus(),
     );
-
-    await user.click(screen.getByRole('button', { name: `Play ${titles[0]}` }));
-    expect(screen.getByRole('dialog', { name: `Play “${titles[0]}”` })).toBeVisible();
-    await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('reopens at ?play=, asking for the role when the URL has none', async () => {
+  it('reopens at ?play= straight away, ignoring an old role', async () => {
     window.history.replaceState(null, '', '/?play=2&as=projectionist');
-    setup();
-    expect(screen.getByRole('dialog', { name: new RegExp(detail.name) })).toHaveTextContent(
-      `Song 2 of ${titles.length}`,
-    );
-    expect(screen.getByRole('list', { name: 'Running order' })).toBeVisible();
+    const { user } = setup();
+    const player = screen.getByRole('dialog', { name: new RegExp(detail.name) });
+    expect(player).toHaveTextContent(`Song 2 of ${titles.length}`);
+    expect(within(player).queryByRole('list', { name: 'Running order' })).toBeNull();
+    await user.click(within(player).getByRole('button', { name: /^Next/ }));
+    expect(window.location.search).toBe('?play=3');
     cleanup();
 
     window.history.replaceState(null, '', '/?play=99');
-    const { user } = setup();
-    await user.click(
-      within(screen.getByRole('dialog', { name: /^Play “/ })).getByRole('button', {
-        name: /^Musician/,
-      }),
-    );
+    setup();
     expect(screen.getByRole('dialog', { name: new RegExp(detail.name) })).toHaveTextContent(
       `Song 1 of ${titles.length}`,
     );

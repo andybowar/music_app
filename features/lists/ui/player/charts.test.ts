@@ -4,14 +4,7 @@ import { SONG_IDS, getSong, thousandHallelujahs } from '@/fixtures';
 import { resolveItemDisplay } from '@/lib/lists/resolve';
 import type { ListItem } from '@/types/domain';
 
-import {
-  chartOptions,
-  hasLyrics,
-  hasTypedChords,
-  keyMismatch,
-  projectionResources,
-  sectionCues,
-} from './charts';
+import { chartOptions, hasLyrics, hasTypedChords, keyMismatch } from './charts';
 
 const item = (songId: string, overrideKey: string | null = null): ListItem => ({
   id: '90000000-0000-4000-8000-000000000001',
@@ -83,17 +76,5 @@ describe('helpers', () => {
     expect(keyMismatch('G', 'G')).toBeNull();
     expect(keyMismatch(null, 'A')).toBeNull();
     expect(keyMismatch('G', null)).toBeNull();
-  });
-
-  it('sectionCues follows the arrangement, then the other sections with lyrics', () => {
-    const song = { ...thousandHallelujahs, arrangement: ['chorus' as const] };
-    const cues = sectionCues(song);
-    expect(cues[0]).toEqual({ section: 'chorus', line: 'With a thousand hallelujahs' });
-    expect(cues.map((c) => c.section)).toEqual(['chorus', 'verse_1', 'verse_2', 'bridge']);
-  });
-
-  it('projectionResources keeps projection files only', () => {
-    const files = projectionResources(resolve(SONG_IDS.thousandHallelujahs));
-    expect(files.map((r) => r.label)).toEqual(['ProPresenter', 'Lyric database', 'Slides']);
   });
 });

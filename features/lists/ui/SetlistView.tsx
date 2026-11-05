@@ -83,10 +83,8 @@ import type {
 import type { ListItemPatch } from '@/types/validation';
 
 import { FirstChords, ItemOverrideEditor, UploadPrompt } from './ItemOverrideEditor';
-import type { PlayerRole } from './player/playerPrefs';
 import { parsePlayParams, withPlayParams } from './player/playUrl';
 import { SetPlayer } from './player/SetPlayer';
-import { StartEventDialog } from './player/StartEventDialog';
 
 export interface SetlistViewProps {
   list: ListDetail;
@@ -223,7 +221,7 @@ interface ItemRowProps {
   onPanel(kind: PanelKind): void;
   onMove(to: number): void;
   onRemove(): void;
-  /** Opens the player at this song (LIST-11: the role is asked first). */
+  /** Opens the player at this song (LIST-11). */
   onPlay(): void;
 }
 
@@ -535,10 +533,8 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   const [shareOpen, setShareOpen] = useState(false);
   const [pdf, setPdf] = useState<{ url: string; title: string } | null>(null);
   const [status, setStatus] = useState('');
-  /** The open set player (LIST-11), mirrored in the URL as `?play=<n>&as=<role>`. */
-  const [play, setPlay] = useState<{ index: number; role: PlayerRole } | null>(null);
-  /** The role question; `index` is where the player opens once a role is picked. */
-  const [asking, setAsking] = useState<{ index: number } | null>(null);
+  /** The open set player's song (LIST-11, 0-based), mirrored in the URL as `?play=<n>`. */
+  const [play, setPlay] = useState<number | null>(null);
 
   // A refresh brings new server data: adopt it.
   useEffect(() => setItems(list.items), [list.items]);
@@ -549,15 +545,13 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
 
   // Reopen the player from the URL (reload, Back, or the offline copy of this page).
   useEffect(() => {
-    const state = parsePlayParams(window.location.search, list.items.length);
-    if (!state) return;
-    if (state.role) setPlay({ index: state.index, role: state.role });
-    else setAsking({ index: state.index });
+    const index = parsePlayParams(window.location.search, list.items.length);
+    if (index !== null) setPlay(index);
     // Only on arrival: later changes come from the player itself.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function showPlayer(next: { index: number; role: PlayerRole } | null) {
+  function showPlayer(next: number | null) {
     setPlay(next);
     const { pathname, search, hash } = window.location;
     // history, not router.replace: the URL only records where the player is, so no refetch.
@@ -569,7 +563,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
   }
 
   function closePlayer() {
-    const at = play ? items[play.index]?.item.id : undefined;
+    const at = play !== null ? items[play]?.item.id : undefined;
     showPlayer(null);
     // Back to the Play button of the song the player was on.
     requestAnimationFrame(() =>
@@ -845,7 +839,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
                   onPanel={(kind) => openPanel(resolved, kind)}
                   onMove={(to) => void move(index, to)}
                   onRemove={() => void remove(resolved)}
-                  onPlay={() => setAsking({ index })}
+                  onPlay={() => showPlayer(index)}
                 />
               ))}
             </ol>
@@ -886,25 +880,13 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
         </>
       )}
 
-      <StartEventDialog
-        songTitle={asking ? items[asking.index]?.song.title : undefined}
-        open={asking !== null}
-        onOpenChange={(open) => !open && setAsking(null)}
-        onStart={(role) => {
-          const index = asking?.index ?? 0;
-          setAsking(null);
-          showPlayer({ index, role });
-        }}
-      />
-      {play && items.length > 0 && (
+      {play !== null && items.length > 0 && (
         <SetPlayer
           title={header.name}
           items={items}
           songs={songs}
-          index={play.index}
-          onIndexChange={(index) => showPlayer({ ...play, index })}
-          role={play.role}
-          onRoleChange={(role) => showPlayer({ ...play, role })}
+          index={play}
+          onIndexChange={showPlayer}
           getPdfUrl={signedPdfUrl}
           onOpenResource={(r) => void openResource(r)}
           onClose={closePlayer}

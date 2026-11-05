@@ -8,7 +8,6 @@ import { LIST_IDS, SONG_IDS, getSong } from '@/fixtures';
 import { resolveItemDisplay } from '@/lib/lists/resolve';
 import type { ListItem, Resource } from '@/types/domain';
 
-import type { PlayerRole } from './playerPrefs';
 import { SetPlayer } from './SetPlayer';
 
 vi.mock('./PdfPages', () => ({
@@ -62,31 +61,21 @@ const songs = [
   SONG_IDS.agnusDei,
 ].map(getSong);
 
-function setup({
-  role = 'vocalist' as PlayerRole,
-  index = 0,
-  getPdfUrl = vi.fn(async (r: Resource) => `blob:${r.id}`),
-} = {}) {
+function setup({ index = 0, getPdfUrl = vi.fn(async (r: Resource) => `blob:${r.id}`) } = {}) {
   const onIndexChange = vi.fn();
-  const onRoleChange = vi.fn();
   const onOpenResource = vi.fn();
   const onClose = vi.fn();
   function Harness() {
-    const [state, setState] = useState({ index, role });
+    const [at, setAt] = useState(index);
     return (
       <SetPlayer
         title="BG 4/19/26"
         items={items}
         songs={songs}
-        index={state.index}
+        index={at}
         onIndexChange={(i) => {
           onIndexChange(i);
-          setState((s) => ({ ...s, index: i }));
-        }}
-        role={state.role}
-        onRoleChange={(r) => {
-          onRoleChange(r);
-          setState((s) => ({ ...s, role: r }));
+          setAt(i);
         }}
         getPdfUrl={getPdfUrl}
         onOpenResource={onOpenResource}
@@ -96,7 +85,7 @@ function setup({
   }
   const user = userEvent.setup();
   render(<Harness />);
-  return { user, onIndexChange, onRoleChange, onOpenResource, onClose, getPdfUrl };
+  return { user, onIndexChange, onOpenResource, onClose, getPdfUrl };
 }
 
 const dialog = () => screen.getByRole('dialog', { name: /BG 4\/19\/26/ });
@@ -174,13 +163,10 @@ describe('SetPlayer shell', () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
-  it('switches role from the menu, keeping the song', async () => {
-    const { user, onRoleChange } = setup({ index: 2 });
-    await user.click(screen.getByRole('button', { name: 'Viewing as Vocalist. Change role' }));
-    await user.click(screen.getByRole('menuitemradio', { name: 'Musician' }));
-    expect(onRoleChange).toHaveBeenCalledWith('musician');
-    expect(songTitle()).toBe('Song 3 of 6');
-    expect(screen.getByRole('button', { name: 'Viewing as Musician. Change role' })).toBeVisible();
+  it('has no role menu', () => {
+    setup();
+    expect(screen.queryByRole('button', { name: /change role/i })).toBeNull();
+    expect(screen.queryByText(/vocalist|projectionist/i)).toBeNull();
   });
 });
 
@@ -204,11 +190,12 @@ describe('autoscroll and text size', () => {
   });
 
   it('A− / A+ change the lyric size, remembered on the device', async () => {
-    const { user } = setup();
+    // Be Exalted, O God has no chart, so the player shows its lyrics.
+    const { user } = setup({ index: 1 });
     const smaller = screen.getByRole('button', { name: 'Smaller text' });
     expect(smaller).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Larger text' }));
-    expect(screen.getAllByText(/Amazing grace, how sweet the sound/)[0]).toHaveStyle({
+    expect(screen.getAllByText(/placeholder/)[0]).toHaveStyle({
       fontSize: '24px',
     });
     expect(window.localStorage.getItem('set-player:text-size')).toBe('1');
@@ -220,24 +207,9 @@ describe('autoscroll and text size', () => {
   });
 });
 
-describe('vocalist', () => {
-  it('sees lyrics only: no chords, charts or first chords', () => {
-    setup();
-    expect(screen.getAllByText(/Amazing grace, how sweet the sound/)[0]).toBeVisible();
-    expect(screen.queryByText('First chords')).toBeNull();
-    expect(screen.queryByText('Which chart?')).toBeNull();
-    expect(document.querySelector('[data-chords]')).toBeNull();
-  });
-
-  it('says so when a song has no details', () => {
-    setup({ index: 4 });
-    expect(screen.getByText('Lyrics aren’t available for this song.')).toBeVisible();
-  });
-});
-
-describe('musician', () => {
+describe('chart view', () => {
   it('asks which chart every time the song comes up', async () => {
-    const { user, getPdfUrl, onOpenResource } = setup({ role: 'musician' });
+    const { user, getPdfUrl, onOpenResource } = setup();
     expect(screen.getByText('First chords')).toBeInTheDocument();
     const choice = screen.getByRole('heading', { name: 'Which chart?' });
     expect(choice).toBeVisible();
@@ -257,20 +229,20 @@ describe('musician', () => {
   });
 
   it('shows a single chart straight away', async () => {
-    setup({ role: 'musician', index: 3 });
+    setup({ index: 3 });
     expect(screen.queryByText('Which chart?')).toBeNull();
     expect(await screen.findByTestId('pdf-pages')).toBeInTheDocument();
   });
 
   it('without a chart, shows the lyrics with first chords', () => {
-    setup({ role: 'musician', index: 1 });
+    setup({ index: 1 });
     expect(screen.getByText('No chord chart for this song.')).toBeVisible();
     expect(screen.getByText('First chords')).toBeInTheDocument();
     expect(screen.getAllByText(/placeholder/).length).toBeGreaterThan(0);
   });
 
   it('marks a key with no files; a song without details still gets its PDF chart', async () => {
-    setup({ role: 'musician', index: 2 });
+    setup({ index: 2 });
     expect(screen.getByText('No files for this key.')).toBeVisible();
     expect(screen.getByText('No chord chart for this song.')).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
@@ -281,14 +253,14 @@ describe('musician', () => {
   });
 
   it('warns when the typed chords are in another key than the setlist', () => {
-    setup({ role: 'musician', index: 5 });
+    setup({ index: 5 });
     expect(screen.getByRole('note')).toHaveTextContent(
       'These chords are written in G; this setlist plays the song in A.',
     );
   });
 
   it('a page-turner press scrolls a screen, then moves on at the end', () => {
-    setup({ role: 'musician', index: 1 });
+    setup({ index: 1 });
     const el = scroller();
     sized(el, { top: 0 });
     fireEvent.keyDown(el, { key: 'PageDown', timeStamp: 1000 });
@@ -309,30 +281,10 @@ describe('musician', () => {
     const getPdfUrl = vi.fn(async () => {
       throw new Error('offline');
     });
-    const { user } = setup({ role: 'musician', index: 3, getPdfUrl });
+    const { user } = setup({ index: 3, getPdfUrl });
     expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t load Chord chart.');
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     await act(async () => {});
     expect(getPdfUrl).toHaveBeenCalledTimes(2);
-  });
-});
-
-describe('projectionist', () => {
-  it('shows the running order with the current song, sections and projection files', async () => {
-    const { user, onOpenResource } = setup({ role: 'projectionist', index: 4 });
-    expect(screen.queryByRole('button', { name: 'Autoscroll' })).toBeNull();
-    const order = screen.getByRole('list', { name: 'Running order' });
-    const rows = within(order).getAllByRole('listitem');
-    expect(rows).toHaveLength(6);
-    expect(rows[4]).toHaveAttribute('aria-current', 'step');
-    expect(rows[0]).toHaveTextContent('V1 · V2 · C · V3 · C · V4 · V5 · B');
-    expect(rows[0]).toHaveTextContent('Amazing grace, how sweet the sound');
-    expect(rows[4]).toHaveTextContent('Lyrics aren’t available for this song.');
-    await user.click(within(rows[4]!).getByRole('button', { name: 'Slides' }));
-    expect(onOpenResource).toHaveBeenCalledWith(expect.objectContaining({ kind: 'projection' }));
-    expect(rows[1]).toHaveTextContent('No projection files.');
-
-    await user.click(screen.getByRole('button', { name: /^Next/ }));
-    expect(within(order).getAllByRole('listitem')[5]).toHaveAttribute('aria-current', 'step');
   });
 });

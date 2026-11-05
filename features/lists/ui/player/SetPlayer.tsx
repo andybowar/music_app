@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MinusIcon,
-  PlusIcon,
-  XIcon,
-} from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, MinusIcon, PlusIcon, XIcon } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import {
   useCallback,
@@ -24,30 +17,12 @@ import { EnergyChip } from '@/components/song/EnergyChip';
 import { KeyBadge } from '@/components/song/KeyBadge';
 import { TimeSigBadge } from '@/components/song/TimeSigBadge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import type { ResolvedItem, Resource, SongDetail } from '@/types/domain';
 
 import { AutoscrollControls } from './AutoscrollControls';
 import { MusicianView } from './MusicianView';
-import {
-  PLAYER_ROLES,
-  ROLE_LABEL,
-  TEXT_SIZES,
-  parseRole,
-  readTextStep,
-  writeTextStep,
-  type PlayerRole,
-} from './playerPrefs';
-import { ProjectionistView } from './ProjectionistView';
+import { TEXT_SIZES, readTextStep, writeTextStep } from './playerPrefs';
 import { pageStep, scrollBox } from './scrolling';
-import { VocalistView } from './VocalistView';
 import { useScreenWakeLock } from './wakeLock';
 
 export interface SetPlayerProps {
@@ -59,8 +34,6 @@ export interface SetPlayerProps {
   /** 0-based. */
   index: number;
   onIndexChange(index: number): void;
-  role: PlayerRole;
-  onRoleChange(role: PlayerRole): void;
   /** A signed URL for a PDF, for charts shown inline (`getSignedResourceUrl`); throws on failure. */
   getPdfUrl(r: Resource): Promise<string>;
   /** Opens a resource the way the setlist does: PDFs in the zoomable viewer, files download. */
@@ -85,11 +58,10 @@ function ownsArrowKeys(target: EventTarget | null): boolean {
 }
 
 /**
- * Full-screen set player (LIST-11, REQ-LIST-09): one song at a time, shown for the reader's role.
- * Musicians get first chords and a chart (typed chords or PDF), vocalists the lyrics, and
- * projectionists the running order with projection files. Previous/next by button, swipe, or
- * arrow and Page Up/Down keys; for musicians a page-turner press scrolls a screen first. The
- * screen stays awake while it's open.
+ * Full-screen set player (LIST-11, REQ-LIST-09): one song at a time, with its first chords and a
+ * chart (typed chords or PDF), or the lyrics when it has no chart. Previous/next by button,
+ * swipe, or arrow and Page Up/Down keys; a page-turner press scrolls a screen first and moves
+ * on at the end. The screen stays awake while it's open. (Roles were removed on 2026-11-05.)
  */
 export function SetPlayer({
   title,
@@ -97,8 +69,6 @@ export function SetPlayer({
   songs,
   index,
   onIndexChange,
-  role,
-  onRoleChange,
   getPdfUrl,
   onOpenResource,
   onClose,
@@ -118,15 +88,14 @@ export function SetPlayer({
   const songId = resolved?.song.id ?? '';
 
   const [textStep, setTextStep] = useState(0);
-  const scrolls = role !== 'projectionist';
 
   useScreenWakeLock(true);
   useEffect(() => setTextStep(readTextStep()), []);
 
   // Each song starts at the top (AutoscrollControls turns autoscroll off and loads its speed).
   useEffect(() => {
-    if (scrollRef.current && role !== 'projectionist') scrollRef.current.scrollTop = 0;
-  }, [songId, at, role]);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [songId, at]);
 
   // Full screen where the browser allows it (not iPhone Safari); the fixed overlay is enough there.
   useEffect(() => {
@@ -154,7 +123,7 @@ export function SetPlayer({
     if (!forward && !PREV_KEYS.has(e.key)) return;
     e.preventDefault();
     const el = scrollRef.current;
-    if (role === 'musician' && el) {
+    if (el) {
       const box = scrollBox(el);
       const pending = turning.current;
       if (pending && e.timeStamp - pending.at < TURN_MS) box.top = pending.to;
@@ -211,7 +180,6 @@ export function SetPlayer({
                   </span>
                 )}
               </DialogPrimitive.Title>
-              <RoleMenu role={role} onRoleChange={onRoleChange} />
               <DialogPrimitive.Close asChild>
                 <Button
                   variant="ghost"
@@ -228,24 +196,20 @@ export function SetPlayer({
                 {resolved.song.title}
               </p>
             )}
-            {resolved && role !== 'projectionist' && (
+            {resolved && (
               <div className="flex flex-wrap items-center gap-2">
                 <KeyBadge value={resolved.key} overridden={resolved.isOverridden.key} />
-                {role === 'musician' && (
-                  <>
-                    <EnergyChip
-                      energy={resolved.energy}
-                      bpm={resolved.bpm}
-                      overridden={resolved.isOverridden.bpm || resolved.isOverridden.energy}
-                    />
-                    <TimeSigBadge value={resolved.song.timeSignature} />
-                  </>
-                )}
+                <EnergyChip
+                  energy={resolved.energy}
+                  bpm={resolved.bpm}
+                  overridden={resolved.isOverridden.bpm || resolved.isOverridden.energy}
+                />
+                <TimeSigBadge value={resolved.song.timeSignature} />
               </div>
             )}
           </header>
 
-          {scrolls && resolved && (
+          {resolved && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-3 py-2">
               <div className="flex items-center gap-1" role="group" aria-label="Text size">
                 <Button
@@ -273,7 +237,7 @@ export function SetPlayer({
               <AutoscrollControls
                 songId={songId}
                 target={scrollRef}
-                resetKey={`${at}-${role}`}
+                resetKey={String(at)}
                 className="contents"
               />
             </div>
@@ -290,14 +254,7 @@ export function SetPlayer({
             <div className="mx-auto w-full max-w-3xl">
               {!resolved ? (
                 <p className="text-muted-foreground">This setlist has no songs.</p>
-              ) : role === 'projectionist' ? (
-                <ProjectionistView
-                  items={items}
-                  details={details}
-                  index={at}
-                  onOpenResource={onOpenResource}
-                />
-              ) : role === 'musician' ? (
+              ) : (
                 <MusicianView
                   key={resolved.item.id}
                   resolved={resolved}
@@ -306,8 +263,6 @@ export function SetPlayer({
                   getPdfUrl={getPdfUrl}
                   onOpenViewer={onOpenResource}
                 />
-              ) : (
-                <VocalistView detail={detail} textSizePx={textSizePx} />
               )}
             </div>
           </div>
@@ -337,44 +292,5 @@ export function SetPlayer({
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
-  );
-}
-
-function RoleMenu({
-  role,
-  onRoleChange,
-}: {
-  role: PlayerRole;
-  onRoleChange(role: PlayerRole): void;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="min-h-tap border-white/40 bg-transparent text-row-foreground hover:bg-white/10 hover:text-row-foreground"
-          aria-label={`Viewing as ${ROLE_LABEL[role]}. Change role`}
-        >
-          {ROLE_LABEL[role]}
-          <ChevronDownIcon aria-hidden />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>View as</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={role}
-          onValueChange={(value) => {
-            const next = parseRole(value);
-            if (next) onRoleChange(next);
-          }}
-        >
-          {PLAYER_ROLES.map((r) => (
-            <DropdownMenuRadioItem key={r} value={r}>
-              {ROLE_LABEL[r]}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

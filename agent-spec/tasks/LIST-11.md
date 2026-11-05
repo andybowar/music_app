@@ -89,3 +89,7 @@ Picked up again by the owner as "Start event", with roles. These replace the ori
 - **Projectionist:** running order with the current song marked; each song's arrangement, each section's first line and its projection files. Next/previous move the current song.
 
 Shipped with these, plus everything in Deliverables. Wake lock and the player live in `features/lists/ui/player/` rather than `features/lists/ui/`.
+
+## Owner decision (2026-11-05)
+
+Roles are removed. Each song's **Play** button opens the player directly at that song (no `StartEventDialog`), and the player always shows the musician view: first chords and a chart ("Which chart?" when there are several), lyrics plus first chords without a chart, and the key-mismatch warning. Text size, autoscroll and the page-turner behaviour apply to everyone. The vocalist and projectionist views, the role menu and the role helpers are gone. The URL is `?play=<n>`; `as=` from older links is ignored.

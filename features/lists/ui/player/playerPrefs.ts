@@ -4,26 +4,6 @@
  */
 import type { UUID } from '@/types/domain';
 
-export const PLAYER_ROLES = ['musician', 'vocalist', 'projectionist'] as const;
-export type PlayerRole = (typeof PLAYER_ROLES)[number];
-
-export const ROLE_LABEL: Record<PlayerRole, string> = {
-  musician: 'Musician',
-  vocalist: 'Vocalist',
-  projectionist: 'Projectionist',
-};
-
-export const ROLE_HINT: Record<PlayerRole, string> = {
-  musician: 'Chord charts (typed chords or PDFs), with autoscroll',
-  vocalist: 'Lyrics only, with autoscroll',
-  projectionist: 'Running order with each song’s sections and projection files',
-};
-
-/** A role from a URL value, or null when it isn't one. */
-export function parseRole(value: string | null | undefined): PlayerRole | null {
-  return PLAYER_ROLES.find((r) => r === value) ?? null;
-}
-
 /** Lyrics text sizes in px (the base step is at least 20px). */
 export const TEXT_SIZES = [20, 24, 28, 34] as const;
 export const DEFAULT_TEXT_STEP = 0;

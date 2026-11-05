@@ -183,10 +183,15 @@ export function ItemOverrideEditor({ resolved, keys, onChange }: ItemOverrideEdi
   const hasOverride =
     item.overrideKey !== null || item.overrideBpm !== null || item.overrideEnergy !== null;
 
-  function changeKey(value: string) {
+  function changeKey(value: string, trusted?: boolean) {
     const next = value === '' ? null : value;
     setOverrideKey(next);
-    if (next !== item.overrideKey) onChange({ overrideKey: next });
+    // TEMPORARY `_source` tag (2026-11-05): which control sent a key save; the server drops it.
+    if (next !== item.overrideKey)
+      onChange({
+        overrideKey: next,
+        _source: `editor-key${trusted === false ? ' (untrusted)' : ''}`,
+      } as ListItemPatch);
   }
 
   function commitBpm() {
@@ -218,7 +223,12 @@ export function ItemOverrideEditor({ resolved, keys, onChange }: ItemOverrideEdi
     setBpmError(false);
     setEnergy(null);
     sentBpm.current = null;
-    onChange({ overrideKey: null, overrideBpm: null, overrideEnergy: null });
+    onChange({
+      overrideKey: null,
+      overrideBpm: null,
+      overrideEnergy: null,
+      _source: 'editor-reset',
+    } as ListItemPatch);
   }
 
   return (
@@ -235,7 +245,7 @@ export function ItemOverrideEditor({ resolved, keys, onChange }: ItemOverrideEdi
           id={`${id}-key`}
           className={selectClass}
           value={overrideKey ?? ''}
-          onChange={(e) => changeKey(e.target.value)}
+          onChange={(e) => changeKey(e.target.value, e.nativeEvent.isTrusted)}
         >
           <option value="">{usualKey ? `Usual key (${displayKey(usualKey)})` : 'Usual key'}</option>
           {withCharts.length > 0 && (

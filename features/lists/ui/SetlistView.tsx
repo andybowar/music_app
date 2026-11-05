@@ -706,7 +706,10 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
                   usualKey={currentDetail.keys.find((k) => k.isPrimary)?.key ?? null}
                   selected={selected}
                   canEdit={canEdit}
-                  onSetKey={(overrideKey) => void override(current, { overrideKey })}
+                  onSetKey={(overrideKey, source) =>
+                    // TEMPORARY `_source` tag (2026-11-05), dropped by the server's validation.
+                    void override(current, { overrideKey, _source: source } as ListItemPatch)
+                  }
                 />
               )}
             />
@@ -913,7 +916,7 @@ export function EventKeyActions({
   usualKey: string | null;
   selected: string;
   canEdit: boolean;
-  onSetKey(key: string | null): void;
+  onSetKey(key: string | null, source: string): void;
 }) {
   if (!canEdit) {
     return (
@@ -929,12 +932,23 @@ export function EventKeyActions({
   return (
     <div className="flex flex-wrap gap-2">
       {changes && (
-        <Button className="min-h-tap" onClick={() => onSetKey(selected)}>
+        <Button
+          className="min-h-tap"
+          onClick={(e) =>
+            onSetKey(selected, `panel-use${e.nativeEvent.isTrusted ? '' : ' (untrusted)'}`)
+          }
+        >
           Use {displayKey(selected)} for this event
         </Button>
       )}
       {canReset && (
-        <Button variant="outline" className="min-h-tap" onClick={() => onSetKey(null)}>
+        <Button
+          variant="outline"
+          className="min-h-tap"
+          onClick={(e) =>
+            onSetKey(null, `panel-back${e.nativeEvent.isTrusted ? '' : ' (untrusted)'}`)
+          }
+        >
           Back to the usual key ({displayKey(usualKey)})
         </Button>
       )}

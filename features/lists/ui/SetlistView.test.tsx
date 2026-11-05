@@ -217,7 +217,10 @@ describe('SetlistView', () => {
     await chooseAction(user, titles[0]!, /change key/i);
     const dialog = await screen.findByRole('dialog');
     await user.selectOptions(within(dialog).getByLabelText('Key'), 'E');
-    expect(actions.updateListItem).toHaveBeenCalledWith(items[0]!.id, { overrideKey: 'E' });
+    expect(actions.updateListItem).toHaveBeenCalledWith(
+      items[0]!.id,
+      expect.objectContaining({ overrideKey: 'E' }),
+    );
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(within(dialog).getByRole('link', { name: 'Upload files for E' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
@@ -265,14 +268,20 @@ describe('SetlistView', () => {
     expect(within(panel).queryByRole('button', { name: /for this event/ })).toBeNull();
     await user.click(within(panel).getByRole('radio', { name: /^Key A\b/ }));
     await user.click(within(panel).getByRole('button', { name: 'Use A for this event' }));
-    expect(actions.updateListItem).toHaveBeenCalledWith(holy.item.id, { overrideKey: 'A' });
+    expect(actions.updateListItem).toHaveBeenCalledWith(
+      holy.item.id,
+      expect.objectContaining({ overrideKey: 'A' }),
+    );
     // Saved: the panel now opens on A and offers the way back.
     const back = await within(screen.getByRole('dialog')).findByRole('button', {
       name: 'Back to the usual key (B♭)',
     });
     expect(within(screen.getByRole('dialog')).queryByRole('button', { name: /^Use / })).toBeNull();
     await user.click(back);
-    expect(actions.updateListItem).toHaveBeenLastCalledWith(holy.item.id, { overrideKey: null });
+    expect(actions.updateListItem).toHaveBeenLastCalledWith(
+      holy.item.id,
+      expect.objectContaining({ overrideKey: null }),
+    );
   });
 
   it('the key panel tells view-only readers who can change the key', async () => {

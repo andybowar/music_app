@@ -1,6 +1,6 @@
 # Task index
 
-108 tasks · 17 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
+109 tasks · 17 waves · 4 human-required · sizes: S ≤ ½ day, M ≈ 1 day, L ≈ 2 days of focused agent work.
 
 **How to use.** A task is *ready* when every task in `depends_on` is merged. All ready tasks in a wave can run at the same time — their `owns` paths never overlap (checked by `scripts/check_tasks.py`). Start a task by setting `status: in_progress` in its file; see `AGENTS.md` for the full protocol.
 
@@ -86,13 +86,14 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | [UI-06](tasks/UI-06.md) | Detail panels: Key, Composer, Usage, Reminder | 1 Library | frontend | M | UI-04 |
 | [UI-07](tasks/UI-07.md) | ResourcesPanel + LyricsViewer | 1 Library | frontend | M | UI-04 |
 
-### Wave 6 — 4 tasks in parallel
+### Wave 6 — 5 tasks in parallel
 
 | ID | Title | Phase | Stream | Size | Depends on |
 |---|---|---|---|---|---|
 | [AUTH-04](tasks/AUTH-04.md) | Session guard + requireUser | 0 Foundations | auth | S | F-05, DB-06, DB-07 |
 | [AUTH-07](tasks/AUTH-07.md) | Self sign-up + account-status page | 0 Foundations | auth | M | DB-07, AUTH-01, AUTH-02 |
 | [DB-05](tasks/DB-05.md) | RLS + permission parity tests | 0 Foundations | security | M | DB-03, DB-04, AUTH-05, DB-07 |
+| [OPS-04](tasks/OPS-04.md) | Move hosting from Vercel to Google Cloud Run (keep Supabase) | 5 Hardening | ops | L | OPS-01, OPS-02 |
 | [SRCH-08](tasks/SRCH-08.md) | ResultsList | 2 Search | frontend | S | UI-05 |
 
 ### Wave 7 — 12 tasks in parallel
@@ -217,7 +218,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | data | DB-01, DB-02, DB-04, DB-07, DB-08, IMP-01, IMP-02, IMP-03 |
 | frontend | ADM-01, ADM-02, ADM-05, BR-02, BR-04, H-01, LIB-10, LIB-11, LIB-12, LIB-13, LIB-14, LIB-15, LIB-17, LIB-18, LIB-19, LIB-20, LIB-21, LIST-04, LIST-05, LIST-06, LIST-07, LIST-08, LIST-09, LIST-10, LIST-11, PLAY-01, PLAY-02, PLAY-03, PLAY-04, PLAY-05, PLAY-06, SHR-02, SHR-04, SRCH-04, SRCH-05, SRCH-06, SRCH-07, SRCH-08, SRCH-09, UI-01, UI-02, UI-04, UI-05, UI-06, UI-07, UI-08 |
 | fullstack | ADM-06, ADM-08, LIB-22, LIB-23 |
-| ops | OPS-01, OPS-02, OPS-03 |
+| ops | OPS-01, OPS-02, OPS-03, OPS-04 |
 | platform | DB-06, F-01, F-02, F-03, F-04, F-05 |
 | qa | H-04, H-05 |
 | security | AUTH-05, DB-03, DB-05 |
@@ -271,7 +272,7 @@ F-01 → F-03 → DB-01 → DB-03 → DB-07 → AUTH-04 → LIB-01 → SRCH-02 �
 | REQ-NF-01 | UI-01, H-01 |
 | REQ-NF-02 | H-01, LIST-11 |
 | REQ-NF-03 | UI-01, UI-04, H-04, LIST-11 |
-| REQ-NF-04 | OPS-03, OPS-02 |
+| REQ-NF-04 | OPS-03, OPS-02, OPS-04 |
 | REQ-NF-05 | DB-03 |
 | REQ-ROW-01 | UI-04, UI-05 |
 | REQ-ROW-02 | UI-05, UI-06, UI-07, SRCH-09, LIST-10 |

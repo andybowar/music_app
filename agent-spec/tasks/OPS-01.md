@@ -8,7 +8,7 @@ size: S
 status: todo
 human_required: true
 depends_on: []
-blocks: ["OPS-03"]
+blocks: ["OPS-03", "OPS-04"]
 owns: ["docs/ops/environments.md"]
 touches: []
 requirements: []

@@ -4,6 +4,9 @@ import type { RouteHandlerCallbackOptions } from 'serwist';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  isStaticAsset,
+  staticAssetPaths,
+  withoutBuildFiles,
   ACTIONS_CACHE,
   actionCacheKey,
   actionRedirectUrl,
@@ -565,5 +568,37 @@ describe('route handlers', () => {
       network.mockRejectedValueOnce(new TypeError('Failed to fetch'));
       expect((await handlePdf(opts(`${SIGNED}?token=t1`))).type).toBe('error');
     });
+  });
+});
+
+describe('build files are cached on use, not precached', () => {
+  it('drops /_next/static entries from the precache and keeps the icons', () => {
+    expect(
+      withoutBuildFiles([
+        { url: '/_next/static/chunks/a-123.js', revision: null },
+        '/_next/static/css/b.css',
+        { url: '/icons/icon-192.png', revision: 'x' },
+      ]),
+    ).toEqual([{ url: '/icons/icon-192.png', revision: 'x' }]);
+    expect(withoutBuildFiles(undefined)).toEqual([]);
+  });
+
+  it('matches same-origin build files only', () => {
+    const origin = 'https://app.example';
+    expect(isStaticAsset(new URL(`${origin}/_next/static/chunks/a.js`), origin)).toBe(true);
+    expect(isStaticAsset(new URL(`${origin}/lists/1`), origin)).toBe(false);
+    expect(isStaticAsset(new URL('https://cdn.example/_next/static/a.js'), origin)).toBe(false);
+  });
+
+  it('finds the scripts and stylesheets a page links to, once each', () => {
+    const html =
+      '<link rel="stylesheet" href="/_next/static/css/app.css?dpl=1"/>' +
+      '<script src="/_next/static/chunks/main-1.js" async></script>' +
+      '<script src="/_next/static/chunks/main-1.js"></script>' +
+      '<img src="/icons/icon.png"/><a href="/lists/1">x</a>';
+    expect(staticAssetPaths(html)).toEqual([
+      '/_next/static/css/app.css?dpl=1',
+      '/_next/static/chunks/main-1.js',
+    ]);
   });
 });

@@ -50,27 +50,42 @@
   /* UI-01 · Song row. */
   --row: #2b2b2b;
   --row-foreground: #ffffff;
+  --row-border: transparent;
 }
 
+/*
+ * The app is always dark (app/layout.tsx puts `dark` on <html>): a forest-green dark theme.
+ * Contrast on the page / cards / song rows: text 16.5 / 14.9 / 13.1:1, muted text 8.2 / 7.4 /
+ * 6.5:1, the green primary 8.8 / 8.0 / 7.0:1 (and dark text on it 8.8:1).
+ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #0f1712;
+  --foreground: #f0f5f1;
+  --card: #16221a;
+  --card-foreground: #f0f5f1;
+  --popover: #16221a;
+  --popover-foreground: #f0f5f1;
+  --primary: #5cc98a;
+  --primary-foreground: #0f1712;
+  --secondary: #223328;
+  --secondary-foreground: #f0f5f1;
+  --muted: #223328;
+  --muted-foreground: #9fb3a5;
+  --accent: #223328;
+  --accent-foreground: #f0f5f1;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: #2f4436;
+  --input: #2f4436;
+  --ring: #5cc98a;
+
+  /* Song rows: a step lighter than the page, with a faint outline. */
+  --row: #1e2d23;
+  --row-foreground: #ffffff;
+  --row-border: #3a5242;
+
+  /* Popovers, sheets and forms are dark too, so the "on light" POP shades use the row ones. */
+  --pop-current-on-light: var(--pop-current);
+  --pop-past-on-light: var(--pop-past);
 }
 
 @theme inline {
@@ -116,6 +131,7 @@
   --color-pop-past-on-light: var(--pop-past-on-light);
   --color-row: var(--row);
   --color-row-foreground: var(--row-foreground);
+  --color-row-border: var(--row-border);
   --radius-chip: 4px;
   --spacing-tap: 2.5rem;
   --font-sans:

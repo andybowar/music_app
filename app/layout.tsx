@@ -14,11 +14,14 @@ export const viewport: Viewport = {
   // iPhones only report the home-indicator area (env(safe-area-inset-bottom)) to the page with
   // `cover`; without it the bottom tab bar sat on the swipe-up-to-close gesture area.
   viewportFit: 'cover',
+  // Browser and status bar colour: the dark theme's page colour (app/globals.css).
+  themeColor: '#0f1712',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
       <body className="min-h-dvh">{children}</body>
     </html>
   );

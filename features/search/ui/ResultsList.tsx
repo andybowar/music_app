@@ -45,7 +45,7 @@ export function hasMoreResults(result: SearchResult): boolean {
 
 function SkeletonRows({ count }: { count: number }) {
   return (
-    <ul aria-hidden="true" className="space-y-1.5" data-testid="results-skeleton">
+    <ul aria-hidden="true" className="space-y-2" data-testid="results-skeleton">
       {Array.from({ length: count }, (_, i) => (
         <li key={i}>
           <Skeleton className="h-14 w-full" />
@@ -135,7 +135,7 @@ export function ResultsList({
         <EmptyState onClearFilters={onClearFilters} />
       ) : (
         <>
-          <ul aria-label="Songs" className="space-y-1.5">
+          <ul aria-label="Songs" className="space-y-2">
             {items.map((song) => (
               <li
                 key={song.id}

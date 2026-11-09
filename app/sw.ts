@@ -283,7 +283,7 @@ export function offlineFallbackHtml(saved: readonly SavedPage[]): string {
   const list = saved.length
     ? `<p>Setlists you’ve opened on this device:</p><ul>${items}</ul>`
     : '<p>Setlists you open while online will be available here offline.</p>';
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Offline · Worship Library</title><style>body{margin:0;font:16px/1.5 system-ui,-apple-system,sans-serif;color:#f0f5f1;background:#0f1712}main{max-width:40rem;margin:0 auto;padding:72px 16px 24px}h1{font-size:1.5rem;margin:0 0 8px}ul{padding-left:1.25rem}li{margin:6px 0}a{color:inherit}</style></head><body><main><h1>This page isn’t available offline</h1>${list}</main></body></html>`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Offline · Worship Library</title><style>body{margin:0;font:16px/1.5 system-ui,-apple-system,sans-serif;color:#f6f1ea;background:#171412}main{max-width:40rem;margin:0 auto;padding:72px 16px 24px}h1{font-size:1.5rem;margin:0 0 8px}ul{padding-left:1.25rem}li{margin:6px 0}a{color:inherit}</style></head><body><main><h1>This page isn’t available offline</h1>${list}</main></body></html>`;
 }
 
 /** Entries beyond `max`, oldest first, given keys in insertion order. */

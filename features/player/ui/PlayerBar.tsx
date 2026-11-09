@@ -191,7 +191,7 @@ export function PlayerBar({ state, dispatch }: PlayerBarProps) {
       data-status={state.status}
       className={cn(
         'sticky bottom-[var(--bottom-nav-height,0px)] z-30 w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80',
-        'pb-[env(safe-area-inset-bottom)]',
+        // No safe-area padding of its own: on phones it sits on the tab bar, which has it.
       )}
     >
       <div className="mx-auto flex max-w-screen-lg items-center gap-2 px-3 py-2 sm:gap-4 sm:px-4">

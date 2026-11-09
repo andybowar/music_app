@@ -344,7 +344,7 @@ export function SongForm({ song, user, branches, actions, initialTab, notice }: 
       </Tabs>
 
       <div
-        className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 flex flex-wrap items-center gap-2 border-t bg-background px-4 py-3 xl:bottom-0"
+        className="sticky bottom-[var(--bottom-nav-height)] z-10 -mx-4 flex flex-wrap items-center gap-2 border-t bg-background px-4 py-3 xl:bottom-0"
         aria-describedby={`${id}-status`}
       >
         <Button type="button" onClick={save} disabled={saving} className="min-h-10">

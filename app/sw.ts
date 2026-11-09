@@ -7,7 +7,10 @@
  *
  * What works offline:
  *
- * - **App code**: every `/_next/static` asset and `public/icons/` is precached.
+ * - **App code**: only `public/icons/` is precached. `/_next/static` files (content-hashed, so
+ *   never stale) are cached as the browser loads them, cache-first, and the files a saved setlist
+ *   page links to are fetched when the page is saved. Precaching every build file cost about 300
+ *   CDN requests per device per deploy (and per preview opened); this costs only what is used.
  * - **Setlists the user has opened** (`/lists/<id>`): the HTML is saved on every full load and
  *   refreshed in the background on client-side navigations (`RSC` fetches) and `router.refresh()`.
  *   Pages already open when the worker first activates are saved too. Offline, a list navigation
@@ -31,7 +34,7 @@
 
 import type { PrecacheEntry, RouteHandlerCallbackOptions, SerwistGlobalConfig } from 'serwist';
 
-import { Serwist } from 'serwist';
+import { CacheFirst, CacheableResponsePlugin, ExpirationPlugin, Serwist } from 'serwist';
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -49,6 +52,10 @@ export const PAGES_CACHE = 'offline-pages-v1';
 export const RESOURCES_CACHE = 'offline-resources-v1';
 export const ACTIONS_CACHE = 'offline-actions-v1';
 export const OFFLINE_CACHES = [PAGES_CACHE, RESOURCES_CACHE, ACTIONS_CACHE] as const;
+/** Build files (`/_next/static`) used on this device. Not private, so kept across sign-outs. */
+export const STATIC_CACHE = 'static-assets-v1';
+export const MAX_STATIC = 400;
+export const STATIC_MAX_AGE_S = 30 * 24 * 60 * 60;
 
 /** Most saved setlists / files / action replies kept; the oldest go first. */
 export const MAX_PAGES = 50;
@@ -287,6 +294,31 @@ export function offlineFallbackHtml(saved: readonly SavedPage[]): string {
 }
 
 /** Entries beyond `max`, oldest first, given keys in insertion order. */
+/** Whether a URL is a content-hashed build file under `/_next/static/`. */
+export function isStaticAsset(url: URL, origin: string): boolean {
+  return url.origin === origin && url.pathname.startsWith('/_next/static/');
+}
+
+/** Precache entries minus the build files, which are cached on use instead (see the top). */
+export function withoutBuildFiles(
+  entries: readonly (PrecacheEntry | string)[] | undefined,
+): (PrecacheEntry | string)[] {
+  return (entries ?? []).filter((e) => {
+    const url = typeof e === 'string' ? e : e.url;
+    return !url.startsWith('/_next/static/');
+  });
+}
+
+/** The `/_next/static` scripts and stylesheets a page's HTML links to, as same-origin URLs. */
+export function staticAssetPaths(html: string): string[] {
+  const paths = new Set<string>();
+  // Keep any query (e.g. Vercel's `?dpl=` deployment id): the browser requests it that way.
+  for (const m of html.matchAll(/(?:src|href)="(\/_next\/static\/[^"#]+)/g)) {
+    paths.add(m[1]!.replaceAll('&amp;', '&'));
+  }
+  return [...paths];
+}
+
 export function overflow<T>(keys: readonly T[], max: number): T[] {
   return keys.length > max ? keys.slice(0, keys.length - max) : [];
 }
@@ -320,6 +352,22 @@ async function savePage(url: URL, response: Response): Promise<void> {
   const cache = await caches.open(PAGES_CACHE);
   await cache.put(pageCacheKey(url), new Response(html, { status: 200, headers }));
   await trim(PAGES_CACHE, MAX_PAGES);
+  await cacheStaticAssets(staticAssetPaths(html));
+}
+
+/**
+ * Make sure a saved page's build files are cached, so it renders offline. Only missing files are
+ * fetched, and usually from the browser's own HTTP cache (the page just loaded them).
+ */
+async function cacheStaticAssets(paths: readonly string[]): Promise<void> {
+  const cache = await caches.open(STATIC_CACHE);
+  await Promise.all(
+    paths.map(async (path) => {
+      if (await cache.match(path)) return;
+      const res = await fetch(path);
+      if (res.ok) await cache.put(path, res);
+    }),
+  );
 }
 
 /** Fetch and save a list page in the background, unless the saved copy is fresh. */
@@ -506,9 +554,9 @@ export async function handlePdf({ request, event, url }: RouteHandlerCallbackOpt
 
 /**
  * On activation, save list pages that are already open (the first visit loads before the worker
- * controls the page) and re-save the existing copies: a new deploy ships new asset hashes, and the
- * old assets leave the precache, so old copies would no longer render. Offline, the fetches fail
- * and the old copies stay.
+ * controls the page) and re-save the existing copies: a new deploy ships new asset hashes, so the
+ * fresh copies link to new build files, which `savePage` caches. Offline, the fetches fail and
+ * the old copies (and the old build files they use) stay.
  */
 async function resaveListPages(): Promise<void> {
   const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -536,7 +584,7 @@ function isServiceWorker(): boolean {
 
 if (isServiceWorker()) {
   const serwist = new Serwist({
-    precacheEntries: self.__SW_MANIFEST,
+    precacheEntries: withoutBuildFiles(self.__SW_MANIFEST),
     skipWaiting: true,
     clientsClaim: true,
     navigationPreload: false,
@@ -562,6 +610,16 @@ if (isServiceWorker()) {
       {
         matcher: ({ url }) => pdfResourceId(url) !== null,
         handler: handlePdf,
+      },
+      {
+        matcher: ({ url }) => isStaticAsset(url, self.location.origin),
+        handler: new CacheFirst({
+          cacheName: STATIC_CACHE,
+          plugins: [
+            new CacheableResponsePlugin({ statuses: [200] }),
+            new ExpirationPlugin({ maxEntries: MAX_STATIC, maxAgeSeconds: STATIC_MAX_AGE_S }),
+          ],
+        }),
       },
     ],
   });

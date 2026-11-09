@@ -288,3 +288,32 @@ describe('chart view', () => {
     expect(getPdfUrl).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('capo', () => {
+  it('shows typed chords and first chords as capo shapes, keeps the key, and remembers the fret', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: 'Typed chords (in G)' }));
+    const firstVerse = () => document.querySelector('[data-section="verse_1"] [data-chords]')!;
+    expect(firstVerse()).toHaveTextContent(/^G/);
+    await user.click(screen.getByRole('button', { name: 'Capo up a fret' }));
+    expect(screen.getByText('Capo 1 · play F♯ shapes · key G')).toBeInTheDocument();
+    // The shape to play, with the sounding chord small beside it.
+    expect(firstVerse()).toHaveTextContent(/^F♯\(G\)/);
+    expect(
+      within(screen.getByLabelText('First chords')).getAllByRole('definition')[0],
+    ).toHaveTextContent('F♯(G)');
+    expect(window.localStorage.getItem(`capo:${SONG_IDS.amazingGrace}:G`)).toBe('1');
+    // The header key doesn't change.
+    expect(
+      within(dialog().querySelector('header')!).getByLabelText(/^Key G\b/),
+    ).toBeInTheDocument();
+  });
+
+  it('opens with the remembered fret, and says PDFs stay as written', async () => {
+    window.localStorage.setItem(`capo:${SONG_IDS.amazingGrace}:G`, '2');
+    const { user } = setup();
+    expect(screen.getByText('Capo 2 · play F shapes · key G')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Chord chart' }));
+    expect(screen.getByText(/PDF charts stay as written/)).toBeVisible();
+  });
+});

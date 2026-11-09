@@ -1,7 +1,7 @@
 'use client';
 
 import { GuitarIcon } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useState, type ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toggle } from '@/components/ui/toggle';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -13,6 +13,7 @@ import {
   type SongChords,
   type SongLyrics,
 } from '@/types/domain';
+import { CapoChord } from './CapoChord';
 import { ChordLyrics } from './ChordLyrics';
 import { displayKey, spokenKey } from './KeyBadge';
 
@@ -34,6 +35,11 @@ export interface LyricsViewerProps {
    */
   chordsKey?: string | null;
   onChordsKeyChange?(key: string): void;
+  /**
+   * Capo fret (0–7): chords show the shape to play, with the sounding chord small beside it.
+   * Relative to the shown chord set's key.
+   */
+  capo?: number;
   /** Lyric text size in px (the set player's A−/A+, LIST-11). Defaults to the `text-lg` size. */
   textSizePx?: number;
 }
@@ -98,7 +104,9 @@ function Block({
   index,
   chordText,
   textSizePx,
+  chordLabel,
 }: {
+  chordLabel?(chord: string): ReactNode;
   block: LyricsBlock;
   idBase: string;
   index: number;
@@ -127,6 +135,7 @@ function Block({
       ) : hasChords(chordText) ? (
         <ChordLyrics
           text={chordText!}
+          chordLabel={chordLabel}
           className="text-lg leading-snug"
           style={textSizePx ? { fontSize: textSizePx } : undefined}
         />
@@ -153,6 +162,7 @@ export function LyricsViewer({
   chords,
   chordsKey: controlledKey,
   onChordsKeyChange,
+  capo = 0,
   textSizePx,
 }: LyricsViewerProps) {
   const [view, setView] = useState<LyricsViewerMode>(mode);
@@ -174,6 +184,10 @@ export function LyricsViewer({
     onChordsKeyChange?.(key);
   };
   const chordText = (section: Section) => (set && showChords ? set.sections[section] : null);
+  const chordLabel =
+    capo > 0 && set
+      ? (chord: string) => <CapoChord chord={chord} capo={capo} soundingKey={set.key} />
+      : undefined;
 
   const bySection = sectionBlocks(lyrics);
   if (bySection.length === 0) {
@@ -265,6 +279,7 @@ export function LyricsViewer({
           index={i}
           chordText={chordText(b.section)}
           textSizePx={textSizePx}
+          chordLabel={chordLabel}
         />
       ))}
 
@@ -284,6 +299,7 @@ export function LyricsViewer({
               index={i}
               chordText={chordText(section)}
               textSizePx={textSizePx}
+              chordLabel={chordLabel}
             />
           ))}
         </section>

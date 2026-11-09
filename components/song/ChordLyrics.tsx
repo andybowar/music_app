@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import { cn } from '@/components/ui/utils';
 import { parseChordLine, type ChordSegment } from '@/lib/lyrics/chords';
@@ -8,6 +8,8 @@ export interface ChordLyricsProps {
   text: string;
   className?: string;
   style?: CSSProperties;
+  /** How to show each chord (e.g. a capo shape); defaults to the chord as written. */
+  chordLabel?(chord: string): ReactNode;
 }
 
 /** A piece of one word: the chord played on it (if any) and the letters under the chord. */
@@ -42,7 +44,7 @@ const NBSP = '\u00a0';
 
 const chordClass = 'pe-1 text-[0.8em] leading-tight font-bold';
 
-function ChordLine({ line }: { line: string }) {
+function ChordLine({ line, label }: { line: string; label(chord: string): ReactNode }) {
   const segments = parseChordLine(line);
   if (segments.every((s) => s.chord === null)) {
     return line.trim() ? <span className="block">{line}</span> : <span className="block h-3" />;
@@ -54,7 +56,7 @@ function ChordLine({ line }: { line: string }) {
         {segments.map((s, i) =>
           s.chord ? (
             <span key={i} className={chordClass}>
-              {s.chord}
+              {label(s.chord)}
             </span>
           ) : null,
         )}
@@ -68,7 +70,7 @@ function ChordLine({ line }: { line: string }) {
           {word.map((piece, p) => (
             <span key={p} className="inline-flex flex-col">
               <span className={chordClass} aria-hidden={piece.chord ? undefined : true}>
-                {piece.chord ?? NBSP}
+                {piece.chord ? label(piece.chord) : NBSP}
               </span>
               <span className="whitespace-pre">{piece.text || NBSP}</span>
             </span>
@@ -83,11 +85,12 @@ function ChordLine({ line }: { line: string }) {
  * Lyrics with each chord shown above the syllable it's played on (LIB-22). Lines without
  * chords render as plain text; lines of only chords render as a row of chords.
  */
-export function ChordLyrics({ text, className, style }: ChordLyricsProps) {
+export function ChordLyrics({ text, className, style, chordLabel }: ChordLyricsProps) {
+  const label = chordLabel ?? ((chord: string) => chord);
   return (
     <div className={cn('flex flex-col', className)} style={style} data-chords="">
       {text.split(/\r\n?|\n/).map((line, i) => (
-        <ChordLine key={i} line={line} />
+        <ChordLine key={i} line={line} label={label} />
       ))}
     </div>
   );

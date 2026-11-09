@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 
+import { CapoChord } from '@/components/song/CapoChord';
 import { displayKey } from '@/components/song/KeyBadge';
 import { CHORD_SLOT_LABEL, chordText } from '@/components/song/panels/KeyPanel';
 import { Button } from '@/components/ui/button';
@@ -91,9 +92,15 @@ const selectClass =
 export function FirstChords({
   chords,
   className,
+  capo = 0,
+  soundingKey = null,
 }: {
   chords: Record<ChordSlot, string>;
   className?: string;
+  /** Capo fret: show the shape to play, with the sounding chord small beside it. */
+  capo?: number;
+  /** The key the chords sound in, for naming capo shapes. */
+  soundingKey?: string | null;
 }) {
   return (
     <div className={cn('flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm', className)}>
@@ -108,7 +115,13 @@ export function FirstChords({
               className={cn('font-semibold', chords[slot] === MISSING_CHORD && 'text-destructive')}
               aria-label={chords[slot] === MISSING_CHORD ? 'X, not known' : undefined}
             >
-              {chords[slot] === MISSING_CHORD ? MISSING_CHORD : displayKey(chords[slot])}
+              {chords[slot] === MISSING_CHORD ? (
+                MISSING_CHORD
+              ) : capo > 0 ? (
+                <CapoChord chord={chords[slot]} capo={capo} soundingKey={soundingKey} />
+              ) : (
+                displayKey(chords[slot])
+              )}
             </dd>
           </div>
         ))}

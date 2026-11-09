@@ -13,7 +13,9 @@ import { EnergyChip } from '@/components/song/EnergyChip';
 import { KeyBadge } from '@/components/song/KeyBadge';
 import { displayKey } from '@/components/song/KeyBadge';
 import { LyricsViewer, LyricsViewerSkeleton } from '@/components/song/LyricsViewer';
+import { CapoControl } from '@/components/song/CapoControl';
 import { AutoscrollControls } from '@/features/lists/ui/player/AutoscrollControls';
+import { chordsInText, readCapo, suggestCapo, writeCapo } from '@/lib/lyrics/capo';
 import { songChordSets } from '@/lib/lyrics/chords';
 import { TimeSigBadge } from '@/components/song/TimeSigBadge';
 import { ComposerPanel } from '@/components/song/panels/ComposerPanel';
@@ -332,6 +334,19 @@ export function SongPage({
   const [shownKey, setShownKey] = useState<string | undefined>(primaryKey);
   useEffect(() => setShownKey(primaryKey), [song.id, primaryKey]);
   const chordSets = songChordSets(song.keys);
+  // Capo: remembered on this device for the song in the key shown.
+  const [capo, setCapo] = useState(0);
+  useEffect(() => setCapo(readCapo(song.id, shownKey ?? null)), [song.id, shownKey]);
+  const changeCapo = (next: number) => {
+    setCapo(next);
+    writeCapo(song.id, shownKey ?? null, next);
+  };
+  const shownSet = chordSets.find((c) => c.key === shownKey);
+  const shownKeyRow = song.keys.find((k) => k.key === shownKey);
+  // Suggest from the shown key's typed chords, else its first chords.
+  const capoChords = shownSet
+    ? SECTIONS.flatMap((s) => chordsInText(shownSet.sections[s]))
+    : Object.values(shownKeyRow?.firstChords ?? {}).filter((c): c is string => !!c?.trim());
   // Autoscroll moves the page itself.
   const pageRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
@@ -344,17 +359,24 @@ export function SongPage({
         <Panel title="Lyrics" id={lyricsId}>
           {hasLyrics(song) && (
             // Stays in view below the app header while the page scrolls.
-            <AutoscrollControls
-              songId={song.id}
-              target={pageRef}
-              className="sticky top-[57px] z-10 -mx-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-background/95 px-4 py-2 backdrop-blur xl:top-[65px]"
-            />
+            <div className="sticky top-[57px] z-10 -mx-4 flex flex-col gap-2 border-b bg-background/95 px-4 py-2 backdrop-blur xl:top-[65px]">
+              <AutoscrollControls songId={song.id} target={pageRef} />
+              {chordSets.length > 0 && (
+                <CapoControl
+                  capo={capo}
+                  onChange={changeCapo}
+                  soundingKey={shownKey ?? null}
+                  suggestion={suggestCapo(capoChords, shownKey ?? null)}
+                />
+              )}
+            </div>
           )}
           <LyricsViewer
             lyrics={song.lyrics}
             arrangement={song.arrangement}
             chords={chordSets}
             chordsKey={chordSets.length > 0 ? (shownKey ?? null) : undefined}
+            capo={capo}
             onChordsKeyChange={setShownKey}
           />
         </Panel>
@@ -411,6 +433,7 @@ export function SongPage({
             keys={song.keys}
             highlightKey={primaryKey}
             selectedKey={shownKey}
+            capo={capo}
             onSelectedChange={setShownKey}
             footer={(key) =>
               chordSets.some((c) => c.key === key) ? null : (

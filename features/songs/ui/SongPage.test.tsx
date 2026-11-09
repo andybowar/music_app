@@ -384,3 +384,33 @@ describe('SongPage autoscroll', () => {
     expect(screen.queryByRole('button', { name: 'Autoscroll' })).toBeNull();
   });
 });
+
+describe('SongPage capo', () => {
+  const amazing = getSong(SONG_IDS.amazingGrace); // typed chords in G (primary), F without
+  afterEach(() => window.localStorage.clear());
+
+  it('shows lyrics and the key panel’s first chords as capo shapes, remembered per key', async () => {
+    const user = userEvent.setup();
+    renderPage({ song: amazing });
+    const verse1 = () => document.querySelector('[data-section="verse_1"] [data-chords]')!;
+    await user.click(screen.getByRole('button', { name: 'Capo up a fret' }));
+    await user.click(screen.getByRole('button', { name: 'Capo up a fret' }));
+    expect(screen.getByText('Capo 2 · play F shapes · key G')).toBeInTheDocument();
+    expect(verse1()).toHaveTextContent(/^F\(G\)/);
+    expect(document.querySelector('[data-slot-chord="intro"]')).toHaveTextContent('F(G)');
+    expect(window.localStorage.getItem(`capo:${amazing.id}:G`)).toBe('2');
+
+    // Another key starts at its own remembered fret (none yet).
+    await user.click(
+      within(screen.getByRole('radiogroup', { name: 'Keys' })).getByRole('radio', {
+        name: /^Key F/,
+      }),
+    );
+    expect(screen.getByText('No capo · key F')).toBeInTheDocument();
+  });
+
+  it('has no capo for a song without typed chords', () => {
+    renderPage({ song: full });
+    expect(screen.queryByRole('button', { name: 'Capo up a fret' })).toBeNull();
+  });
+});

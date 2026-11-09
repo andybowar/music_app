@@ -4,6 +4,7 @@ import { useId, useState, type ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { CHORD_SLOTS, MISSING_CHORD, type ChordSlot, type SongKey } from '@/types/domain';
+import { CapoChord } from '../CapoChord';
 import { displayKey, spokenKey } from '../KeyBadge';
 
 export interface KeyPanelProps {
@@ -21,6 +22,8 @@ export interface KeyPanelProps {
    */
   selectedKey?: string;
   onSelectedChange?(key: string): void;
+  /** Capo fret: first chords show the shape to play, with the sounding chord beside it. */
+  capo?: number;
 }
 
 export const CHORD_SLOT_LABEL: Record<ChordSlot, string> = {
@@ -62,6 +65,7 @@ export function KeyPanel({
   footer,
   selectedKey,
   onSelectedChange,
+  capo = 0,
 }: KeyPanelProps) {
   const headingId = useId();
   const [own, setOwn] = useState<string | null>(() => initialKey(keys, highlightKey));
@@ -142,7 +146,15 @@ export function KeyPanel({
                   data-missing={missing || undefined}
                   className={missing ? 'text-lg font-semibold opacity-60' : 'text-lg font-semibold'}
                 >
-                  {text}
+                  {missing || capo === 0 ? (
+                    text
+                  ) : (
+                    <CapoChord
+                      chord={current.firstChords[slot]!.trim()}
+                      capo={capo}
+                      soundingKey={current.key}
+                    />
+                  )}
                   {missing && <span className="sr-only"> (not recorded)</span>}
                 </dd>
               </div>

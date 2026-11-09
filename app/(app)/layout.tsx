@@ -121,11 +121,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <InstallBanner />
-          {/* Bottom padding keeps content clear of the fixed mobile tab bar (h-14 + safe area). */}
+          {/* Bottom padding keeps content clear of the fixed mobile tab bar (--bottom-nav-height). */}
           <main
             id="main"
             tabIndex={-1}
-            className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] outline-none xl:pb-0"
+            className="flex-1 pb-[calc(var(--bottom-nav-height)+1rem)] outline-none xl:pb-0"
           >
             {children}
           </main>

@@ -138,3 +138,19 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+/*
+ * Height of the phone tab bar (components/NavBar.tsx MobileNav), shared by everything that sits
+ * above it: the page's bottom padding, the player bar and the song form's save bar. The tab row
+ * is 3.5rem; under it at least 0.75rem, or the phone's home-indicator area when that's larger,
+ * so the buttons stay clear of the swipe-up gesture. No tab bar from xl (1280px) up.
+ */
+:root {
+  --bottom-nav-pad: max(0.75rem, env(safe-area-inset-bottom));
+  --bottom-nav-height: calc(3.5rem + var(--bottom-nav-pad));
+}
+@media (min-width: 1280px) {
+  :root {
+    --bottom-nav-height: 0px;
+  }
+}

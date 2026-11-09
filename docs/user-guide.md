@@ -69,6 +69,12 @@ The bar at the top of every page (and the tab bar at the bottom on a phone) has:
 The account button (top right) shows who you're signed in as and your branch. It also has
 **Report a bug**, **Admin** (admins and music leaders) and **Sign out**.
 
+### Choosing a theme
+
+The **Theme** menu at the bottom left of every page changes the app's colours. There are five
+dark themes: **Warm slate** (the default), **Charcoal**, **Deep navy**, **Logo blue** and
+**Logo flame**. Your choice is remembered on that device only, so your phone and iPad can differ.
+
 ### Using it on your phone
 
 On an iPad or iPhone, a banner at the top of the app offers to show you how to add it to your Home Screen (Share, then **Add to Home Screen**, then **Add**). Once you've added it, open it from the new icon and sign in again: the Home Screen app keeps its own sign-in. Tap ✕ on the banner to hide it for good on that device.

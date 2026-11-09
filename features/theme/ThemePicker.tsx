@@ -14,10 +14,10 @@ export function applyTheme(id: ThemeId) {
 }
 
 /**
- * TEMPORARY switcher for trying the five dark palettes (not rendered on production). The
- * choice is remembered on this device. Sits bottom-left, above the phone tab bar.
+ * The theme picker: a small "Theme" menu fixed bottom-left on every page, above the phone tab
+ * bar. The choice is remembered on this device.
  */
-export function ThemeTrial() {
+export function ThemePicker() {
   const id = useId();
   const [theme, setTheme] = useState<ThemeId>(DEFAULT_THEME);
 

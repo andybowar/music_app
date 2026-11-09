@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import { THEME_BOOT_SCRIPT } from '@/features/theme-trial/themes';
-import { ThemeTrial } from '@/features/theme-trial/ThemeTrial';
+import { THEME_BOOT_SCRIPT } from '@/features/theme/themes';
+import { ThemePicker } from '@/features/theme/ThemePicker';
 
 import './globals.css';
 
@@ -18,25 +18,20 @@ export const viewport: Viewport = {
   // `cover`; without it the bottom tab bar sat on the swipe-up-to-close gesture area.
   viewportFit: 'cover',
   // Browser and status bar colour: the dark theme's page colour (app/globals.css).
-  themeColor: '#121212',
+  themeColor: '#171412',
   colorScheme: 'dark',
 };
 
-/** TEMPORARY: the five-palette switcher, everywhere but production. */
-const themeTrial = process.env.VERCEL_ENV !== 'production';
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    // suppressHydrationWarning: the theme-trial script may set data-theme before React loads.
+    // suppressHydrationWarning: the theme script may set data-theme before React loads.
     <html lang="en" className="dark" style={{ colorScheme: 'dark' }} suppressHydrationWarning>
-      {themeTrial && (
-        <head>
-          <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
-        </head>
-      )}
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-dvh">
         {children}
-        {themeTrial && <ThemeTrial />}
+        <ThemePicker />
       </body>
     </html>
   );

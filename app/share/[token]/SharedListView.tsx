@@ -183,7 +183,7 @@ export function SharedListView({ list }: SharedListViewProps) {
           <p className="text-sm text-muted-foreground">Check back later.</p>
         </div>
       ) : (
-        <ol aria-label={`Songs in ${list.name}`} className="flex flex-col gap-1">
+        <ol aria-label={`Songs in ${list.name}`} className="flex flex-col gap-2">
           {list.items.map((resolved) => (
             <li key={resolved.item.id} data-item-id={resolved.item.id}>
               <SongRow

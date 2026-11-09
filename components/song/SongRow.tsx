@@ -99,7 +99,8 @@ export function SongRow({
         data-song-id={song.id}
         className={cn(
           ROW_TOKEN.surface,
-          'flex w-full min-w-0 items-center gap-0.5 rounded-md px-1 py-1 @min-[480px]:gap-2 @min-[480px]:px-2',
+          'flex w-full min-w-0 items-center gap-1.5 rounded-md border border-row-border px-2 py-1.5',
+          '@min-[480px]:gap-3 @min-[480px]:px-3 @min-[480px]:py-2',
         )}
       >
         {dragHandle !== undefined && (
@@ -110,7 +111,7 @@ export function SongRow({
 
         {/* Narrow rows stack the chip above the key to leave room for the title. */}
         <span
-          className="flex shrink-0 flex-col items-center @min-[480px]:flex-row @min-[480px]:gap-2"
+          className="flex shrink-0 flex-col items-center gap-1 @min-[480px]:flex-row @min-[480px]:gap-2"
           data-region="musical"
         >
           <span className="flex shrink-0 items-center">

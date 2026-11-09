@@ -305,7 +305,7 @@ function BranchCard({ activity, days, renderSong }: BranchCardProps) {
           {recentlyAdded.length === 0 ? (
             <Empty>No songs added in the last {days} days.</Empty>
           ) : (
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-2">
               {recentlyAdded.map((song) => (
                 <li key={song.id}>{renderSong(song, 'recent')}</li>
               ))}
@@ -316,7 +316,7 @@ function BranchCard({ activity, days, renderSong }: BranchCardProps) {
           {upcoming.length === 0 ? (
             <Empty>No upcoming setlists.</Empty>
           ) : (
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-2">
               {upcoming.map((list) => (
                 <li key={list.id}>
                   <Link
@@ -348,7 +348,7 @@ function BranchCard({ activity, days, renderSong }: BranchCardProps) {
           {topSongs.length === 0 ? (
             <Empty>No setlists in the last {days} days.</Empty>
           ) : (
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-2">
               {topSongs.map((song) => (
                 <li key={song.id}>
                   {renderSong(

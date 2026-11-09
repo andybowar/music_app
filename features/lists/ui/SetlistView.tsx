@@ -831,7 +831,7 @@ export function SetlistView({ list, canEdit, songs }: SetlistViewProps) {
             items={items.map((i) => i.item.id)}
             strategy={verticalListSortingStrategy}
           >
-            <ol aria-label={`Songs in ${header.name}`} className="flex flex-col gap-1">
+            <ol aria-label={`Songs in ${header.name}`} className="flex flex-col gap-2">
               {items.map((resolved, index) => (
                 <ItemRow
                   key={resolved.item.id}

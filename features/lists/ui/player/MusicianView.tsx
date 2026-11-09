@@ -1,11 +1,14 @@
 'use client';
 
 import { FileTextIcon, GuitarIcon, TriangleAlertIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { CapoControl } from '@/components/song/CapoControl';
 import { LyricsViewer } from '@/components/song/LyricsViewer';
+import { chordsInText, readCapo, suggestCapo, writeCapo } from '@/lib/lyrics/capo';
 import { Button } from '@/components/ui/button';
 import { displayKey } from '@/components/song/KeyBadge';
+import { MISSING_CHORD, SECTIONS } from '@/types/domain';
 import type { ResolvedItem, Resource, SongChords, SongDetail } from '@/types/domain';
 
 import { FirstChords } from '../ItemOverrideEditor';
@@ -40,9 +43,42 @@ export function MusicianView({
   const [chosenId, setChosenId] = useState<string | null>(null);
   const chosen = options.length === 1 ? options[0]! : options.find((o) => o.id === chosenId);
 
+  // Capo: remembered on this device for the song in this setlist key.
+  const songId = resolved.song.id;
+  const [capo, setCapo] = useState(() => readCapo(songId, resolved.key));
+  useEffect(() => setCapo(readCapo(songId, resolved.key)), [songId, resolved.key]);
+  const changeCapo = (next: number) => {
+    setCapo(next);
+    writeCapo(songId, resolved.key, next);
+  };
+  const typed = chosen?.type === 'typed' ? chosen.chords : null;
+  // Typed chords are written in their own key; first chords are in the setlist's key.
+  const soundingKey = typed?.key ?? resolved.key;
+  const firstChordList = Object.values(resolved.firstChords).filter((c) => c !== MISSING_CHORD);
+  const suggestion = suggestCapo(
+    typed ? SECTIONS.flatMap((s) => chordsInText(typed.sections[s])) : firstChordList,
+    soundingKey,
+  );
+
   return (
     <div className="flex flex-col gap-4">
-      <FirstChords chords={resolved.firstChords} className="rounded-md bg-muted/60 px-3 py-2" />
+      <FirstChords
+        chords={resolved.firstChords}
+        capo={capo}
+        soundingKey={resolved.key}
+        className="rounded-md bg-muted/60 px-3 py-2"
+      />
+      <CapoControl
+        capo={capo}
+        onChange={changeCapo}
+        soundingKey={soundingKey}
+        suggestion={suggestion}
+      />
+      {capo > 0 && chosen?.type === 'pdf' && (
+        <p className="text-sm text-muted-foreground">
+          The capo changes typed chords and first chords; PDF charts stay as written.
+        </p>
+      )}
       {resolved.needsUpload && (
         <p className="text-sm text-muted-foreground">No files for this key.</p>
       )}
@@ -84,6 +120,7 @@ export function MusicianView({
               resolved={resolved}
               detail={detail!}
               chords={chosen.chords}
+              capo={capo}
               textSizePx={textSizePx}
             />
           ) : (
@@ -105,11 +142,13 @@ function TypedChords({
   resolved,
   detail,
   chords,
+  capo,
   textSizePx,
 }: {
   resolved: ResolvedItem;
   detail: SongDetail;
   chords: SongChords;
+  capo: number;
   textSizePx: number;
 }) {
   const warning = keyMismatch(chords.key, resolved.key);
@@ -128,6 +167,7 @@ function TypedChords({
         lyrics={detail.lyrics}
         arrangement={detail.arrangement}
         chords={[chords]}
+        capo={capo}
         textSizePx={textSizePx}
       />
     </>

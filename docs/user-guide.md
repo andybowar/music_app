@@ -204,6 +204,14 @@ so. **A−** and **A+** change the text size of lyrics and typed chords.
 Turn on **Autoscroll** and set its **Speed** from 1 (slow) to 10. The speed is remembered for each
 song on your device, and autoscroll turns off when you move to another song.
 
+**Capo:** if the chords are hard to play (lots of flats, say), use **Capo** − / + to set the fret
+your capo is on, from 1 to 7. The song stays in the same key; each chord shows the **shape to
+play**, with the chord that sounds small beside it, e.g. **G** (A♭), and the line under the
+buttons says which shapes you're playing ("Capo 1 · play G shapes · key A♭"). **Suggest** picks
+the fret that gives the fewest sharps and flats. The capo changes typed chords and first chords
+(PDF charts stay as written), works on the song page too, and is remembered for each song and key
+on your device.
+
 Move between songs with **Previous** and **Next**, by swiping sideways, or with the arrow or Page
 Up/Page Down keys, which is what most Bluetooth page-turner pedals send. A pedal press first
 scrolls the song down a screen, and moves to the next song once you're at the end.

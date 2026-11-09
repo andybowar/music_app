@@ -216,7 +216,7 @@ function MobileNav({ currentList, onCreate, onShare, onLibrary, canAddSong }: Na
     <nav
       aria-label="Main"
       data-testid="nav-mobile"
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] xl:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[var(--bottom-nav-pad)] xl:hidden"
     >
       <ul className="mx-auto grid max-w-xl grid-cols-5 gap-1 px-1">
         <li>

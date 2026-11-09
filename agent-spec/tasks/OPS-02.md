@@ -8,7 +8,7 @@ size: S
 status: done
 human_required: false
 depends_on: ["F-01", "DB-06"]
-blocks: []
+blocks: ["OPS-04"]
 owns: ["sentry.*.config.ts", "instrumentation.ts", "instrumentation-client.ts", "lib/log.ts", "app/global-error.tsx", "app/api/debug/sentry/"]
 touches: ["lib/action.ts", "next.config.ts", ".env.example"]
 requirements: ["REQ-NF-04"]

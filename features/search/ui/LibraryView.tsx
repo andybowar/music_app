@@ -260,7 +260,8 @@ export function LibraryView({
 
       <div className="flex flex-wrap items-start gap-2">
         <FilterBar
-          className="min-w-0 flex-1"
+          // Phones show just the Filters button: keep its width so it can't spill over Sort.
+          className="shrink-0 md:min-w-0 md:flex-1 md:shrink"
           params={params}
           facets={facets ?? NO_FACETS}
           error={facets ? null : (facetsError ?? 'Filters are unavailable right now.')}

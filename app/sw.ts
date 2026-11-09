@@ -204,7 +204,7 @@ export type BannerOptions = {
  * hidden from `xl`) and the PDF viewer's page controls, clear of the sticky header.
  */
 const BANNER_CSS = [
-  '#offline-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:2147483000;display:flex;align-items:center;gap:12px;width:max-content;max-width:calc(100vw - 16px);box-sizing:border-box;padding:8px 14px;border-radius:9999px;background:#171717;color:#fafafa;font:500 14px/1.4 system-ui,-apple-system,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.25)}',
+  '#offline-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--bottom-nav-height,56px) + 16px);z-index:2147483000;display:flex;align-items:center;gap:12px;width:max-content;max-width:calc(100vw - 16px);box-sizing:border-box;padding:8px 14px;border-radius:9999px;background:#171717;color:#fafafa;font:500 14px/1.4 system-ui,-apple-system,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.25)}',
   '#offline-banner button{flex:none;min-height:32px;padding:2px 12px;border-radius:9999px;border:1px solid #fafafa;background:transparent;color:inherit;font:inherit;cursor:pointer}',
   '#offline-banner button:focus-visible{outline:2px solid #fafafa;outline-offset:2px}',
   '@media (min-width:1280px){#offline-banner{bottom:24px}}',
